@@ -16,7 +16,11 @@ from graph_fines_accumulated import create_fines_accumulated_chart
 from graph_weekday_infractions import create_weekday_infractions_chart
 
 # Configuração inicial
-st.set_page_config(page_title="Dashboard de Multas", layout="wide")
+st.set_page_config(page_title="Torre de Controle - Dashboard de Multas", layout="wide")
+
+# Inserir o logo da Itracker no topo
+logo_path = "C:/Users/leonardo.fragoso/Documents/dash-streamlit/itracker logo.jpg"
+st.image(logo_path, width=150, use_container_width=False)
 
 # Define cache file for coordinates
 CACHE_FILE = "coordinates_cache.json"
@@ -62,24 +66,25 @@ data_cleaned = clean_data(data)
 total_multas, valor_total_a_pagar, multas_mes_atual = calculate_metrics(data_cleaned)
 
 # Streamlit interface
-st.markdown("<h1 style='text-align: center; color: #E74C3C;'>Dashboard de Multas</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: #0056b3;'>Torre de Controle - Dashboard de Multas</h1>", unsafe_allow_html=True)
+
+st.divider()
 
 # Highlight key metrics
-st.markdown("<h2 style='text-align: center; color: #E74C3C; font-weight: bold;'>Indicadores Principais</h2>", unsafe_allow_html=True)
-st.divider()
+st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>Indicadores Principais</h2>", unsafe_allow_html=True)
 st.markdown(
     """
-    <div style="display: flex; justify-content: center;">
-        <div style="margin: 0 20px; text-align: center;">
-            <h3 style="color: #E74C3C;">Total de Multas</h3>
+    <div style="display: flex; justify-content: space-around; margin: 20px 0; color: #333;">
+        <div style="text-align: center;">
+            <h3 style="color: #1E90FF;">Total de Multas</h3>
             <p style="font-size: 34px; font-weight: bold; color: black;">{}</p>
         </div>
-        <div style="margin: 0 20px; text-align: center;">
-            <h3 style="color: #E74C3C;">Valor Total a Pagar (R$)</h3>
+        <div style="text-align: center;">
+            <h3 style="color: #FFA500;">Valor Total a Pagar (R$)</h3>
             <p style="font-size: 34px; font-weight: bold; color: black;">{}</p>
         </div>
-        <div style="margin: 0 20px; text-align: center;">
-            <h3 style="color: #E74C3C;">Multas no Mês Atual</h3>
+        <div style="text-align: center;">
+            <h3 style="color: #1E90FF;">Multas no Mês Atual</h3>
             <p style="font-size: 34px; font-weight: bold; color: black;">{}</p>
         </div>
     </div>
@@ -89,29 +94,37 @@ st.markdown(
 
 st.divider()
 
-# Date filter
-st.markdown("<h2 style='text-align: center; color: #E74C3C; font-weight: bold;'>Filtro por Período</h2>", unsafe_allow_html=True)
-filter_col1, filter_col2 = st.columns(2)
-with filter_col1:
-    start_date = st.date_input("Data inicial", value=data_cleaned['Dia da Consulta'].min().date())
-with filter_col2:
-    end_date = st.date_input("Data final", value=data_cleaned['Dia da Consulta'].max().date())
+# Date filter with Brazilian format (dd/mm/yyyy)
+st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>Filtro por Período</h2>", unsafe_allow_html=True)
 
-# Filter data by selected date range
+# Add columns for input fields
+filter_col1, filter_col2 = st.columns(2)
+
+with filter_col1:
+    st.markdown("<p style='text-align: center; font-size: 18px; color: #333;'>Data Inicial:</p>", unsafe_allow_html=True)
+    start_date = st.date_input("", value=data_cleaned['Dia da Consulta'].min().date(), key="start_date")
+    st.markdown(f"<p style='text-align: center; font-size: 16px; color: #FF7F00;'>Selecionada: {start_date.strftime('%d/%m/%Y')}</p>", unsafe_allow_html=True)
+
+with filter_col2:
+    st.markdown("<p style='text-align: center; font-size: 18px; color: #333;'>Data Final:</p>", unsafe_allow_html=True)
+    end_date = st.date_input("", value=data_cleaned['Dia da Consulta'].max().date(), key="end_date")
+    st.markdown(f"<p style='text-align: center; font-size: 16px; color: #FF7F00;'>Selecionada: {end_date.strftime('%d/%m/%Y')}</p>", unsafe_allow_html=True)
+
+# Filtrar dados pelo intervalo selecionado
 filtered_data = data_cleaned[(data_cleaned['Dia da Consulta'] >= pd.Timestamp(start_date)) & 
                              (data_cleaned['Dia da Consulta'] <= pd.Timestamp(end_date))]
 
 st.divider()
 
 # Veículos com mais multas
-st.markdown("<h2 style='text-align: center; color: #E74C3C; font-weight: bold;'>Top 10 Veículos com Mais Multas e Valores Totais</h2>", unsafe_allow_html=True)
+st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>Top 10 Veículos com Mais Multas e Valores Totais</h2>", unsafe_allow_html=True)
 top_vehicles_chart = create_vehicle_fines_chart(filtered_data)
 st.plotly_chart(top_vehicles_chart, use_container_width=True)
 
-# Add description below the chart
+# Add description below the chart with consistent style
 st.markdown(
     "<p style='text-align: center; font-size: 18px; color: black;'>"
-    "Este gráfico mostra os 10 veículos com mais multas e seus valores totais dentro do período selecionado."
+    "10 veículos com mais multas e seus valores totais dentro do período selecionado."
     "</p>",
     unsafe_allow_html=True
 )
@@ -119,7 +132,7 @@ st.markdown(
 st.divider()
 
 # Geographical distribution of fines and ranking
-st.markdown("<h2 style='text-align: center; color: #E74C3C; font-weight: bold;'>Distribuição Geográfica das Multas e Ranking</h2>", unsafe_allow_html=True)
+st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>Distribuição Geográfica das Multas e Ranking</h2>", unsafe_allow_html=True)
 
 # Load cache
 coordinates_cache = load_cache()
@@ -170,7 +183,7 @@ if map_click_data and map_click_data.get("last_object_clicked"):
     selected_fines = map_data[(map_data['Latitude'] == lat) & (map_data['Longitude'] == lng)]
     
     if not selected_fines.empty:
-        st.markdown("<h2 style='text-align: center; color: #E74C3C; font-weight: bold;'>Detalhes das Multas para a Localização Selecionada</h2>", unsafe_allow_html=True)
+        st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>Detalhes das Multas para a Localização Selecionada</h2>", unsafe_allow_html=True)
         st.dataframe(
             selected_fines[['Local', 'Valor a Pagar (R$)', 'Data da Infração', 'Descrição']].reset_index(drop=True), 
             use_container_width=True, 
@@ -182,7 +195,7 @@ if map_click_data and map_click_data.get("last_object_clicked"):
 st.divider()
 
 # Ranking das Localidades com Maiores Valores de Multas
-st.markdown("<h2 style='text-align: center; color: #E74C3C; font-weight: bold;'>Ranking das Localidades com Maiores Valores de Multas</h2>", unsafe_allow_html=True)
+st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>Ranking das Localidades com Maiores Valores de Multas</h2>", unsafe_allow_html=True)
 ranking_localidades = filtered_data.groupby('Local', as_index=False).agg(
     Valor_Total=('Valor a Pagar (R$)', 'sum'),
     Total_Multas=('Local', 'count')
@@ -196,22 +209,22 @@ st.dataframe(
 st.divider()
 
 # Infrações mais frequentes
-st.markdown("<h2 style='text-align: center; color: #E74C3C; font-weight: bold;'>Infrações Mais Frequentes</h2>", unsafe_allow_html=True)
+st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>Infrações Mais Frequentes</h2>", unsafe_allow_html=True)
 common_infractions_chart = create_common_infractions_chart(filtered_data)
 st.plotly_chart(common_infractions_chart, use_container_width=True)
 
 # Distribuição de Multas por Placas
-st.markdown("<h2 style='text-align: center; color: #E74C3C; font-weight: bold;'>Distribuição de Multas por Placas</h2>", unsafe_allow_html=True)
+st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>Distribuição de Multas por Placas</h2>", unsafe_allow_html=True)
 plate_distribution_chart = create_plate_distribution_chart(filtered_data)
 st.plotly_chart(plate_distribution_chart, use_container_width=True)
 
-# Adicione uma descrição abaixo do gráfico
-st.caption("Este gráfico mostra as placas com maior número de multas dentro do período selecionado.")
+# Adicione uma descrição abaixo do gráfico com estilo consistente
+st.markdown("<p style='text-align: center; font-size: 18px; color: black;'>Placas com maior número de multas dentro do período selecionado.</p>", unsafe_allow_html=True)
 
 st.divider()
 
 # Valores das Multas Acumulados por Período
-st.markdown("<h2 style='text-align: center; color: #E74C3C; font-weight: bold;'>Valores das Multas Acumulados por Período</h2>", unsafe_allow_html=True)
+st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>Valores das Multas Acumulados por Período</h2>", unsafe_allow_html=True)
 
 # Permitir que o usuário selecione o período (Mensal ou Semanal)
 period_option = st.radio(
@@ -230,13 +243,13 @@ fines_accumulated_chart = create_fines_accumulated_chart(filtered_data, period=p
 # Exibir o gráfico
 st.plotly_chart(fines_accumulated_chart, use_container_width=True)
 
-# Adicionar uma legenda explicando o gráfico
-st.caption("Este gráfico mostra os valores acumulados das multas no período selecionado.")
+# Adicionar uma legenda explicando o gráfico com estilo consistente
+st.markdown("<p style='text-align: center; font-size: 18px; color: black;'>Valores acumulados das multas no período selecionado.</p>", unsafe_allow_html=True)
 
 st.divider()
 
 # Infrações por Dia da Semana
-st.markdown("<h2 style='text-align: center; color: #E74C3C; font-weight: bold;'>Infrações Mais Frequentes por Dia da Semana</h2>", unsafe_allow_html=True)
+st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>Infrações Mais Frequentes por Dia da Semana</h2>", unsafe_allow_html=True)
 
 # Criar o gráfico de infrações por dia da semana
 weekday_infractions_chart = create_weekday_infractions_chart(filtered_data)
@@ -244,8 +257,8 @@ weekday_infractions_chart = create_weekday_infractions_chart(filtered_data)
 # Exibir o gráfico
 st.plotly_chart(weekday_infractions_chart, use_container_width=True)
 
-# Adicionar uma legenda explicando o gráfico
-st.caption("Este gráfico mostra a quantidade de multas distribuídas pelos dias da semana no período selecionado.")
+# Adicionar uma legenda explicando o gráfico com estilo consistente
+st.markdown("<p style='text-align: center; font-size: 18px; color: black;'>Quantidade de multas distribuídas pelos dias da semana no período selecionado.</p>", unsafe_allow_html=True)
 
 # Footer
 st.markdown(
