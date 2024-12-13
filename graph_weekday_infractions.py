@@ -22,11 +22,15 @@ def create_weekday_infractions_chart(data):
     data = data.dropna(subset=['Data da Infração'])
 
     # Extract day of the week
-    data.loc[:, 'Dia da Semana'] = data['Data da Infração'].dt.day_name(locale='pt_BR') 
+    dias_semana = {
+        0: 'Segunda-feira', 1: 'Terça-feira', 2: 'Quarta-feira',
+        3: 'Quinta-feira', 4: 'Sexta-feira', 5: 'Sábado', 6: 'Domingo'
+    }
+    data['Dia da Semana'] = data['Data da Infração'].dt.weekday.map(dias_semana)
 
     # Count fines by day of the week
     weekday_counts = data['Dia da Semana'].value_counts().reindex(
-        ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+        ['Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado', 'Domingo']
     ).reset_index()
     weekday_counts.columns = ['Dia da Semana', 'Quantidade de Multas']
 
@@ -48,7 +52,7 @@ def create_weekday_infractions_chart(data):
     fig.update_layout(
         xaxis_title="Dia da Semana",
         yaxis_title="Quantidade de Multas",
-        template="plotly_dark"  # Use a dark theme (optional)
+        template="plotly_white"  # Alterado para tema claro para melhor integração
     )
 
     return fig
