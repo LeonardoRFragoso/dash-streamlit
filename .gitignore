@@ -1,0 +1,77 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Caches
+.cache/
+*.log
+
+# Environment variables and secrets
+.env
+*.env
+
+# Environment folders
+venv/
+env/
+.venv/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# Local development files
+*.local
+*.idea/
+*.vscode/
+*.DS_Store
+*.swp
+*.swo
+Thumbs.db
+
+# Configuration files for editors or IDEs
+.vscode/
+.idea/
+
+# Streamlit cache and logs
+.streamlit/
+*.log
+
+# Data files
+*.db
+*.sqlite3
+*.bak
+*.json
+coordinates_cache.json
+Consulta Multas.xlsx
+ResultadosOrganizados.xlsx
+
+# Ignore compiled and binary files
+*.so
+*.dll
+*.dylib
+*.o
+*.out
+*.exe
+
+# Ignore test coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+
+# Ignore Python package folders
+*.egg-info/
+*.eggs/
+dist/
+build/
+
+# Node.js dependency folder
+node_modules/
+
+# Ignore custom cache or temporary files
+.temp/
+*.tmp
+
+# Ignore OS generated files
+.DS_Store
+Thumbs.db

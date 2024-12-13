@@ -1,2 +1,2 @@
 # Configurações globais
-FILE_PATH = r"C:\Users\leona\OneDrive\Documentos\Dash-Multas\ResultadosOrganizados.xlsx"
+FILE_PATH = r"C:\Users\leonardo.fragoso\Documents\dash-streamlit\ResultadosOrganizados.xlsx"
