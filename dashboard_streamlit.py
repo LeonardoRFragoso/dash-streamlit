@@ -130,7 +130,6 @@ for _, row in map_data.iterrows():
         ).add_to(map_object)
 
 # Display map and ranking side by side
-st.markdown("<h3 style='color: #1f77b4; font-weight: bold;'>Distribuição e Ranking</h3>", unsafe_allow_html=True)
 col_map, col_ranking = st.columns([2, 1])
 
 with col_map:
@@ -186,7 +185,7 @@ period_option = st.radio(
 )
 
 # Determinar o código do período com base na escolha do usuário
-period_code = 'ME' if period_option == "Mensal" else 'W'
+period_code = 'M' if period_option == "Mensal" else 'W'  # Corrigido de 'ME' para 'M'
 
 # Criar o gráfico
 fines_accumulated_chart = create_fines_accumulated_chart(filtered_data, period=period_code)

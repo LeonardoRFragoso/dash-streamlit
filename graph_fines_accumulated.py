@@ -53,7 +53,10 @@ def create_fines_accumulated_chart(data, period='M'):
     fig.update_layout(
         xaxis_title="Período",
         yaxis_title="Valor Acumulado (R$)",
-        template="plotly_dark"  # Use a dark theme (optional)
+        template="plotly_dark",  # Use a dark theme (optional)
+        title_x=0.5,  # Center the title
+        title_font_size=20,
+        title_font=dict(family="Arial", weight="bold")
     )
 
     return fig
