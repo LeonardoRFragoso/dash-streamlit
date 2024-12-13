@@ -1,2 +1,4 @@
+import streamlit as st
+
 # Configurações globais
-FILE_PATH = r"C:\Users\leonardo.fragoso\Documents\dash-streamlit\ResultadosOrganizados.xlsx"
+FILE_PATH = st.secrets["FILE_PATH"]  # Lê o caminho do arquivo de 'secrets.toml'
