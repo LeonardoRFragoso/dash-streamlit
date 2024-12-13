@@ -66,20 +66,21 @@ st.markdown("<h1 style='text-align: center; color: #E74C3C;'>Dashboard de Multas
 
 # Highlight key metrics
 st.markdown("<h2 style='text-align: center; color: #E74C3C; font-weight: bold;'>Indicadores Principais</h2>", unsafe_allow_html=True)
+st.divider()
 st.markdown(
     """
     <div style="display: flex; justify-content: center;">
         <div style="margin: 0 20px; text-align: center;">
             <h3 style="color: #E74C3C;">Total de Multas</h3>
-            <p style="font-size: 28px; font-weight: bold; color: black;">{}</p>
+            <p style="font-size: 34px; font-weight: bold; color: black;">{}</p>
         </div>
         <div style="margin: 0 20px; text-align: center;">
             <h3 style="color: #E74C3C;">Valor Total a Pagar (R$)</h3>
-            <p style="font-size: 28px; font-weight: bold; color: black;">{}</p>
+            <p style="font-size: 34px; font-weight: bold; color: black;">{}</p>
         </div>
         <div style="margin: 0 20px; text-align: center;">
             <h3 style="color: #E74C3C;">Multas no Mês Atual</h3>
-            <p style="font-size: 28px; font-weight: bold; color: black;">{}</p>
+            <p style="font-size: 34px; font-weight: bold; color: black;">{}</p>
         </div>
     </div>
     """.format(total_multas, f"R$ {valor_total_a_pagar:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'), multas_mes_atual),
@@ -108,7 +109,12 @@ top_vehicles_chart = create_vehicle_fines_chart(filtered_data)
 st.plotly_chart(top_vehicles_chart, use_container_width=True)
 
 # Add description below the chart
-st.caption("Este gráfico mostra os 10 veículos com mais multas e seus valores totais dentro do período selecionado.")
+st.markdown(
+    "<p style='text-align: center; font-size: 18px; color: black;'>"
+    "Este gráfico mostra os 10 veículos com mais multas e seus valores totais dentro do período selecionado."
+    "</p>",
+    unsafe_allow_html=True
+)
 
 st.divider()
 
@@ -240,3 +246,26 @@ st.plotly_chart(weekday_infractions_chart, use_container_width=True)
 
 # Adicionar uma legenda explicando o gráfico
 st.caption("Este gráfico mostra a quantidade de multas distribuídas pelos dias da semana no período selecionado.")
+
+# Footer
+st.markdown(
+    """
+    <style>
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background-color: #f9f9f9;
+            padding: 10px;
+            text-align: center;
+            font-size: 14px;
+            color: #6c757d;
+            box-shadow: 0 -1px 5px rgba(0,0,0,0.1);
+        }
+    </style>
+    <div class="footer">
+        Dashboard de Multas © 2024 | Desenvolvido pela Equipe de Qualidade
+    </div>
+    """,
+    unsafe_allow_html=True
+)
