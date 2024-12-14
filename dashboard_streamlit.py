@@ -12,7 +12,6 @@ from data_loader import load_data, clean_data
 from metrics import calculate_metrics
 from graph_vehicles_fines import create_vehicle_fines_chart
 from graph_common_infractions import create_common_infractions_chart
-from graph_plate_distribution import create_plate_distribution_chart
 from graph_fines_accumulated import create_fines_accumulated_chart
 from graph_weekday_infractions import create_weekday_infractions_chart
 from google.oauth2.service_account import Credentials
@@ -270,15 +269,6 @@ st.divider()
 st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>Infrações Mais Frequentes</h2>", unsafe_allow_html=True)
 common_infractions_chart = create_common_infractions_chart(filtered_data)
 st.plotly_chart(common_infractions_chart, use_container_width=True)
-
-# Distribuição de Multas por Placas
-st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>Distribuição de Multas por Placas</h2>", unsafe_allow_html=True)
-plate_distribution_chart = create_plate_distribution_chart(filtered_data)
-st.plotly_chart(plate_distribution_chart, use_container_width=True)
-
-st.markdown("<p style='text-align: center; font-size: 18px; color: black;'>Placas com maior número de multas dentro do período selecionado.</p>", unsafe_allow_html=True)
-
-st.divider()
 
 # Valores das Multas Acumulados por Período
 st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>Valores das Multas Acumulados por Período</h2>", unsafe_allow_html=True)
