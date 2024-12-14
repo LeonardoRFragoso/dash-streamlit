@@ -11,8 +11,8 @@ def create_common_infractions_chart(data):
     Returns:
         fig (plotly.graph_objects.Figure): A bar chart of the most common infractions.
     """
-    # Group by 'Enquadramento' to calculate frequencies
-    infraction_data = data.groupby(['Enquadramento', 'Descrição'])['Auto de Infração'].count().reset_index()
+    # Group by 'Enquadramento da Infração' to calculate frequencies
+    infraction_data = data.groupby(['Enquadramento da Infração', 'Descrição'])['Auto de Infração'].count().reset_index()
     infraction_data.rename(columns={'Auto de Infração': 'Frequência'}, inplace=True)
 
     # Sort by frequency
@@ -23,7 +23,7 @@ def create_common_infractions_chart(data):
         infraction_data,
         x='Frequência',
         y='Descrição',
-        text='Enquadramento',
+        text='Enquadramento da Infração',
         orientation='h',
         labels={'Descrição': 'Descrição da Infração', 'Frequência': 'Número de Ocorrências'},
         title="Infrações Mais Frequentes e suas Descrições"

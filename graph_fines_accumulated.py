@@ -13,8 +13,10 @@ def create_fines_accumulated_chart(data, period='M'):
         fig (plotly.graph_objects.Figure): A line chart showing accumulated fine values and fine counts.
     """
     # Check if required columns exist
-    if 'Data da Infração' not in data.columns or 'Valor a Pagar (R$)' not in data.columns:
-        raise KeyError("As colunas 'Data da Infração' e 'Valor a Pagar (R$)' não estão presentes no DataFrame.")
+    required_columns = ['Data da Infração', 'Valor a ser pago R$']
+    for col in required_columns:
+        if col not in data.columns:
+            raise KeyError(f"A coluna '{col}' não está presente no DataFrame.")
 
     # Ensure 'Data da Infração' is a datetime object
     data['Data da Infração'] = pd.to_datetime(data['Data da Infração'], errors='coerce')
@@ -31,8 +33,8 @@ def create_fines_accumulated_chart(data, period='M'):
         raise ValueError("Período inválido. Use 'M' para mensal ou 'W' para semanal.")
 
     accumulated_fines = data.groupby('Período').agg(
-        Valor_Acumulado=('Valor a Pagar (R$)', 'sum'),
-        Quantidade_de_Multas=('Valor a Pagar (R$)', 'size')
+        Valor_Acumulado=('Valor a ser pago R$', 'sum'),
+        Quantidade_de_Multas=('Valor a ser pago R$', 'size')
     ).reset_index()
 
     # Create line chart
@@ -72,13 +74,15 @@ def create_location_ranking(data):
         ranking_data (DataFrame): A DataFrame with the ranking of locations.
     """
     # Check if required columns exist
-    if 'Local' not in data.columns or 'Valor a Pagar (R$)' not in data.columns:
-        raise KeyError("As colunas 'Local' e 'Valor a Pagar (R$)' não estão presentes no DataFrame.")
+    required_columns = ['Local da Infração', 'Valor a ser pago R$']
+    for col in required_columns:
+        if col not in data.columns:
+            raise KeyError(f"A coluna '{col}' não está presente no DataFrame.")
 
     # Aggregate data by location
-    ranking_data = data.groupby('Local').agg(
-        Valor_Total=('Valor a Pagar (R$)', 'sum'),
-        Quantidade_Multas=('Valor a Pagar (R$)', 'size')
+    ranking_data = data.groupby('Local da Infração').agg(
+        Valor_Total=('Valor a ser pago R$', 'sum'),
+        Quantidade_Multas=('Valor a ser pago R$', 'size')
     ).reset_index()
 
     # Sort by total value of fines in descending order

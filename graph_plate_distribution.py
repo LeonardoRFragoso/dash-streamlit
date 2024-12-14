@@ -11,13 +11,20 @@ def create_plate_distribution_chart(data):
     Returns:
         fig (plotly.graph_objects.Figure): A bar chart showing distribution by plate type.
     """
-    # Check if column 'Placa' exists
-    if 'Placa' not in data.columns:
-        raise KeyError("A coluna 'Placa' não está presente no DataFrame.")
+    # Check if required columns exist
+    required_columns = ['Placa Relacionada', 'Valor a ser pago R$']
+    for col in required_columns:
+        if col not in data.columns:
+            raise KeyError(f"A coluna '{col}' não está presente no DataFrame.")
 
-    # Group by 'Placa' and count occurrences
-    plate_distribution = data['Placa'].value_counts().reset_index()
-    plate_distribution.columns = ['Placa', 'Frequência']
+    # Ensure 'Valor a ser pago R$' is numeric
+    data['Valor a ser pago R$'] = pd.to_numeric(
+        data['Valor a ser pago R$'], errors='coerce'
+    )
+
+    # Group by 'Placa Relacionada' and count occurrences
+    plate_distribution = data['Placa Relacionada'].value_counts().reset_index()
+    plate_distribution.columns = ['Placa Relacionada', 'Frequência']
 
     # Sort by frequency
     plate_distribution = plate_distribution.sort_values(by='Frequência', ascending=False).head(10)
@@ -26,9 +33,9 @@ def create_plate_distribution_chart(data):
     fig = px.bar(
         plate_distribution,
         x='Frequência',
-        y='Placa',
+        y='Placa Relacionada',
         orientation='h',
-        labels={'Placa': 'Placa do Veículo', 'Frequência': 'Número de Multas'},
+        labels={'Placa Relacionada': 'Placa do Veículo', 'Frequência': 'Número de Multas'},
         title="Distribuição de Multas por Placas Mais Multadas"
     )
 
