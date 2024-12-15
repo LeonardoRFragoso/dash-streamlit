@@ -115,8 +115,11 @@ else:
 data_cleaned.loc[:, 'Dia da Consulta'] = pd.to_datetime(data_cleaned['Dia da Consulta'], dayfirst=True, errors='coerce')
 data_cleaned.loc[:, 'Data da Infração'] = pd.to_datetime(data_cleaned['Data da Infração'], dayfirst=True, errors='coerce')
 
-# Calcular métricas
+# Calcular métricas principais
 total_multas, valor_total_a_pagar, multas_mes_atual = calculate_metrics(data_cleaned)
+
+# Calcular a data da última consulta
+ultima_data_consulta = data_cleaned['Dia da Consulta'].max()
 
 # Streamlit interface
 st.markdown("<h1 style='text-align: center; color: #0056b3;'>Torre de Controle - Dashboard de Multas</h1>", unsafe_allow_html=True)
@@ -141,12 +144,22 @@ st.markdown(
             <h3 style="color: #1E90FF;">Multas no Mês Atual</h3>
             <p style="font-size: 34px; font-weight: bold; color: black;">{}</p>
         </div>
+        <div style="text-align: center;">
+            <h3 style="color: #FFA500;">Última Consulta</h3>
+            <p style="font-size: 34px; font-weight: bold; color: black;">{}</p>
+        </div>
     </div>
-    """.format(total_multas, f"R$ {valor_total_a_pagar:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'), multas_mes_atual),
+    """.format(
+        total_multas,
+        f"R$ {valor_total_a_pagar:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
+        multas_mes_atual,
+        ultima_data_consulta.strftime("%d/%m/%Y") if pd.notnull(ultima_data_consulta) else "Data não disponível"
+    ),
     unsafe_allow_html=True
 )
 
 st.divider()
+
 
 # Filtro de data com formato brasileiro (dd/mm/yyyy)
 st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>Filtro por Período</h2>", unsafe_allow_html=True)

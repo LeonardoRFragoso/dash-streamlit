@@ -50,7 +50,7 @@ def create_weekday_infractions_chart(data):
     # Update layout for better readability
     fig.update_traces(textposition='outside')
     fig.update_layout(
-        xaxis_title="Dia da Semana",
+        xaxis_title="",
         yaxis_title="Quantidade de Multas",
         template="plotly_white"  # Alterado para tema claro para melhor integração
     )

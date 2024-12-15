@@ -70,7 +70,7 @@ def create_vehicle_fines_chart(df):
     )
 
     fig.update_layout(
-        xaxis_title='Veículo (Placa Relacionada)',
+        xaxis_title='',
         yaxis_title='Total das Multas (R$)',
         coloraxis_colorbar=dict(title='Número de Multas'),
         template="plotly_dark"  # Tema opcional escuro
