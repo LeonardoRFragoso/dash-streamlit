@@ -1,3 +1,4 @@
+
 import pandas as pd
 import plotly.express as px
 
@@ -27,7 +28,7 @@ def get_vehicle_fines_data(df):
     df[value_column] = (
         df[value_column]
         .astype(str)
-        .replace({r'[^\d,.-]': '', r'\.(?=\d{3,})': '', ',': '.'}, regex=True)
+        .replace({r'[^\d,.-]': '', r'\\.(?=\\d{3,})': '', ',': '.'}, regex=True)
     )
     df[value_column] = pd.to_numeric(df[value_column], errors='coerce')
 
@@ -61,6 +62,7 @@ def create_vehicle_fines_chart(df):
         x='Placa Relacionada',
         y='total_fines',
         color='num_fines',
+        text='num_fines',  # Exibir o número de multas dentro das barras
         labels={
             'Placa Relacionada': 'Veículo (Placa Relacionada)',
             'total_fines': 'Total das Multas (R$)',
@@ -69,10 +71,17 @@ def create_vehicle_fines_chart(df):
         title='Top 10 Veículos com Mais Multas e Valores Totais'
     )
 
+    fig.update_traces(
+        texttemplate='R$ %{y:,.2f}<br>%{text} multas',  # Exibe valores e número de multas
+        textposition='inside'  # Texto dentro das barras
+    )
+
     fig.update_layout(
         xaxis_title='',
         yaxis_title='Total das Multas (R$)',
         coloraxis_colorbar=dict(title='Número de Multas'),
+        uniformtext_minsize=8,
+        uniformtext_mode='hide',
         template="plotly_dark"  # Tema opcional escuro
     )
 
