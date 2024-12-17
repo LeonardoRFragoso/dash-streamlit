@@ -203,7 +203,7 @@ for _, row in map_data.iterrows():
 map_click_data = st_folium(map_object, width=1800, height=600)
 
 # Tabela de Detalhes ao Clicar no Mapa
-if map_click_data.get("last_object_clicked"):
+if map_click_data and map_click_data.get("last_object_clicked"):
     lat = map_click_data["last_object_clicked"].get("lat")
     lng = map_click_data["last_object_clicked"].get("lng")
 
@@ -213,7 +213,8 @@ if map_click_data.get("last_object_clicked"):
         st.markdown("<h3 style='color: #F37529;'>Detalhes das Multas na Localização</h3>", unsafe_allow_html=True)
         st.dataframe(
             selected_fines[['Local da Infração', 'Valor a ser pago R$', 'Data da Infração']],
-            use_container_width=True
+            use_container_width=True,
+            hide_index=True  # Esconde a coluna do índice
         )
     else:
         st.info("Nenhuma multa encontrada para a localização selecionada.")
