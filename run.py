@@ -20,62 +20,10 @@ from graph_weekday_infractions import create_weekday_infractions_chart
 # Configuração inicial
 st.set_page_config(page_title="Torre de Controle - Dashboard de Multas", layout="wide")
 
-# CSS e HTML customizados
-st.markdown(
-    """
-    <style>
-        @keyframes fadeIn {
-            0% { opacity: 0; transform: translateY(-20px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
+# Inserir o logo da Itracker no topo usando o link do secrets
+logo_url = st.secrets["image"]["logo_url"]  # Pega o link direto configurado nos secrets
+st.image(logo_url, width=150, use_container_width=False)
 
-        /* Container do título */
-        .titulo-dashboard-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 30px auto;
-            padding: 20px;
-            background: linear-gradient(to right, #F37529, rgba(255, 255, 255, 0.8));
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            animation: fadeIn 1.2s ease-out;
-        }
-
-        .titulo-dashboard {
-            font-size: 45px;
-            font-weight: bold;
-            color: #333333;
-            text-align: center;
-        }
-
-        .subtitulo-dashboard {
-            font-size: 18px;
-            color: #555555;
-            text-align: center;
-            font-style: italic;
-        }
-    </style>
-
-    <!-- Container do Título -->
-    <div class="titulo-dashboard-container">
-        <div>
-            <h1 class="titulo-dashboard">Torre de Controle - Dashboard de Multas</h1>
-            <p class="subtitulo-dashboard">Monitore e analise suas multas em tempo real com gráficos e indicadores.</p>
-        </div>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-# Carregamento da logo com fallback
-try:
-    logo_url = st.secrets["image"]["logo_url"]  # URL configurada no secrets
-except KeyError:
-    st.warning("URL da logo não encontrada. Usando imagem padrão.")
-    logo_url = "https://via.placeholder.com/150?text=Logo"
-
-st.image(logo_url, width=150, use_column_width=False)
 
 # Define cache file for coordinates
 CACHE_FILE = "coordinates_cache.json"
@@ -114,13 +62,28 @@ def get_coordinates(local, api_key):
 
 def autenticar_google_drive():
     """Autentica no Google Drive usando credenciais de serviço."""
+    # Converte explicitamente o conteúdo de CREDENTIALS para string e depois para JSON
     credentials_str = str(st.secrets["CREDENTIALS"])  # Converte AttrDict para string
-    credentials_dict = json.loads(credentials_str.replace("\n", "\\n"))
+    credentials_dict = json.loads(credentials_str.replace("\n", "\\n"))  # Ajusta quebras de linha e carrega JSON
+    
+    # Cria as credenciais a partir do dicionário
     credentials = Credentials.from_service_account_info(
         credentials_dict, 
         scopes=["https://www.googleapis.com/auth/drive"]
     )
+    
+    # Retorna o serviço autenticado do Google Drive
     return build("drive", "v3", credentials=credentials)
+
+def obter_id_ultima_planilha():
+    """Obtém o ID da última planilha salva no JSON."""
+    try:
+        with open(st.secrets["ULTIMA_PLANILHA_JSON"], 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            return data.get("file_id")
+    except Exception as e:
+        st.error(f"Erro ao carregar o ID da última planilha: {e}")
+        st.stop()
 
 def carregar_dados_google_drive():
     """Carrega os dados da última planilha no Google Drive."""
@@ -143,17 +106,138 @@ def carregar_dados_google_drive():
 data = carregar_dados_google_drive()
 data_cleaned = clean_data(data)
 
+# Ajustar campos necessários
+if 'Valor a ser pago R$' in data_cleaned.columns:
+    data_cleaned.loc[:, 'Valor a ser pago R$'] = data_cleaned['Valor a ser pago R$'].replace(
+        {r'[^0-9,]': '', ',': '.'}, regex=True
+    ).astype(float)
+else:
+    st.error("A coluna 'Valor a ser pago R$' não foi encontrada nos dados carregados.")
+    st.stop()
+
+if 'Local da Infração' in data_cleaned.columns:
+    data_cleaned.loc[:, 'Local da Infração'] = data_cleaned['Local da Infração'].fillna('Desconhecido')
+else:
+    st.error("A coluna 'Local da Infração' não foi encontrada nos dados carregados.")
+    st.stop()
+
+# Ajustar datas
+data_cleaned.loc[:, 'Dia da Consulta'] = pd.to_datetime(data_cleaned['Dia da Consulta'], dayfirst=True, errors='coerce')
+data_cleaned.loc[:, 'Data da Infração'] = pd.to_datetime(data_cleaned['Data da Infração'], dayfirst=True, errors='coerce')
+
 # Calcular métricas principais
 total_multas, valor_total_a_pagar, multas_mes_atual = calculate_metrics(data_cleaned)
 
-# Streamlit interface
-st.markdown("---")
-st.markdown("<h2 style='text-align: center; color: #FF7F00;'>Indicadores Principais</h2>", unsafe_allow_html=True)
+# Calcular a data da última consulta
+ultima_data_consulta = data_cleaned['Dia da Consulta'].max()
 
-# Exibição das métricas
-st.write(f"**Total de Multas:** {total_multas}")
-st.write(f"**Valor Total a Pagar:** R$ {valor_total_a_pagar:,.2f}")
-st.write(f"**Multas no Mês Atual:** {multas_mes_atual}")
+# Streamlit interface (restante do código segue inalterado)
+
+st.markdown(
+    """
+    <style>
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(-20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Container do título */
+        .titulo-dashboard-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 40px auto;
+            padding: 25px 20px;
+            background: linear-gradient(to right, #F37529, rgba(255, 255, 255, 0.8));
+            border-radius: 15px;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 1.2s ease-out;
+        }
+
+        /* Título principal */
+        .titulo-dashboard {
+            font-size: 50px;
+            font-weight: bold;
+            color: #333333;
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* Subtítulo */
+        .subtitulo-dashboard {
+            font-size: 20px;
+            color: #555555;
+            margin-top: 10px;
+            text-align: center;
+            font-style: italic;
+        }
+
+        /* Seção dos indicadores principais */
+        .indicadores-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            margin: 40px auto;
+            padding: 30px 20px;
+            background: linear-gradient(to right, #fff, #FDF1E8);
+            border-radius: 15px;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 1.5s ease-out;
+        }
+
+        /* Indicador individual */
+        .indicador {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background-color: #FFFFFF;
+            border: 4px solid #F37529; /* Laranja ITracker */
+            border-radius: 15px;
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);
+            width: 260px;
+            height: 160px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeIn 2s ease-out;
+        }
+
+        .indicador:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 18px rgba(0, 0, 0, 0.4);
+            border-color: #F37529;
+        }
+
+        .indicador h3 {
+            color: #F37529; /* Laranja ITracker */
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .indicador p {
+            font-size: 38px;
+            font-weight: bold;
+            color: #F37529; /* Laranja ITracker */
+            margin: 0;
+        }
+    </style>
+
+    <!-- Container do Título -->
+    <div class="titulo-dashboard-container">
+        <div>
+            <h1 class="titulo-dashboard">Torre de Controle - Dashboard de Multas</h1>
+            <p class="subtitulo-dashboard">Monitore e analise suas multas em tempo real com gráficos e indicadores.</p>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+st.divider()
 
 # Subtítulo para os indicadores principais
 st.markdown("<h2 style='text-align: center; color: #F37529; font-size: 36px; font-weight: bold; text-shadow: 1px 1px 4px rgba(0,0,0,0.3);'>Indicadores Principais</h2>", unsafe_allow_html=True)
