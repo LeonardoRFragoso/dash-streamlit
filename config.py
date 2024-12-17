@@ -20,3 +20,8 @@ SITE_KEY = st.secrets["SITE_KEY"] if "SITE_KEY" in st.secrets else "CHAVE_PADRAO
 
 # ID da pasta no Google Drive onde a planilha de resultados está armazenada
 GOOGLE_DRIVE_FOLDER_ID = st.secrets["file_data"].get("GOOGLE_DRIVE_FOLDER_ID", None)
+
+# Outras configurações ou funções úteis para centralizar
+def get_credentials():
+    """Retorna as credenciais de serviço do Google"""
+    return CREDENTIALS_FILE
