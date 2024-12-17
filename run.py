@@ -193,6 +193,12 @@ st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>
 top_vehicles_chart = create_vehicle_fines_chart(filtered_data)
 st.plotly_chart(top_vehicles_chart, use_container_width=True)
 
+# Exibir mapa de distribuição geográfica das multas
+st.divider()
+st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>Distribuição Geográfica das Multas</h2>", unsafe_allow_html=True)
+API_KEY = st.secrets["API_KEY"]
+coordinates_cache = load_cache()
+
 # Exibir gráfico de infrações mais comuns
 st.divider()
 st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>Infrações Mais Frequentes</h2>", unsafe_allow_html=True)
@@ -212,12 +218,6 @@ st.divider()
 st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>Infrações Mais Frequentes por Dia da Semana</h2>", unsafe_allow_html=True)
 weekday_infractions_chart = create_weekday_infractions_chart(filtered_data)
 st.plotly_chart(weekday_infractions_chart, use_container_width=True)
-
-# Exibir mapa de distribuição geográfica das multas
-st.divider()
-st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>Distribuição Geográfica das Multas</h2>", unsafe_allow_html=True)
-API_KEY = st.secrets["API_KEY"]
-coordinates_cache = load_cache()
 
 # Filtra dados para o mapa usando filtered_data
 map_data = filtered_data.dropna(subset=['Local da Infração']).copy()
