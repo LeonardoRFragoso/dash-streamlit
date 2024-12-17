@@ -381,10 +381,6 @@ else:
         (data_cleaned['Dia da Consulta'] <= end_date)
     ]
 
-    # Exibição dos dados filtrados
-    st.success(f"Dados filtrados entre {start_date.strftime('%d/%m/%Y')} e {end_date.strftime('%d/%m/%Y')}")
-    st.dataframe(filtered_data)  # Exibe os dados filtrados
-
 st.divider()
 
 # Veículos com mais multas
