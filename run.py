@@ -27,8 +27,8 @@ st.markdown(
         /* Título principal */
         .titulo-dashboard-container {
             display: flex;
-            justify-content: center; /* Centraliza horizontalmente */
-            align-items: center;     /* Centraliza verticalmente */
+            justify-content: center;
+            align-items: center;
             text-align: center;
             margin: 40px auto;
             padding: 25px 20px;
@@ -46,17 +46,16 @@ st.markdown(
             margin: 0;
         }
 
-        /* Container dos Indicadores Principais */
+        /* Container dos Indicadores */
         .indicadores-container {
             display: flex;
-            justify-content: center; /* Centraliza os indicadores horizontalmente */
-            align-items: center;     /* Centraliza verticalmente */
-            flex-wrap: wrap;         /* Garante que os indicadores se ajustem em telas menores */
-            gap: 40px;               /* Espaçamento entre os indicadores */
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 40px;
             margin-top: 30px;
         }
 
-        /* Estilização dos Indicadores Individuais */
         .indicador {
             display: flex;
             justify-content: center;
@@ -83,6 +82,15 @@ st.markdown(
             font-size: 18px;
             color: #555;
             margin-bottom: 8px;
+        }
+
+        /* Centralizar títulos de seção */
+        .titulo-centralizado {
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            color: #F37529;
+            margin: 20px 0;
         }
 
         /* Footer */
@@ -127,29 +135,17 @@ ultima_consulta = pd.to_datetime(data_cleaned['Dia da Consulta'].max(), errors='
 st.markdown(
     """
     <div class="indicadores-container">
-        <div class="indicador">
-            <span>Total de Multas</span>
-            <p>{}</p>
-        </div>
-        <div class="indicador">
-            <span>Valor Total a Pagar</span>
-            <p>R$ {:,.2f}</p>
-        </div>
-        <div class="indicador">
-            <span>Multas no Mês Atual</span>
-            <p>{}</p>
-        </div>
-        <div class="indicador">
-            <span>Última Consulta</span>
-            <p>{}</p>
-        </div>
+        <div class="indicador"><span>Total de Multas</span><p>{}</p></div>
+        <div class="indicador"><span>Valor Total a Pagar</span><p>R$ {:,.2f}</p></div>
+        <div class="indicador"><span>Multas no Mês Atual</span><p>{}</p></div>
+        <div class="indicador"><span>Última Consulta</span><p>{}</p></div>
     </div>
     """.format(total_multas, valor_total_a_pagar, multas_mes_atual, ultima_consulta),
     unsafe_allow_html=True
 )
 
 # Filtro por Período
-st.markdown("### Filtro por Período")
+st.markdown("<h2 class='titulo-centralizado'>Filtro por Período</h2>", unsafe_allow_html=True)
 data_cleaned['Dia da Consulta'] = pd.to_datetime(data_cleaned['Dia da Consulta'], errors='coerce')
 start_date = st.date_input("Data Inicial", value=data_cleaned['Dia da Consulta'].min())
 end_date = st.date_input("Data Final", value=data_cleaned['Dia da Consulta'].max())
@@ -159,34 +155,22 @@ filtered_data = data_cleaned[
     (data_cleaned['Dia da Consulta'] <= pd.Timestamp(end_date))
 ]
 
-# Função auxiliar para converter valores
-def safe_float(value):
-    try:
-        return float(str(value).replace(",", ".").replace("R$", "").strip())
-    except (ValueError, TypeError):
-        return 0.00
+# Gráficos com títulos centralizados
+st.markdown("<h2 class='titulo-centralizado'>Top 10 Veículos com Mais Multas e Valores Totais</h2>", unsafe_allow_html=True)
+st.plotly_chart(create_vehicle_fines_chart(filtered_data), use_container_width=True)
 
-# Gráficos
-st.markdown("### Top 10 Veículos com Mais Multas e Valores Totais")
-top_vehicles_chart = create_vehicle_fines_chart(filtered_data)
-st.plotly_chart(top_vehicles_chart, use_container_width=True)
+st.markdown("<h2 class='titulo-centralizado'>Infrações Mais Frequentes</h2>", unsafe_allow_html=True)
+st.plotly_chart(create_common_infractions_chart(filtered_data), use_container_width=True)
 
-st.markdown("### Infrações Mais Frequentes")
-common_infractions_chart = create_common_infractions_chart(filtered_data)
-st.plotly_chart(common_infractions_chart, use_container_width=True)
-
-st.markdown("### Valores das Multas Acumulados por Período")
+st.markdown("<h2 class='titulo-centralizado'>Valores das Multas Acumulados por Período</h2>", unsafe_allow_html=True)
 period_option = st.radio("Selecione o período:", ["Mensal", "Semanal"], horizontal=True)
-period_code = 'M' if period_option == "Mensal" else 'W'
-fines_accumulated_chart = create_fines_accumulated_chart(filtered_data, period=period_code)
-st.plotly_chart(fines_accumulated_chart, use_container_width=True)
+st.plotly_chart(create_fines_accumulated_chart(filtered_data, 'M' if period_option == "Mensal" else 'W'), use_container_width=True)
 
-st.markdown("### Infrações Mais Frequentes por Dia da Semana")
-weekday_infractions_chart = create_weekday_infractions_chart(filtered_data)
-st.plotly_chart(weekday_infractions_chart, use_container_width=True)
+st.markdown("<h2 class='titulo-centralizado'>Infrações Mais Frequentes por Dia da Semana</h2>", unsafe_allow_html=True)
+st.plotly_chart(create_weekday_infractions_chart(filtered_data), use_container_width=True)
 
 # Mapa
-st.markdown("### Distribuição Geográfica das Multas")
+st.markdown("<h2 class='titulo-centralizado'>Distribuição Geográfica das Multas</h2>", unsafe_allow_html=True)
 API_KEY = st.secrets["API_KEY"]
 coordinates_cache = load_cache()
 map_data = filtered_data.dropna(subset=['Local da Infração']).copy()
@@ -200,7 +184,7 @@ map_object = folium.Map(location=map_center, zoom_start=5, tiles="CartoDB dark_m
 icon_url = "https://cdn-icons-png.flaticon.com/512/1828/1828843.png"
 
 for _, row in map_data.iterrows():
-    valor_multa = safe_float(row['Valor a ser pago R$'])
+    valor_multa = float(row['Valor a ser pago R$'])
     popup_content = f"<b>Local:</b> {row['Local da Infração']}<br><b>Valor:</b> R$ {valor_multa:.2f}"
     folium.Marker(
         location=[row['Latitude'], row['Longitude']],
