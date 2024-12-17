@@ -20,10 +20,114 @@ from graph_weekday_infractions import create_weekday_infractions_chart
 # Configuração inicial
 st.set_page_config(page_title="Torre de Controle - Dashboard de Multas", layout="wide")
 
-# Inserir o logo da Itracker no topo usando o link do secrets
-logo_url = st.secrets["image"]["logo_url"]  # Pega o link direto configurado nos secrets
-st.image(logo_url, width=150, use_container_width=False)
+# Streamlit interface
+st.markdown(
+    """
+    <style>
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(-20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
 
+        /* Container do título */
+        .titulo-dashboard-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 40px auto;
+            padding: 25px 20px;
+            background: linear-gradient(to right, #F37529, rgba(255, 255, 255, 0.8));
+            border-radius: 15px;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 1.2s ease-out;
+        }
+
+        /* Título principal */
+        .titulo-dashboard {
+            font-size: 50px;
+            font-weight: bold;
+            color: #333333;
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* Subtítulo */
+        .subtitulo-dashboard {
+            font-size: 20px;
+            color: #555555;
+            margin-top: 10px;
+            text-align: center;
+            font-style: italic;
+        }
+
+        /* Seção dos indicadores principais */
+        .indicadores-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            margin: 40px auto;
+            padding: 30px 20px;
+            background: linear-gradient(to right, #fff, #FDF1E8);
+            border-radius: 15px;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 1.5s ease-out;
+        }
+
+        /* Indicador individual */
+        .indicador {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background-color: #FFFFFF;
+            border: 4px solid #F37529; /* Laranja ITracker */
+            border-radius: 15px;
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);
+            width: 260px;
+            height: 160px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeIn 2s ease-out;
+        }
+
+        .indicador:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 18px rgba(0, 0, 0, 0.4);
+            border-color: #F37529;
+        }
+
+        .indicador h3 {
+            color: #F37529; /* Laranja ITracker */
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .indicador p {
+            font-size: 38px;
+            font-weight: bold;
+            color: #F37529; /* Laranja ITracker */
+            margin: 0;
+        }
+    </style>
+
+    <!-- Container do Título -->
+    <div class="titulo-dashboard-container">
+        <div>
+            <h1 class="titulo-dashboard">Torre de Controle - Dashboard de Multas</h1>
+            <p class="subtitulo-dashboard">Monitore e analise suas multas em tempo real com gráficos e indicadores.</p>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+# Inserir o logo da Itracker no topo usando o link do secrets
+logo_url = st.secrets["image"]["logo_url"]
+st.image(logo_url, width=150, use_container_width=False)
 
 # Define cache file for coordinates
 CACHE_FILE = "coordinates_cache.json"
@@ -130,112 +234,6 @@ total_multas, valor_total_a_pagar, multas_mes_atual = calculate_metrics(data_cle
 
 # Calcular a data da última consulta
 ultima_data_consulta = data_cleaned['Dia da Consulta'].max()
-
-# Streamlit interface (restante do código segue inalterado)
-
-st.markdown(
-    """
-    <style>
-        @keyframes fadeIn {
-            0% { opacity: 0; transform: translateY(-20px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Container do título */
-        .titulo-dashboard-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 40px auto;
-            padding: 25px 20px;
-            background: linear-gradient(to right, #F37529, rgba(255, 255, 255, 0.8));
-            border-radius: 15px;
-            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
-            animation: fadeIn 1.2s ease-out;
-        }
-
-        /* Título principal */
-        .titulo-dashboard {
-            font-size: 50px;
-            font-weight: bold;
-            color: #333333;
-            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-
-        /* Subtítulo */
-        .subtitulo-dashboard {
-            font-size: 20px;
-            color: #555555;
-            margin-top: 10px;
-            text-align: center;
-            font-style: italic;
-        }
-
-        /* Seção dos indicadores principais */
-        .indicadores-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 40px;
-            flex-wrap: wrap;
-            margin: 40px auto;
-            padding: 30px 20px;
-            background: linear-gradient(to right, #fff, #FDF1E8);
-            border-radius: 15px;
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
-            animation: fadeIn 1.5s ease-out;
-        }
-
-        /* Indicador individual */
-        .indicador {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            background-color: #FFFFFF;
-            border: 4px solid #F37529; /* Laranja ITracker */
-            border-radius: 15px;
-            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);
-            width: 260px;
-            height: 160px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            animation: fadeIn 2s ease-out;
-        }
-
-        .indicador:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 12px 18px rgba(0, 0, 0, 0.4);
-            border-color: #F37529;
-        }
-
-        .indicador h3 {
-            color: #F37529; /* Laranja ITracker */
-            font-size: 22px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .indicador p {
-            font-size: 38px;
-            font-weight: bold;
-            color: #F37529; /* Laranja ITracker */
-            margin: 0;
-        }
-    </style>
-
-    <!-- Container do Título -->
-    <div class="titulo-dashboard-container">
-        <div>
-            <h1 class="titulo-dashboard">Torre de Controle - Dashboard de Multas</h1>
-            <p class="subtitulo-dashboard">Monitore e analise suas multas em tempo real com gráficos e indicadores.</p>
-        </div>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
 
 st.divider()
 
