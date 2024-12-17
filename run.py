@@ -167,13 +167,11 @@ st.markdown(
 )
 st.plotly_chart(create_vehicle_fines_chart(filtered_data), use_container_width=True)
 
-# Mapa
-st.markdown(
-    "<h2 class='titulo-centralizado' style='color: #F37529;'>Distribuição Geográfica das Multas</h2>",
-    unsafe_allow_html=True
-)
+# Mapa e Tabela de Detalhes
+st.markdown("<h2 style='color: #F37529;'>Distribuição Geográfica das Multas</h2>", unsafe_allow_html=True)
 API_KEY = st.secrets["API_KEY"]
 coordinates_cache = load_cache()
+
 map_data = filtered_data.dropna(subset=['Local da Infração']).copy()
 map_data[['Latitude', 'Longitude']] = map_data['Local da Infração'].apply(
     lambda x: pd.Series(get_cached_coordinates(x, API_KEY, coordinates_cache))
@@ -182,21 +180,21 @@ save_cache(coordinates_cache)
 
 map_center = [map_data['Latitude'].mean(), map_data['Longitude'].mean()] if not map_data.empty else [0, 0]
 map_object = folium.Map(location=map_center, zoom_start=5, tiles="CartoDB dark_matter")
-icon_url = "https://cdn-icons-png.flaticon.com/512/1828/1828843.png"
 
+icon_url = "https://cdn-icons-png.flaticon.com/512/1828/1828843.png"
 for _, row in map_data.iterrows():
-    valor_multa = safe_float(row['Valor a ser pago R$'])
-    popup_content = f"<b>Local:</b> {row['Local da Infração']}<br><b>Valor:</b> R$ {valor_multa:.2f}"
+    popup_content = f"<b>Local:</b> {row['Local da Infração']}<br><b>Valor:</b> R$ {row['Valor a ser pago R$']:.2f}"
     folium.Marker(
         location=[row['Latitude'], row['Longitude']],
         popup=folium.Popup(popup_content, max_width=300),
         icon=CustomIcon(icon_url, icon_size=(30, 30))
     ).add_to(map_object)
 
-st_folium(map_object, width=1800, height=600)
+# Definir map_click_data com valor padrão vazio
+map_click_data = st_folium(map_object, width=1800, height=600) or {}
 
 # Tabela de Detalhes ao Clicar no Mapa
-if map_click_data and map_click_data.get("last_object_clicked"):
+if map_click_data.get("last_object_clicked"):
     lat = map_click_data["last_object_clicked"].get("lat")
     lng = map_click_data["last_object_clicked"].get("lng")
 
@@ -205,8 +203,11 @@ if map_click_data and map_click_data.get("last_object_clicked"):
     if not selected_fines.empty:
         st.markdown("<h3 style='color: #F37529;'>Detalhes das Multas na Localização</h3>", unsafe_allow_html=True)
         st.dataframe(
-            selected_fines[['Local da Infração', 'Valor a ser pago R$', 'Data da Infração']]
+            selected_fines[['Local da Infração', 'Valor a ser pago R$', 'Data da Infração']],
+            use_container_width=True
         )
+    else:
+        st.info("Nenhuma multa encontrada para a localização selecionada.")
 
 # Ranking das Localidades
 st.markdown("<h2 style='color: #F37529;'>Ranking das Localidades com Mais Multas</h2>", unsafe_allow_html=True)
