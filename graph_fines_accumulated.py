@@ -5,7 +5,7 @@ from datetime import datetime
 def create_fines_accumulated_chart(data, period='M'):
     """
     Create a line chart to display the accumulated fine values and count of fines by month or week.
-    Now restricted to display only the months of the current year.
+    Ensure all months of the current year are displayed, even with no data.
 
     Parameters:
         data (DataFrame): The filtered data containing fines information.
@@ -23,33 +23,33 @@ def create_fines_accumulated_chart(data, period='M'):
     # Ensure 'Data da Infração' is a datetime object
     data['Data da Infração'] = pd.to_datetime(data['Data da Infração'], errors='coerce')
 
-    # Filter out invalid dates
-    data = data.dropna(subset=['Data da Infração'])
-
-    # Filter data for the current year only
+    # Filter for the current year
     current_year = datetime.now().year
     data = data[data['Data da Infração'].dt.year == current_year]
 
-    # Group data by the selected period and calculate the accumulated value and count
-    if period == 'M':
-        data['Período'] = data['Data da Infração'].dt.to_period('M').dt.to_timestamp()
-    elif period == 'W':
-        data['Período'] = data['Data da Infração'].dt.to_period('W').dt.to_timestamp()
-    else:
-        raise ValueError("Período inválido. Use 'M' para mensal ou 'W' para semanal.")
+    # Create a complete list of months for the current year
+    all_months = pd.date_range(start=f"{current_year}-01-01", end=f"{current_year}-12-31", freq='MS')
+    months_df = pd.DataFrame({'Período': all_months})
 
+    # Aggregate data by month
+    data['Período'] = data['Data da Infração'].dt.to_period('M').dt.to_timestamp()
     accumulated_fines = data.groupby('Período').agg(
         Valor_Acumulado=('Valor a ser pago R$', 'sum'),
         Quantidade_de_Multas=('Valor a ser pago R$', 'size')
     ).reset_index()
 
-    # Create line chart
+    # Merge the complete months list with the aggregated data
+    accumulated_fines = pd.merge(months_df, accumulated_fines, on='Período', how='left')
+    accumulated_fines['Valor_Acumulado'].fillna(0, inplace=True)  # Fill missing values with 0
+    accumulated_fines['Quantidade_de_Multas'].fillna(0, inplace=True)
+
+    # Create the line chart
     fig = px.line(
         accumulated_fines,
         x='Período',
         y='Valor_Acumulado',
         labels={
-            'Período': 'Período', 
+            'Período': 'Período',
             'Valor_Acumulado': 'Valor Acumulado (R$)',
             'Quantidade_de_Multas': 'Quantidade de Multas'
         },
@@ -61,8 +61,8 @@ def create_fines_accumulated_chart(data, period='M'):
     fig.update_layout(
         xaxis_title="",
         yaxis_title="Valor Acumulado (R$)",
-        template="plotly_white",  # Tema claro
-        title_x=0.5,  # Centraliza o título
+        template="plotly_white",  # Light theme
+        title_x=0.5,  # Center the title
         title_font_size=20,
         title_font=dict(family="Arial", weight="bold")
     )
