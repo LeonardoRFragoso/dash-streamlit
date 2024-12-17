@@ -346,71 +346,81 @@ st.markdown(
             justify-content: center;
             align-items: center;
             margin-top: 40px;
-            padding: 10px;
+            padding: 20px;
+            background-color: #FFF8F0;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 700px;
+            margin-bottom: 40px;
         }}
 
         /* Título do filtro */
         .filtro-titulo {{
-            font-size: 32px;
+            font-size: 36px;
             font-weight: bold;
             color: #F37529;
             margin-bottom: 20px;
             text-align: center;
             border-bottom: 2px solid #F37529;
             width: 100%;
-            max-width: 500px;
         }}
 
-        /* Container dos campos de data */
+        /* Contêiner do grid para data */
         .date-input-container {{
-            display: flex;
-            justify-content: space-between;
-            gap: 15px; /* Ajuste no espaçamento */
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
             width: 100%;
-            max-width: 550px;
-            margin-bottom: 25px;
+            max-width: 600px;
         }}
 
+        .date-input-container div {{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }}
+
+        /* Labels dos campos de data */
         .date-input-container span {{
-            font-size: 22px;
-            color: #555555;
-            display: inline-block;
-            width: 100%; /* Controla o alinhamento dos campos */
-            text-align: center;
+            font-size: 18px;
+            color: #333333;
+            margin-bottom: 5px;
+            font-weight: 500;
         }}
 
-        .date-input-container input {{
-            font-size: 20px;
-            padding: 12px 15px;
+        /* Campos de data */
+        .stDateInput input {{
+            font-size: 18px;
+            padding: 12px;
             border-radius: 8px;
             border: 2px solid #F37529;
-            background-color: #FDF1E8;
-            width: 240px;
-            transition: all 0.3s ease;
-            display: block;
+            background-color: #FFF;
+            width: 100%;
+            max-width: 250px;
             margin-top: 5px;
             text-align: center;
         }}
 
-        /* Efeito de foco nos campos de data */
+        /* Estilo de foco para os campos de data */
         .stDateInput input:focus {{
             border-color: #FF7F00;
             background-color: #FFF3E5;
             outline: none;
         }}
 
-        /* Estilo do botão de filtro */
+        /* Botão de filtro */
         .filtro-btn {{
             background-color: #F37529;
             color: white;
             font-size: 22px;
-            padding: 14px 30px;
+            padding: 14px 35px;
             border: none;
             border-radius: 10px;
             cursor: pointer;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
             transition: background-color 0.3s ease, transform 0.3s ease;
-            margin-top: 25px;
+            margin-top: 20px;
         }}
 
         .filtro-btn:hover {{
@@ -425,43 +435,27 @@ st.markdown(
 
     <div class="filtro-container">
         <h2 class="filtro-titulo">Filtro por Período</h2>
+
+        <!-- Grid para Data Inicial e Data Final -->
         <div class="date-input-container">
-            <span>Data Inicial:</span>
-            <span>Data Final:</span>
+            <div>
+                <span>Data Inicial:</span>
+                <div class='stDateInput'>
+                    {start_date}
+                </div>
+            </div>
+            <div>
+                <span>Data Final:</span>
+                <div class='stDateInput'>
+                    {end_date}
+                </div>
+            </div>
         </div>
+
+        <!-- Botão para aplicar o filtro -->
+        <button class="filtro-btn">Aplicar Filtro</button>
     </div>
     """,
-    unsafe_allow_html=True
-)
-
-# Campos de data ajustados com ícones
-filter_col1, filter_col2 = st.columns(2)
-
-with filter_col1:
-    st.markdown(
-        """
-        <div class='date-input-container'>
-            <span style='text-align: center;'>Data Inicial:</span>
-        </div>
-        """, 
-        unsafe_allow_html=True
-    )
-    start_date = st.date_input("", value=data_cleaned['Dia da Consulta'].min().date(), key="start_date")
-
-with filter_col2:
-    st.markdown(
-        """
-        <div class='date-input-container'>
-            <span style='text-align: center;'>Data Final:</span>
-        </div>
-        """, 
-        unsafe_allow_html=True
-    )
-    end_date = st.date_input("", value=data_cleaned['Dia da Consulta'].max().date(), key="end_date")
-
-# Botão aplicar filtro
-st.markdown(
-    "<button class='filtro-btn'>Aplicar Filtro</button>",
     unsafe_allow_html=True
 )
 
