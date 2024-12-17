@@ -82,6 +82,7 @@ st.markdown(
         .indicador span {
             font-size: 18px;
             color: #555;
+            margin-bottom: 8px;
         }
 
         /* Footer */
@@ -123,16 +124,29 @@ total_multas, valor_total_a_pagar, multas_mes_atual = calculate_metrics(data_cle
 ultima_consulta = pd.to_datetime(data_cleaned['Dia da Consulta'].max(), errors='coerce').strftime('%d/%m/%Y')
 
 # Indicadores Principais
-st.markdown("### Indicadores Principais")
-col1, col2, col3, col4 = st.columns(4)
-with col1:
-    st.markdown(f"<div class='indicador'><span>Total de Multas</span><p>{total_multas}</p></div>", unsafe_allow_html=True)
-with col2:
-    st.markdown(f"<div class='indicador'><span>Valor Total a Pagar</span><p>R$ {valor_total_a_pagar:,.2f}</p></div>", unsafe_allow_html=True)
-with col3:
-    st.markdown(f"<div class='indicador'><span>Multas no Mês Atual</span><p>{multas_mes_atual}</p></div>", unsafe_allow_html=True)
-with col4:
-    st.markdown(f"<div class='indicador'><span>Última Consulta</span><p>{ultima_consulta}</p></div>", unsafe_allow_html=True)
+st.markdown(
+    """
+    <div class="indicadores-container">
+        <div class="indicador">
+            <span>Total de Multas</span>
+            <p>{}</p>
+        </div>
+        <div class="indicador">
+            <span>Valor Total a Pagar</span>
+            <p>R$ {:,.2f}</p>
+        </div>
+        <div class="indicador">
+            <span>Multas no Mês Atual</span>
+            <p>{}</p>
+        </div>
+        <div class="indicador">
+            <span>Última Consulta</span>
+            <p>{}</p>
+        </div>
+    </div>
+    """.format(total_multas, valor_total_a_pagar, multas_mes_atual, ultima_consulta),
+    unsafe_allow_html=True
+)
 
 # Filtro por Período
 st.markdown("### Filtro por Período")
