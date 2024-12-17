@@ -247,53 +247,51 @@ st.markdown(
         /* Contêiner dos indicadores */
         .indicadores-container {{
             display: flex;
-            justify-content: center;
+            justify-content: space-evenly; /* Espaçamento uniforme */
             align-items: center;
-            gap: 40px;
+            gap: 10px; /* Reduz o espaço entre indicadores */
             flex-wrap: wrap;
             margin: 40px auto;
-            padding: 20px 10px;
+            padding: 20px;
             background: linear-gradient(to right, #fff, #FDF1E8);
             border-radius: 15px;
             box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
-            animation: fadeIn 1.5s ease-out;
         }}
 
         /* Indicador individual */
         .indicador {{
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
+            justify-content: center; /* Centraliza verticalmente */
+            align-items: center; /* Centraliza horizontalmente */
+            text-align: center; /* Texto centralizado */
             background-color: #FFFFFF;
             border: 4px solid #F37529;
             border-radius: 15px;
             box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);
             width: 260px;
             height: 160px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            padding: 10px;
+            padding: 10px; /* Ajuste de padding */
+            margin: 0; /* Remove margens extras */
         }}
 
         .indicador h3 {{
             color: #F37529;
             font-size: 22px;
             font-weight: bold;
-            margin: 0;
-            margin-bottom: 8px;
+            margin: 0 0 8px 0; /* Remove margens laterais */
         }}
 
         .indicador p {{
             font-size: 36px;
             font-weight: bold;
             color: #F37529;
-            margin: 0;
+            margin: 0; /* Remove margens */
         }}
 
         /* Hover effect */
         .indicador:hover {{
-            transform: translateY(-10px);
+            transform: translateY(-5px);
             box-shadow: 0 12px 18px rgba(0, 0, 0, 0.4);
         }}
     </style>
