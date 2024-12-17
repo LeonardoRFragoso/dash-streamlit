@@ -337,14 +337,29 @@ st.divider()
 
 # Filtro por Período
 st.divider()
-st.markdown("<h2 style='text-align: center; color: #F37529; font-size: 32px; font-weight: bold;'>Filtro por Período</h2>", unsafe_allow_html=True)
+st.markdown(
+    "<h2 style='text-align: center; color: #F37529; font-size: 32px; font-weight: bold;'>Filtro por Período</h2>",
+    unsafe_allow_html=True
+)
 
 # Criação das colunas para os campos de data
 filter_col1, filter_col2 = st.columns(2)
 
 # Definição de valores padrão para as datas
-min_date = data_cleaned['Dia da Consulta'].min().date() if not data_cleaned['Dia da Consulta'].isnull().all() else None
-max_date = data_cleaned['Dia da Consulta'].max().date() if not data_cleaned['Dia da Consulta'].isnull().all() else None
+if 'Dia da Consulta' in data_cleaned.columns:
+    # Certificar que a coluna está no formato datetime
+    data_cleaned['Dia da Consulta'] = pd.to_datetime(data_cleaned['Dia da Consulta'], dayfirst=True, errors='coerce')
+    
+    if data_cleaned['Dia da Consulta'].isnull().all():
+        st.error("A coluna 'Dia da Consulta' não contém datas válidas.")
+        st.stop()
+else:
+    st.error("A coluna 'Dia da Consulta' não foi encontrada nos dados carregados.")
+    st.stop()
+
+# Calcular a data mínima e máxima
+min_date = data_cleaned['Dia da Consulta'].dropna().min().date()
+max_date = data_cleaned['Dia da Consulta'].dropna().max().date()
 
 # Garante que as datas iniciais não estejam nulas
 start_date_default = min_date or pd.to_datetime("today").date()
@@ -354,40 +369,36 @@ end_date_default = max_date or pd.to_datetime("today").date()
 with filter_col1:
     start_date = st.date_input(
         "Data Inicial",
-        value=start_date_default,  # Valor padrão inicial
-        min_value=min_date,  # Permite selecionar desde a data mínima
-        max_value=max_date,  # Permite selecionar até a data máxima
+        value=start_date_default,
+        min_value=min_date,
+        max_value=max_date,
         key="start_date"
     )
 
 with filter_col2:
     end_date = st.date_input(
         "Data Final",
-        value=end_date_default,  # Valor padrão inicial
-        min_value=min_date,  # Permite selecionar desde a data mínima
-        max_value=max_date,  # Permite selecionar até a data máxima
+        value=end_date_default,
+        min_value=min_date,
+        max_value=max_date,
         key="end_date"
     )
 
-# Inicializa filtered_data como data_cleaned para uso antes do botão ser clicado
-filtered_data = data_cleaned.copy()
+# Aplicação do filtro automaticamente sem botão
+if start_date > end_date:
+    st.error("A Data Inicial não pode ser posterior à Data Final. Por favor, selecione um intervalo válido.")
+else:
+    # Filtragem dos dados conforme as datas selecionadas
+    filtered_data = data_cleaned[
+        (data_cleaned['Dia da Consulta'] >= pd.Timestamp(start_date)) &
+        (data_cleaned['Dia da Consulta'] <= pd.Timestamp(end_date))
+    ]
 
-# Adiciona botão para confirmar o filtro
-apply_filter = st.button("Aplicar Filtro")
+    # Exibir mensagem de sucesso
+    st.success(f"Dados filtrados entre {start_date.strftime('%d/%m/%Y')} e {end_date.strftime('%d/%m/%Y')}")
 
-# Validação das datas selecionadas e aplicação do filtro após o clique no botão
-if apply_filter:
-    if start_date > end_date:
-        st.error("A Data Inicial não pode ser posterior à Data Final. Por favor, selecione um intervalo válido.")
-    else:
-        # Filtragem dos dados conforme as datas selecionadas
-        filtered_data = data_cleaned[
-            (data_cleaned['Dia da Consulta'] >= pd.Timestamp(start_date)) & 
-            (data_cleaned['Dia da Consulta'] <= pd.Timestamp(end_date))
-        ]
-
-        # Exibir mensagem de sucesso
-        st.success(f"Dados filtrados entre {start_date.strftime('%d/%m/%Y')} e {end_date.strftime('%d/%m/%Y')}")
+    # Visualização dos dados filtrados
+    st.dataframe(filtered_data, use_container_width=True)
 
 # Veículos com mais multas
 st.divider()
