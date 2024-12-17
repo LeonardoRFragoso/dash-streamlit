@@ -148,8 +148,19 @@ for _, row in map_data.iterrows():
     if pd.notnull(row['Latitude']) and pd.notnull(row['Longitude']):
         custom_icon = CustomIcon(icon_url, icon_size=(30, 30))
         data_infracao = row['Data da Infração'].strftime('%d/%m/%Y') if pd.notnull(row['Data da Infração']) else "Data não disponível"
-        popup_content = f"<b>Local:</b> {row['Local da Infração']}<br><b>Valor:</b> R$ {row['Valor a ser pago R$']:,.2f}<br><b>Data da Infração:</b> {data_infracao}"
-        folium.Marker(location=[row['Latitude'], row['Longitude']], popup=folium.Popup(popup_content, max_width=300), icon=custom_icon).add_to(map_object)
+        
+        # Garantir que 'Valor a ser pago R$' esteja como numérico antes de formatar
+        row['Valor a ser pago R$'] = pd.to_numeric(row['Valor a ser pago R$'], errors='coerce')
+        
+        # Construir o conteúdo do popup com a formatação correta
+        popup_content = f"<b>Local:</b> {row['Local da Infração']}<br><b>Valor:</b> R$ {row['Valor a ser pago R$']:.2f}<br><b>Data da Infração:</b> {data_infracao}"
+        
+        folium.Marker(
+            location=[row['Latitude'], row['Longitude']],
+            popup=folium.Popup(popup_content, max_width=300),
+            icon=custom_icon
+        ).add_to(map_object)
+
 
 # Display map
 st_folium(map_object, width=1800, height=600)
