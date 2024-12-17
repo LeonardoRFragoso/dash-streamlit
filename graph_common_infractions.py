@@ -29,28 +29,27 @@ def create_common_infractions_chart(data):
         infraction_data,
         x='Frequência',
         y='Descrição',
-        text='Texto',  # Texto com código e ocorrências lado a lado
+        text='Texto',
         orientation='h',
-        
-        labels={'Descrição': '', 'Frequência': ''}  # Remove os nomes dos eixos
+        title="Infrações Mais Frequentes",
     )
 
     # Ajustar a legibilidade do texto
     fig.update_traces(
-        texttemplate='%{text}',  # Formata o texto
-        textposition='inside',   # Mantém texto dentro da barra
-        insidetextanchor='middle',  # Centraliza o texto
-        textfont=dict(size=16, color='white'),  # Ajusta tamanho e cor do texto
-        marker_color='#007bff'  # Define cor das barras
+        texttemplate='%{text}',
+        textposition='inside',
+        insidetextanchor='middle',
+        textfont=dict(size=16, color='white'),
+        marker_color='#007bff'
     )
 
-    # Ajustar layout
+    # Ajustar layout removendo o subtítulo duplicado
     fig.update_layout(
-        xaxis=dict(visible=False),  # Remove a numeração do eixo X
-        yaxis_title="",  # Remove título do eixo Y
-        title_x=0.5,  # Centraliza o título
-        margin=dict(l=50, r=50, t=50, b=50),  # Ajusta margens
-        template="plotly_white"  # Define tema claro
+        xaxis=dict(visible=False),  # Remove eixo X
+        yaxis=dict(title=None),  # Remove título duplicado do eixo Y
+        title_x=0.5,
+        margin=dict(l=50, r=50, t=50, b=50),
+        template="plotly_white"
     )
 
     return fig
