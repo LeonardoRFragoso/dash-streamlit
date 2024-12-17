@@ -339,63 +339,63 @@ st.divider()
 st.markdown(
     f"""
     <style>
-        /* Container principal do filtro */
+        /* Ajustes no container dos filtros */
         .filtro-container {{
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             margin-top: 40px;
+            padding: 10px;
         }}
 
         /* Título do filtro */
         .filtro-titulo {{
             font-size: 32px;
-            font-weight: 600;
+            font-weight: bold;
             color: #F37529;
             margin-bottom: 20px;
             text-align: center;
             border-bottom: 2px solid #F37529;
-            padding-bottom: 12px;
             width: 100%;
-            max-width: 400px;
+            max-width: 500px;
         }}
 
-        /* Container das entradas de data */
+        /* Containers de Data */
         .date-input-container {{
             display: flex;
             justify-content: space-between;
             gap: 25px;
             width: 100%;
-            max-width: 500px;
+            max-width: 550px;
             margin-bottom: 20px;
         }}
 
-        /* Estilo dos labels dos campos de data */
         .date-input-container p {{
-            font-size: 20px;
+            font-size: 22px;
             color: #555555;
             margin: 0;
         }}
 
-        /* Estilo dos campos de entrada de data */
+        /* Ajuste nos campos de data */
         .stDateInput input {{
-            font-size: 18px;
+            font-size: 20px;
             padding: 12px 15px;
             border-radius: 8px;
             border: 2px solid #F37529;
             background-color: #FDF1E8;
-            width: 200px;
+            width: 240px;
             transition: all 0.3s ease;
         }}
 
+        /* Efeito de foco nos campos de data */
         .stDateInput input:focus {{
             border-color: #FF7F00;
             background-color: #FFF3E5;
             outline: none;
         }}
 
-        /* Estilo do botão aplicar filtro */
+        /* Estilo do botão de filtro */
         .filtro-btn {{
             background-color: #F37529;
             color: white;
@@ -418,14 +418,6 @@ st.markdown(
             transform: translateY(2px);
         }}
 
-        /* Adicionar um ícone de calendário dentro dos campos de data */
-        .stDateInput .calendar {{
-            position: absolute;
-            right: 10px;
-            top: 10px;
-            font-size: 18px;
-            color: #F37529;
-        }}
     </style>
 
     <div class="filtro-container">
@@ -446,7 +438,7 @@ with filter_col1:
     st.markdown(
         """
         <div class='date-input-container'>
-            <p style='text-align: center; font-size: 20px; color: #555;'>Data Inicial:</p>
+            <p style='text-align: center; font-size: 22px; color: #555;'>Data Inicial:</p>
         </div>
         """, 
         unsafe_allow_html=True
@@ -457,7 +449,7 @@ with filter_col2:
     st.markdown(
         """
         <div class='date-input-container'>
-            <p style='text-align: center; font-size: 20px; color: #555;'>Data Final:</p>
+            <p style='text-align: center; font-size: 22px; color: #555;'>Data Final:</p>
         </div>
         """, 
         unsafe_allow_html=True
