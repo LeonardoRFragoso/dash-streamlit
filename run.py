@@ -346,11 +346,15 @@ filter_col1, filter_col2 = st.columns(2)
 min_date = data_cleaned['Dia da Consulta'].min().date() if not data_cleaned['Dia da Consulta'].isnull().all() else None
 max_date = data_cleaned['Dia da Consulta'].max().date() if not data_cleaned['Dia da Consulta'].isnull().all() else None
 
+# Garante que as datas iniciais não estejam nulas
+start_date_default = min_date or pd.to_datetime("today").date()
+end_date_default = max_date or pd.to_datetime("today").date()
+
 # Entrada de data inicial e final
 with filter_col1:
     start_date = st.date_input(
         "Data Inicial",
-        value=min_date,
+        value=start_date_default,  # Valor padrão inicial
         min_value=min_date,
         max_value=max_date,
         key="start_date"
@@ -359,7 +363,7 @@ with filter_col1:
 with filter_col2:
     end_date = st.date_input(
         "Data Final",
-        value=max_date,
+        value=end_date_default,  # Valor padrão inicial
         min_value=min_date,
         max_value=max_date,
         key="end_date"
@@ -384,6 +388,9 @@ if apply_filter:
 
         # Exibir mensagem de sucesso
         st.success(f"Dados filtrados entre {start_date.strftime('%d/%m/%Y')} e {end_date.strftime('%d/%m/%Y')}")
+
+# Exibição do resultado após filtro
+st.write(filtered_data)
 
 # Veículos com mais multas
 st.divider()
