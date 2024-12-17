@@ -313,19 +313,19 @@ st.markdown(
 
     <div class="indicadores-container">
         <div class="indicador">
-            <h3> Total de Multas</h3>
+            <h3>  Total de Multas</h3>
             <p>{total_multas}</p>
         </div>
         <div class="indicador">
-            <h3> Valor Total a Pagar</h3>
+            <h3>  Valor Total a Pagar</h3>
             <p>R$ {valor_total_a_pagar:,.2f}</p>
         </div>
         <div class="indicador">
-            <h3> Multas no Mês Atual</h3>
+            <h3>  Multas no Mês Atual</h3>
             <p>{multas_mes_atual}</p>
         </div>
         <div class="indicador">
-            <h3> Última Consulta</h3>
+            <h3>  Última Consulta</h3>
             <p>{ultima_data_consulta.strftime("%d/%m/%Y") if pd.notnull(ultima_data_consulta) else "Data não disponível"}</p>
         </div>
     </div>
