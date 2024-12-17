@@ -342,52 +342,83 @@ st.markdown(
         /* Container principal do filtro */
         .filtro-container {{
             display: flex;
-            justify-content: center; /* Centraliza horizontalmente */
             flex-direction: column;
-            gap: 20px;
+            justify-content: center;
             align-items: center;
-            margin-top: 30px;
+            margin-top: 40px;
         }}
 
+        /* Título do filtro */
         .filtro-titulo {{
-            font-size: 24px;
+            font-size: 30px;
             font-weight: bold;
             color: #F37529;
+            margin-bottom: 20px;
+            text-align: center;
+            border-bottom: 2px solid #F37529; /* Adiciona uma linha embaixo do título */
+            padding-bottom: 10px;
+            width: 100%;
+            max-width: 400px;
         }}
 
-        /* Estilo para o contêiner de datas */
+        /* Container das entradas de data */
         .date-input-container {{
             display: flex;
-            justify-content: center;
-            gap: 10px;
+            justify-content: space-between;
+            gap: 20px;
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 20px;
         }}
 
+        /* Estilo das labels dos campos de data */
         .date-input-container p {{
             font-size: 20px;
             color: #555555;
+            margin: 0;
         }}
 
+        /* Estilo dos campos de entrada de data */
         .stDateInput input {{
-            font-size: 20px;
-            padding: 10px;
+            font-size: 18px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 2px solid #F37529;
+            background-color: #FDF1E8;
+            width: 180px;
+            transition: all 0.3s ease;
+        }}
+
+        .stDateInput input:focus {{
+            border-color: #FF7F00;
+            background-color: #FFF3E5;
+            outline: none;
         }}
 
         /* Estilo do botão aplicar filtro */
         .filtro-btn {{
             background-color: #F37529;
             color: white;
-            font-size: 18px;
-            padding: 10px 20px;
+            font-size: 20px;
+            padding: 12px 25px;
             border: none;
             border-radius: 10px;
             cursor: pointer;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            margin-top: 20px;
         }}
 
         .filtro-btn:hover {{
-            background-color: #e5671d;
+            background-color: #FF7F00;
+            transform: translateY(-2px);
+        }}
+
+        .filtro-btn:active {{
+            transform: translateY(2px);
         }}
     </style>
+
     <div class="filtro-container">
         <h2 class="filtro-titulo">Filtro por Período</h2>
         <div class="date-input-container">
@@ -406,7 +437,7 @@ with filter_col1:
     st.markdown(
         """
         <div class='date-input-container'>
-            <p style='text-align: center; font-size: 24px; color: #555;'>Data Inicial:</p>
+            <p style='text-align: center; font-size: 20px; color: #555;'>Data Inicial:</p>
         </div>
         """, 
         unsafe_allow_html=True
@@ -417,7 +448,7 @@ with filter_col2:
     st.markdown(
         """
         <div class='date-input-container'>
-            <p style='text-align: center; font-size: 24px; color: #555;'>Data Final:</p>
+            <p style='text-align: center; font-size: 20px; color: #555;'>Data Final:</p>
         </div>
         """, 
         unsafe_allow_html=True
