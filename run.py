@@ -386,25 +386,33 @@ if apply_button:
             (data_cleaned['Dia da Consulta'] <= end_date)
         ]
 
-        # Atualizar gráficos com os dados filtrados
-        top_vehicles_chart = create_vehicle_fines_chart(filtered_data)
-        st.plotly_chart(top_vehicles_chart, use_container_width=True)
+        # Verificar se os dados filtrados são válidos
+        if filtered_data.empty:
+            st.warning("Nenhum dado encontrado para o intervalo de datas selecionado.")
+        else:
+            try:
+                # Atualizar gráficos com os dados filtrados
+                top_vehicles_chart = create_vehicle_fines_chart(filtered_data)
+                st.plotly_chart(top_vehicles_chart, use_container_width=True)
 
-        common_infractions_chart = create_common_infractions_chart(filtered_data)
-        st.plotly_chart(common_infractions_chart, use_container_width=True)
+                common_infractions_chart = create_common_infractions_chart(filtered_data)
+                st.plotly_chart(common_infractions_chart, use_container_width=True)
 
-        period_option = st.radio(
-            "Selecione o período para acumulação:",
-            options=["Mensal", "Semanal"],
-            index=0,
-            horizontal=True
-        )
-        period_code = 'M' if period_option == "Mensal" else 'W'
-        fines_accumulated_chart = create_fines_accumulated_chart(filtered_data, period=period_code)
-        st.plotly_chart(fines_accumulated_chart, use_container_width=True)
+                period_option = st.radio(
+                    "Selecione o período para acumulação:",
+                    options=["Mensal", "Semanal"],
+                    index=0,
+                    horizontal=True
+                )
+                period_code = 'M' if period_option == "Mensal" else 'W'
+                fines_accumulated_chart = create_fines_accumulated_chart(filtered_data, period=period_code)
+                st.plotly_chart(fines_accumulated_chart, use_container_width=True)
 
-        weekday_infractions_chart = create_weekday_infractions_chart(filtered_data)
-        st.plotly_chart(weekday_infractions_chart, use_container_width=True)
+                weekday_infractions_chart = create_weekday_infractions_chart(filtered_data)
+                st.plotly_chart(weekday_infractions_chart, use_container_width=True)
+
+            except Exception as e:
+                st.error(f"Erro ao gerar os gráficos: {e}")
 
 st.divider()
 
