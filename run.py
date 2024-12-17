@@ -161,21 +161,36 @@ def safe_float(value):
         return 0.00
 
 # Gráficos
-st.markdown("<h2 class='titulo-centralizado'>Top 10 Veículos com Mais Multas e Valores Totais</h2>", unsafe_allow_html=True)
+st.markdown(
+    "<h2 class='titulo-centralizado' style='color: #F37529;'>Top 10 Veículos com Mais Multas e Valores Totais</h2>",
+    unsafe_allow_html=True
+)
 st.plotly_chart(create_vehicle_fines_chart(filtered_data), use_container_width=True)
 
-st.markdown("<h2 class='titulo-centralizado'>Infrações Mais Frequentes</h2>", unsafe_allow_html=True)
+st.markdown(
+    "<h2 class='titulo-centralizado' style='color: #F37529;'>Infrações Mais Frequentes</h2>",
+    unsafe_allow_html=True
+)
 st.plotly_chart(create_common_infractions_chart(filtered_data), use_container_width=True)
 
-st.markdown("<h2 class='titulo-centralizado'>Valores das Multas Acumulados por Período</h2>", unsafe_allow_html=True)
+st.markdown(
+    "<h2 class='titulo-centralizado' style='color: #F37529;'>Valores das Multas Acumulados por Período</h2>",
+    unsafe_allow_html=True
+)
 period_option = st.radio("Selecione o período:", ["Mensal", "Semanal"], horizontal=True)
 st.plotly_chart(create_fines_accumulated_chart(filtered_data, 'M' if period_option == "Mensal" else 'W'), use_container_width=True)
 
-st.markdown("<h2 class='titulo-centralizado'>Infrações Mais Frequentes por Dia da Semana</h2>", unsafe_allow_html=True)
+st.markdown(
+    "<h2 class='titulo-centralizado' style='color: #F37529;'>Infrações Mais Frequentes por Dia da Semana</h2>",
+    unsafe_allow_html=True
+)
 st.plotly_chart(create_weekday_infractions_chart(filtered_data), use_container_width=True)
 
 # Mapa
-st.markdown("<h2 class='titulo-centralizado'>Distribuição Geográfica das Multas</h2>", unsafe_allow_html=True)
+st.markdown(
+    "<h2 class='titulo-centralizado' style='color: #F37529;'>Distribuição Geográfica das Multas</h2>",
+    unsafe_allow_html=True
+)
 API_KEY = st.secrets["API_KEY"]
 coordinates_cache = load_cache()
 map_data = filtered_data.dropna(subset=['Local da Infração']).copy()
