@@ -346,34 +346,29 @@ st.markdown(
             justify-content: center;
             align-items: center;
             margin-top: 40px;
-            padding: 20px;
-            background-color: #FFF8F0;
-            border-radius: 12px;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-            width: 80%;
-            max-width: 700px;
-            margin-bottom: 40px;
         }}
 
         /* Título do filtro */
         .filtro-titulo {{
-            font-size: 36px;
-            font-weight: bold;
+            font-size: 32px;
+            font-weight: 600;
             color: #F37529;
             margin-bottom: 20px;
             text-align: center;
             border-bottom: 2px solid #F37529;
             padding-bottom: 12px;
             width: 100%;
+            max-width: 400px;
         }}
 
         /* Container das entradas de data */
         .date-input-container {{
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            display: flex;
+            justify-content: space-between;
+            gap: 25px;
             width: 100%;
-            max-width: 600px;
+            max-width: 500px;
+            margin-bottom: 20px;
         }}
 
         /* Estilo dos labels dos campos de data */
@@ -381,7 +376,6 @@ st.markdown(
             font-size: 20px;
             color: #555555;
             margin: 0;
-            text-align: center;
         }}
 
         /* Estilo dos campos de entrada de data */
@@ -391,8 +385,7 @@ st.markdown(
             border-radius: 8px;
             border: 2px solid #F37529;
             background-color: #FDF1E8;
-            width: 100%;
-            text-align: center;
+            width: 200px;
             transition: all 0.3s ease;
         }}
 
@@ -437,27 +430,10 @@ st.markdown(
 
     <div class="filtro-container">
         <h2 class="filtro-titulo">Filtro por Período</h2>
-
-        <!-- Grid para Data Inicial e Data Final -->
         <div class="date-input-container">
-            <div>
-                <p>Data Inicial:</p>
-                <!-- Data inicial de entrada -->
-                <div class='stDateInput'>
-                    {start_date}
-                </div>
-            </div>
-            <div>
-                <p>Data Final:</p>
-                <!-- Data final de entrada -->
-                <div class='stDateInput'>
-                    {end_date}
-                </div>
-            </div>
+            <p>Data Inicial:</p>
+            <p>Data Final:</p>
         </div>
-
-        <!-- Botão para aplicar o filtro -->
-        <button class="filtro-btn">Aplicar Filtro</button>
     </div>
     """,
     unsafe_allow_html=True
@@ -467,10 +443,26 @@ st.markdown(
 filter_col1, filter_col2 = st.columns(2)
 
 with filter_col1:
-    start_date = st.date_input("Data Inicial", value=data_cleaned['Dia da Consulta'].min().date(), key="start_date")
+    st.markdown(
+        """
+        <div class='date-input-container'>
+            <p style='text-align: center; font-size: 20px; color: #555;'>Data Inicial:</p>
+        </div>
+        """, 
+        unsafe_allow_html=True
+    )
+    start_date = st.date_input("", value=data_cleaned['Dia da Consulta'].min().date(), key="start_date")
 
 with filter_col2:
-    end_date = st.date_input("Data Final", value=data_cleaned['Dia da Consulta'].max().date(), key="end_date")
+    st.markdown(
+        """
+        <div class='date-input-container'>
+            <p style='text-align: center; font-size: 20px; color: #555;'>Data Final:</p>
+        </div>
+        """, 
+        unsafe_allow_html=True
+    )
+    end_date = st.date_input("", value=data_cleaned['Dia da Consulta'].max().date(), key="end_date")
 
 # Botão aplicar filtro
 st.markdown(
