@@ -280,7 +280,7 @@ with filter_col1:
 with filter_col2:
     end_date = st.date_input("Data Final", value=max_date, min_value=min_date, max_value=max_date, key="end_date")
 
-# Botão para aplicar o filtro
+# Defina apenas um botão "Aplicar Filtro"
 if st.button("Aplicar Filtro"):
     if start_date > end_date:
         st.error("A Data Inicial não pode ser posterior à Data Final.")
@@ -301,7 +301,6 @@ if st.button("Aplicar Filtro"):
                 st.plotly_chart(top_vehicles_chart, use_container_width=True)
             except Exception as e:
                 st.error(f"Erro ao gerar o gráfico: {e}")
-
             
             # Verificar se a coluna 'Placa Relacionada' tem dados
             if 'Placa Relacionada' not in filtered_data.columns or filtered_data['Placa Relacionada'].isnull().all():
