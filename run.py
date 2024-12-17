@@ -1,5 +1,8 @@
 import streamlit as st
 import pandas as pd
+import folium
+from folium.features import CustomIcon
+from streamlit_folium import st_folium
 from data_loader import clean_data  # Apenas a função de limpeza de dados é necessária aqui
 from metrics import calculate_metrics
 from graph_vehicles_fines import create_vehicle_fines_chart  # Importando a função de gráfico de veículos
@@ -33,6 +36,12 @@ st.image(logo_url, width=150, use_container_width=False)
 # Carregar e limpar os dados utilizando a função do google_drive.py
 data = carregar_dados_google_drive()
 data_cleaned = clean_data(data)
+
+# Verificar colunas essenciais antes de prosseguir
+required_columns = ['Data da Infração', 'Valor a ser pago R$', 'Auto de Infração', 'Status de Pagamento']
+if not all(col in data_cleaned.columns for col in required_columns):
+    st.error(f"Faltam colunas essenciais: {', '.join([col for col in required_columns if col not in data_cleaned.columns])}")
+    st.stop()
 
 # Calcular métricas principais
 total_multas, valor_total_a_pagar, multas_mes_atual = calculate_metrics(data_cleaned)
@@ -73,9 +82,16 @@ st.markdown("<h2 style='text-align: center; color: #F37529; font-size: 32px; fon
 # Seleção das datas para o filtro
 filter_col1, filter_col2 = st.columns(2)
 
+# Garantir que a coluna de data está no formato datetime
+data_cleaned['Dia da Consulta'] = pd.to_datetime(data_cleaned['Dia da Consulta'], errors='coerce')
+
 # Definição de valores padrão para as datas
-start_date = st.date_input("Data Inicial", value=data_cleaned['Dia da Consulta'].min(), min_value=data_cleaned['Dia da Consulta'].min(), max_value=data_cleaned['Dia da Consulta'].max())
-end_date = st.date_input("Data Final", value=data_cleaned['Dia da Consulta'].max(), min_value=data_cleaned['Dia da Consulta'].min(), max_value=data_cleaned['Dia da Consulta'].max())
+start_date_default = data_cleaned['Dia da Consulta'].min().date()
+end_date_default = data_cleaned['Dia da Consulta'].max().date()
+
+# Entrada para as datas
+start_date = st.date_input("Data Inicial", value=start_date_default, min_value=start_date_default, max_value=end_date_default)
+end_date = st.date_input("Data Final", value=end_date_default, min_value=start_date_default, max_value=end_date_default)
 
 # Aplicar filtro conforme o período
 filtered_data = data_cleaned[(data_cleaned['Dia da Consulta'] >= pd.Timestamp(start_date)) & (data_cleaned['Dia da Consulta'] <= pd.Timestamp(end_date))]
