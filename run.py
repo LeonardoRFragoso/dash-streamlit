@@ -195,6 +195,31 @@ for _, row in map_data.iterrows():
 
 st_folium(map_object, width=1800, height=600)
 
+# Tabela de Detalhes ao Clicar no Mapa
+if map_click_data and map_click_data.get("last_object_clicked"):
+    lat = map_click_data["last_object_clicked"].get("lat")
+    lng = map_click_data["last_object_clicked"].get("lng")
+
+    selected_fines = map_data[(map_data['Latitude'] == lat) & (map_data['Longitude'] == lng)]
+
+    if not selected_fines.empty:
+        st.markdown("<h3 style='color: #F37529;'>Detalhes das Multas na Localização</h3>", unsafe_allow_html=True)
+        st.dataframe(
+            selected_fines[['Local da Infração', 'Valor a ser pago R$', 'Data da Infração']]
+        )
+
+# Ranking das Localidades
+st.markdown("<h2 style='color: #F37529;'>Ranking das Localidades com Mais Multas</h2>", unsafe_allow_html=True)
+ranking_localidades = filtered_data.groupby('Local da Infração', as_index=False).agg(
+    Valor_Total=('Valor a ser pago R$', 'sum'),
+    Total_Multas=('Local da Infração', 'count')
+).sort_values(by='Valor_Total', ascending=False)
+
+st.dataframe(
+    ranking_localidades.rename(columns={"Valor_Total": "Valor Total (R$)", "Total_Multas": "Total de Multas"}),
+    use_container_width=True
+)
+
 st.markdown(
     "<h2 class='titulo-centralizado' style='color: #F37529;'>Infrações Mais Frequentes</h2>",
     unsafe_allow_html=True
