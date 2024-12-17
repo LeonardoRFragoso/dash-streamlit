@@ -32,6 +32,7 @@ def create_common_infractions_chart(data):
         text='Texto',
         orientation='h',
         title="Infrações Mais Frequentes",
+        labels={'Descrição': ''}  # Remove o título automático do eixo Y
     )
 
     # Ajustar a legibilidade do texto
@@ -43,14 +44,14 @@ def create_common_infractions_chart(data):
         marker_color='#007bff'
     )
 
-    # Ajustar layout para remover o subtítulo e eixo desnecessário
+    # Ajustar layout para remover o subtítulo duplicado
     fig.update_layout(
-        xaxis=dict(visible=False),  # Remove o eixo X
+        xaxis=dict(visible=False),  # Remove eixo X
         yaxis=dict(title=None, showticklabels=True),  # Remove título do eixo Y
         title_x=0.5,  # Centraliza o título
-        margin=dict(l=50, r=50, t=50, b=50),  # Ajusta margens
-        showlegend=False,  # Remove qualquer legenda
-        template="plotly_white"
+        margin=dict(l=50, r=50, t=50, b=50),
+        template="plotly_white",
+        showlegend=False  # Remove qualquer legenda
     )
 
     return fig
