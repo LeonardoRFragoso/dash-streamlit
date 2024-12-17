@@ -46,6 +46,15 @@ st.markdown(
             margin: 0;
         }
 
+        /* Centralizar títulos de seção */
+        .titulo-centralizado {
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            color: #F37529;
+            margin: 20px 0;
+        }
+
         /* Container dos Indicadores */
         .indicadores-container {
             display: flex;
@@ -82,15 +91,6 @@ st.markdown(
             font-size: 18px;
             color: #555;
             margin-bottom: 8px;
-        }
-
-        /* Centralizar títulos de seção */
-        .titulo-centralizado {
-            text-align: center;
-            font-size: 28px;
-            font-weight: bold;
-            color: #F37529;
-            margin: 20px 0;
         }
 
         /* Footer */
@@ -155,19 +155,12 @@ filtered_data = data_cleaned[
     (data_cleaned['Dia da Consulta'] <= pd.Timestamp(end_date))
 ]
 
-# Gráficos com títulos centralizados
-st.markdown("<h2 class='titulo-centralizado'>Top 10 Veículos com Mais Multas e Valores Totais</h2>", unsafe_allow_html=True)
-st.plotly_chart(create_vehicle_fines_chart(filtered_data), use_container_width=True)
-
-st.markdown("<h2 class='titulo-centralizado'>Infrações Mais Frequentes</h2>", unsafe_allow_html=True)
-st.plotly_chart(create_common_infractions_chart(filtered_data), use_container_width=True)
-
-st.markdown("<h2 class='titulo-centralizado'>Valores das Multas Acumulados por Período</h2>", unsafe_allow_html=True)
-period_option = st.radio("Selecione o período:", ["Mensal", "Semanal"], horizontal=True)
-st.plotly_chart(create_fines_accumulated_chart(filtered_data, 'M' if period_option == "Mensal" else 'W'), use_container_width=True)
-
-st.markdown("<h2 class='titulo-centralizado'>Infrações Mais Frequentes por Dia da Semana</h2>", unsafe_allow_html=True)
-st.plotly_chart(create_weekday_infractions_chart(filtered_data), use_container_width=True)
+# Função auxiliar para valores
+def safe_float(value):
+    try:
+        return float(str(value).replace(",", ".").replace("R$", "").strip())
+    except (ValueError, TypeError):
+        return 0.00
 
 # Mapa
 st.markdown("<h2 class='titulo-centralizado'>Distribuição Geográfica das Multas</h2>", unsafe_allow_html=True)
@@ -184,7 +177,7 @@ map_object = folium.Map(location=map_center, zoom_start=5, tiles="CartoDB dark_m
 icon_url = "https://cdn-icons-png.flaticon.com/512/1828/1828843.png"
 
 for _, row in map_data.iterrows():
-    valor_multa = float(row['Valor a ser pago R$'])
+    valor_multa = safe_float(row['Valor a ser pago R$'])
     popup_content = f"<b>Local:</b> {row['Local da Infração']}<br><b>Valor:</b> R$ {valor_multa:.2f}"
     folium.Marker(
         location=[row['Latitude'], row['Longitude']],
@@ -195,7 +188,4 @@ for _, row in map_data.iterrows():
 st_folium(map_object, width=1800, height=600)
 
 # Footer
-st.markdown(
-    "<div class='footer'>Dashboard de Multas © 2024 | Desenvolvido pela Equipe de Qualidade</div>",
-    unsafe_allow_html=True
-)
+st.markdown("<div class='footer'>Dashboard de Multas © 2024 | Desenvolvido pela Equipe de Qualidade</div>", unsafe_allow_html=True)
