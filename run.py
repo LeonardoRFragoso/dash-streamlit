@@ -23,22 +23,40 @@ st.markdown(
             0% { opacity: 0; transform: translateY(-20px); }
             100% { opacity: 1; transform: translateY(0); }
         }
+
+        /* Título principal */
         .titulo-dashboard-container {
             display: flex;
-            justify-content: center;
-            align-items: center;
+            justify-content: center; /* Centraliza horizontalmente */
+            align-items: center;     /* Centraliza verticalmente */
+            text-align: center;
             margin: 40px auto;
             padding: 25px 20px;
             background: linear-gradient(to right, #F37529, rgba(255, 255, 255, 0.8));
             border-radius: 15px;
             box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 1.2s ease-out;
         }
+
         .titulo-dashboard {
             font-size: 50px;
             font-weight: bold;
             color: #333333;
             text-transform: uppercase;
+            margin: 0;
         }
+
+        /* Container dos Indicadores Principais */
+        .indicadores-container {
+            display: flex;
+            justify-content: center; /* Centraliza os indicadores horizontalmente */
+            align-items: center;     /* Centraliza verticalmente */
+            flex-wrap: wrap;         /* Garante que os indicadores se ajustem em telas menores */
+            gap: 40px;               /* Espaçamento entre os indicadores */
+            margin-top: 30px;
+        }
+
+        /* Estilização dos Indicadores Individuais */
         .indicador {
             display: flex;
             justify-content: center;
@@ -51,21 +69,29 @@ st.markdown(
             box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);
             width: 260px;
             height: 160px;
+            animation: fadeIn 1.5s ease-out;
         }
+
         .indicador p {
             font-size: 38px;
             font-weight: bold;
             color: #F37529;
             margin: 0;
         }
+
         .indicador span {
             font-size: 18px;
             color: #555;
         }
+
+        /* Footer */
         .footer {
             text-align: center;
             font-size: 14px;
             color: #6c757d;
+            margin-top: 40px;
+            padding: 10px 0;
+            border-top: 1px solid #ddd;
         }
     </style>
 
