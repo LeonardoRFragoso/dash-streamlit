@@ -38,7 +38,7 @@ data_cleaned = clean_data(data)
 total_multas, valor_total_a_pagar, multas_mes_atual = calculate_metrics(data_cleaned)
 
 # Calcular a data da última consulta
-ultima_data_consulta = data_cleaned['Dia da Consulta'].max()
+ultima_data_consulta = pd.to_datetime(data_cleaned['Dia da Consulta'].max(), errors='coerce')
 
 # Exibir os indicadores principais
 st.markdown("<h2 style='text-align: center; color: #F37529; font-size: 36px; font-weight: bold;'>Indicadores Principais</h2>", unsafe_allow_html=True)
