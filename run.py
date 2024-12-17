@@ -218,7 +218,12 @@ icon_url = "https://cdn-icons-png.flaticon.com/512/1828/1828843.png"  # URL de u
 for _, row in map_data.iterrows():
     if pd.notnull(row['Latitude']) and pd.notnull(row['Longitude']):
         custom_icon = CustomIcon(icon_url, icon_size=(30, 30))
+        # Garantir que a coluna 'Data da Infração' seja datetime
+        map_data['Data da Infração'] = pd.to_datetime(map_data['Data da Infração'], errors='coerce')
+
+        # Dentro do loop
         data_infracao = row['Data da Infração'].strftime('%d/%m/%Y') if pd.notnull(row['Data da Infração']) else "Data não disponível"
+
         
         # Garantir que 'Valor a ser pago R$' esteja como numérico antes de formatar
         row['Valor a ser pago R$'] = pd.to_numeric(row['Valor a ser pago R$'], errors='coerce')
