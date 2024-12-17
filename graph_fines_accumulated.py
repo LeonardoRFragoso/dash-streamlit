@@ -43,7 +43,7 @@ def create_fines_accumulated_chart(data, period='M'):
     accumulated_fines['Valor_Acumulado'].fillna(0, inplace=True)  # Fill missing values with 0
     accumulated_fines['Quantidade_de_Multas'].fillna(0, inplace=True)
 
-    # Create the line chart
+    # Create the line chart with markers
     fig = px.line(
         accumulated_fines,
         x='Período',
@@ -57,6 +57,13 @@ def create_fines_accumulated_chart(data, period='M'):
         hover_data=['Quantidade_de_Multas']
     )
 
+    # Adicionar marcadores e personalizar o estilo
+    fig.update_traces(
+        mode='lines+markers',  # Adiciona marcadores nos pontos da linha
+        marker=dict(size=8, symbol='circle', color='blue', line=dict(width=2, color='DarkSlateGrey')),
+        line=dict(color='royalblue', width=2)
+    )
+
     # Update layout for better readability
     fig.update_layout(
         xaxis_title="",
@@ -64,7 +71,8 @@ def create_fines_accumulated_chart(data, period='M'):
         template="plotly_white",  # Light theme
         title_x=0.5,  # Center the title
         title_font_size=20,
-        title_font=dict(family="Arial", weight="bold")
+        title_font=dict(family="Arial", weight="bold"),
+        hovermode="x unified"  # Hover unificado na vertical
     )
 
     return fig
