@@ -431,8 +431,6 @@ st.markdown(
     <div class="filtro-container">
         <h2 class="filtro-titulo">Filtro por Período</h2>
         <div class="date-input-container">
-            <p>Data Inicial:</p>
-            <p>Data Final:</p>
         </div>
     </div>
     """,
