@@ -34,7 +34,7 @@ def create_weekday_infractions_chart(data):
     ).reset_index()
     weekday_counts.columns = ['Dia da Semana', 'Quantidade de Multas']
 
-    # Criar o gráfico de barras com o texto dentro das barras
+    # Criar o gráfico de barras sem título
     fig = px.bar(
         weekday_counts,
         x='Dia da Semana',
@@ -43,8 +43,7 @@ def create_weekday_infractions_chart(data):
         labels={
             'Dia da Semana': 'Dia da Semana',
             'Quantidade de Multas': 'Quantidade de Multas'
-        },
-        title="Distribuição de Multas por Dia da Semana"
+        }
     )
 
     # Atualizar layout para exibir texto dentro das barras
@@ -54,6 +53,7 @@ def create_weekday_infractions_chart(data):
     )
 
     fig.update_layout(
+        title="",  # Remove o título automático
         xaxis_title="",
         yaxis_title="Quantidade de Multas",
         template="plotly_white",  # Tema claro

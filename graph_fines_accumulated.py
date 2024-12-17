@@ -37,7 +37,7 @@ def create_fines_accumulated_chart(data, period='M'):
         Quantidade_de_Multas=('Valor a ser pago R$', 'size')
     ).reset_index()
 
-    # Create line chart
+    # Create line chart without a title
     fig = px.line(
         accumulated_fines,
         x='Período',
@@ -47,12 +47,12 @@ def create_fines_accumulated_chart(data, period='M'):
             'Valor_Acumulado': 'Valor Acumulado (R$)',
             'Quantidade_de_Multas': 'Quantidade de Multas'
         },
-        title="Valores das Multas Acumulados por Período",
         hover_data=['Quantidade_de_Multas']
     )
 
     # Update layout for better readability
     fig.update_layout(
+        title="",  # Remover o título automático
         xaxis_title="",
         yaxis_title="Valor Acumulado (R$)",
         template="plotly_dark",  # Use a dark theme (optional)
