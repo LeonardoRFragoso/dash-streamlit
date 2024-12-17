@@ -46,6 +46,32 @@ st.markdown(
             letter-spacing: 2px;
             text-transform: uppercase;
         }
+
+        /* Indicadores principais */
+        .indicadores-container {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 40px auto;
+            flex-wrap: wrap;
+        }
+
+        .indicador {
+            border: 4px solid #F37529;
+            border-radius: 15px;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            text-align: center;
+            width: 200px;
+            font-size: 18px;
+            color: #333;
+            background-color: #FFF;
+        }
+
+        .indicador h3 {
+            color: #F37529;
+            font-size: 22px;
+        }
     </style>
 
     <!-- Container do Título -->
@@ -72,58 +98,54 @@ if not all(col in data_cleaned.columns for col in required_columns):
 
 # Calcular métricas principais
 total_multas, valor_total_a_pagar, multas_mes_atual = calculate_metrics(data_cleaned)
-
-# Calcular a data da última consulta
 ultima_data_consulta = pd.to_datetime(data_cleaned['Dia da Consulta'].max(), errors='coerce')
 
-# Exibir os indicadores principais
-st.markdown("<h2 style='text-align: center; color: #F37529; font-size: 36px; font-weight: bold;'>Indicadores Principais</h2>", unsafe_allow_html=True)
-
+# Exibir indicadores principais
 st.markdown(
     f"""
-    <div style="display: flex; justify-content: center; gap: 40px; flex-wrap: wrap;">
-        <div style="text-align: center; border: 2px solid #F37529; border-radius: 10px; padding: 20px; width: 200px;">
-            <h3 style="color: #F37529;">Total de Multas</h3>
-            <p style="font-size: 28px; font-weight: bold;">{total_multas}</p>
-        </div>
-        <div style="text-align: center; border: 2px solid #F37529; border-radius: 10px; padding: 20px; width: 200px;">
-            <h3 style="color: #F37529;">Valor Total a Pagar</h3>
-            <p style="font-size: 28px; font-weight: bold;">R$ {valor_total_a_pagar:,.2f}</p>
-        </div>
-        <div style="text-align: center; border: 2px solid #F37529; border-radius: 10px; padding: 20px; width: 200px;">
-            <h3 style="color: #F37529;">Multas no Mês Atual</h3>
-            <p style="font-size: 28px; font-weight: bold;">{multas_mes_atual}</p>
-        </div>
-        <div style="text-align: center; border: 2px solid #F37529; border-radius: 10px; padding: 20px; width: 200px;">
-            <h3 style="color: #F37529;">Última Consulta</h3>
-            <p style="font-size: 28px; font-weight: bold;">{ultima_data_consulta.strftime("%d/%m/%Y") if pd.notnull(ultima_data_consulta) else "Data não disponível"}</p>
-        </div>
+    <div class="indicadores-container">
+        <div class="indicador"><h3>Total de Multas</h3><p>{total_multas}</p></div>
+        <div class="indicador"><h3>Valor Total a Pagar</h3><p>R$ {valor_total_a_pagar:,.2f}</p></div>
+        <div class="indicador"><h3>Multas no Mês Atual</h3><p>{multas_mes_atual}</p></div>
+        <div class="indicador"><h3>Última Consulta</h3><p>{ultima_data_consulta.strftime("%d/%m/%Y") if pd.notnull(ultima_data_consulta) else "Data não disponível"}</p></div>
     </div>
     """,
     unsafe_allow_html=True
 )
 
-# Exibir gráfico de infrações mais comuns
+# Gráficos sem o título do Plotly
 st.divider()
-common_infractions_chart = create_common_infractions_chart(data_cleaned)
-st.plotly_chart(common_infractions_chart, use_container_width=True)
+st.markdown("<h2 style='text-align: center; color: #FF7F00;'>Top 10 Veículos com Mais Multas e Valores Totais</h2>", unsafe_allow_html=True)
+st.plotly_chart(create_vehicle_fines_chart(data_cleaned), use_container_width=True)
+
+st.divider()
+st.markdown("<h2 style='text-align: center; color: #FF7F00;'>Distribuição Geográfica das Multas</h2>", unsafe_allow_html=True)
+API_KEY = st.secrets["API_KEY"]
+coordinates_cache = load_cache()
+map_data = data_cleaned.dropna(subset=['Local da Infração']).copy()
+map_data[['Latitude', 'Longitude']] = map_data['Local da Infração'].apply(
+    lambda x: pd.Series(get_cached_coordinates(x, API_KEY, coordinates_cache))
+)
+save_cache(coordinates_cache)
+map_center = [map_data['Latitude'].mean(), map_data['Longitude'].mean()] if not map_data.empty else [0, 0]
+map_object = folium.Map(location=map_center, zoom_start=5)
+st_folium(map_object, width=1200, height=600)
+
+st.divider()
+st.markdown("<h2 style='text-align: center; color: #FF7F00;'>Infrações Mais Frequentes</h2>", unsafe_allow_html=True)
+st.plotly_chart(create_common_infractions_chart(data_cleaned), use_container_width=True)
+
+st.divider()
+st.markdown("<h2 style='text-align: center; color: #FF7F00;'>Valores das Multas Acumulados por Período</h2>", unsafe_allow_html=True)
+st.plotly_chart(create_fines_accumulated_chart(data_cleaned, period='M'), use_container_width=True)
+
+st.divider()
+st.markdown("<h2 style='text-align: center; color: #FF7F00;'>Infrações Mais Frequentes por Dia da Semana</h2>", unsafe_allow_html=True)
+st.plotly_chart(create_weekday_infractions_chart(data_cleaned), use_container_width=True)
 
 # Footer
-st.markdown(""" 
-    <style>
-        .footer {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            background-color: #f9f9f9;
-            padding: 10px;
-            text-align: center;
-            font-size: 14px;
-            color: #6c757d;
-            box-shadow: 0 -1px 5px rgba(0,0,0,0.1);
-        }
-    </style>
-    <div class="footer">
+st.markdown("""
+    <div style="text-align: center; margin-top: 50px; font-size: 14px; color: #777;">
         Dashboard de Multas © 2024 | Desenvolvido pela Equipe de Qualidade
     </div>
 """, unsafe_allow_html=True)
