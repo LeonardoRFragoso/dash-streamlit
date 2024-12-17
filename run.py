@@ -15,7 +15,7 @@ from google_drive import carregar_dados_google_drive
 # Configuração inicial
 st.set_page_config(page_title="Torre de Controle iTracker - Dashboard de Multas", layout="wide")
 
-# Estilização CSS e HTML para o dashboard
+# Estilização CSS e HTML
 st.markdown(
     """
     <style>
@@ -23,8 +23,6 @@ st.markdown(
             0% { opacity: 0; transform: translateY(-20px); }
             100% { opacity: 1; transform: translateY(0); }
         }
-
-        /* Container do título */
         .titulo-dashboard-container {
             display: flex;
             justify-content: center;
@@ -34,29 +32,13 @@ st.markdown(
             background: linear-gradient(to right, #F37529, rgba(255, 255, 255, 0.8));
             border-radius: 15px;
             box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
-            animation: fadeIn 1.2s ease-out;
         }
-
-        /* Título principal */
         .titulo-dashboard {
             font-size: 50px;
             font-weight: bold;
             color: #333333;
-            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
-            letter-spacing: 2px;
             text-transform: uppercase;
         }
-
-        /* Subtítulo */
-        .subtitulo-dashboard {
-            font-size: 20px;
-            color: #555555;
-            margin-top: 10px;
-            text-align: center;
-            font-style: italic;
-        }
-
-        /* Indicadores */
         .indicador {
             display: flex;
             justify-content: center;
@@ -69,108 +51,91 @@ st.markdown(
             box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);
             width: 260px;
             height: 160px;
-            margin: 10px 0;
         }
-
         .indicador p {
             font-size: 38px;
             font-weight: bold;
             color: #F37529;
             margin: 0;
         }
-
         .indicador span {
             font-size: 18px;
             color: #555;
         }
-
-        /* Footer */
         .footer {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            background-color: #f9f9f9;
-            padding: 10px;
             text-align: center;
             font-size: 14px;
             color: #6c757d;
-            box-shadow: 0 -1px 5px rgba(0,0,0,0.1);
         }
     </style>
 
     <div class="titulo-dashboard-container">
         <div>
             <h1 class="titulo-dashboard">Torre de Controle iTracker - Dashboard de Multas</h1>
-            <p class="subtitulo-dashboard">Monitore e analise suas multas em tempo real com gráficos e indicadores.</p>
         </div>
     </div>
     """,
     unsafe_allow_html=True
 )
 
-# Inserir o logo da Itracker no topo
+# Logo
 logo_url = st.secrets["image"]["logo_url"]
 st.image(logo_url, width=150, use_container_width=False)
 
-# Carregar e limpar os dados
+# Carregar e limpar dados
 data = carregar_dados_google_drive()
 data_cleaned = clean_data(data)
 
 # Verificar colunas essenciais
-required_columns = ['Data da Infração', 'Valor a ser pago R$', 'Auto de Infração', 'Status de Pagamento']
+required_columns = ['Data da Infração', 'Valor a ser pago R$', 'Auto de Infração', 'Status de Pagamento', 'Dia da Consulta']
 if not all(col in data_cleaned.columns for col in required_columns):
     st.error(f"Faltam colunas essenciais: {', '.join([col for col in required_columns if col not in data_cleaned.columns])}")
     st.stop()
 
-# Calcular métricas principais
+# Calcular métricas
 total_multas, valor_total_a_pagar, multas_mes_atual = calculate_metrics(data_cleaned)
+ultima_consulta = pd.to_datetime(data_cleaned['Dia da Consulta'].max(), errors='coerce').strftime('%d/%m/%Y')
 
-# Exibir Indicadores Principais
+# Indicadores Principais
 st.markdown("### Indicadores Principais")
-col1, col2, col3 = st.columns(3)
+col1, col2, col3, col4 = st.columns(4)
 with col1:
     st.markdown(f"<div class='indicador'><span>Total de Multas</span><p>{total_multas}</p></div>", unsafe_allow_html=True)
 with col2:
     st.markdown(f"<div class='indicador'><span>Valor Total a Pagar</span><p>R$ {valor_total_a_pagar:,.2f}</p></div>", unsafe_allow_html=True)
 with col3:
     st.markdown(f"<div class='indicador'><span>Multas no Mês Atual</span><p>{multas_mes_atual}</p></div>", unsafe_allow_html=True)
+with col4:
+    st.markdown(f"<div class='indicador'><span>Última Consulta</span><p>{ultima_consulta}</p></div>", unsafe_allow_html=True)
 
-# Filtro de Período
+# Filtro por Período
 st.markdown("### Filtro por Período")
 data_cleaned['Dia da Consulta'] = pd.to_datetime(data_cleaned['Dia da Consulta'], errors='coerce')
 start_date = st.date_input("Data Inicial", value=data_cleaned['Dia da Consulta'].min())
 end_date = st.date_input("Data Final", value=data_cleaned['Dia da Consulta'].max())
 
-# Filtrar dados
 filtered_data = data_cleaned[
     (data_cleaned['Dia da Consulta'] >= pd.Timestamp(start_date)) &
     (data_cleaned['Dia da Consulta'] <= pd.Timestamp(end_date))
 ]
 
-# Gráfico 1: Top 10 Veículos
+# Gráficos
 st.markdown("### Top 10 Veículos com Mais Multas e Valores Totais")
 top_vehicles_chart = create_vehicle_fines_chart(filtered_data)
-top_vehicles_chart.update_layout(title=None)
 st.plotly_chart(top_vehicles_chart, use_container_width=True)
 
-# Gráfico 2: Infrações Mais Frequentes
 st.markdown("### Infrações Mais Frequentes")
 common_infractions_chart = create_common_infractions_chart(filtered_data)
-common_infractions_chart.update_layout(title=None)
 st.plotly_chart(common_infractions_chart, use_container_width=True)
 
-# Gráfico 3: Multas Acumuladas
 st.markdown("### Valores das Multas Acumulados por Período")
 period_option = st.radio("Selecione o período:", ["Mensal", "Semanal"], horizontal=True)
 period_code = 'M' if period_option == "Mensal" else 'W'
 fines_accumulated_chart = create_fines_accumulated_chart(filtered_data, period=period_code)
-fines_accumulated_chart.update_layout(title=None)
 st.plotly_chart(fines_accumulated_chart, use_container_width=True)
 
-# Gráfico 4: Infrações por Dia da Semana
 st.markdown("### Infrações Mais Frequentes por Dia da Semana")
 weekday_infractions_chart = create_weekday_infractions_chart(filtered_data)
-weekday_infractions_chart.update_layout(title=None)
 st.plotly_chart(weekday_infractions_chart, use_container_width=True)
 
 # Mapa
