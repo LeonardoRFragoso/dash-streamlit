@@ -343,7 +343,8 @@ st.divider()
 # Distribuição geográfica das multas e ranking
 st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>Distribuição Geográfica das Multas e Ranking</h2>", unsafe_allow_html=True)
 
-# Load cache
+# Prepare data for the map
+API_KEY = st.secrets["API_KEY"]  # Adicione esta linha
 coordinates_cache = load_cache()
 
 # Prepare data for the map
