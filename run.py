@@ -40,7 +40,7 @@ st.markdown(
         .titulo-dashboard {
             font-size: 50px;
             font-weight: bold;
-            color: #333333;
+            color: #F37529;
             text-transform: uppercase;
             margin: 0;
         }
@@ -85,14 +85,14 @@ st.markdown(
 
         .indicador span {
             font-size: 18px;
-            color: #555;
+            color: #F37529;
             margin-bottom: 8px;
         }
 
         .footer {
             text-align: center;
             font-size: 14px;
-            color: #6c757d;
+            color: #F37529;
             margin-top: 40px;
             padding: 10px 0;
             border-top: 1px solid #ddd;
