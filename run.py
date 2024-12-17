@@ -18,7 +18,7 @@ from graph_fines_accumulated import create_fines_accumulated_chart
 from graph_weekday_infractions import create_weekday_infractions_chart
 
 # Configuração inicial
-st.set_page_config(page_title="Torre de Controle - Dashboard de Multas", layout="wide")
+st.set_page_config(page_title="Torre de Controle iTracker - Dashboard de Multas", layout="wide")
 
 # Streamlit interface
 st.markdown(
