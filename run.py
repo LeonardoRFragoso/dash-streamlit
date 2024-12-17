@@ -117,7 +117,7 @@ st.markdown(
     <!-- Container do Título -->
     <div class="titulo-dashboard-container">
         <div>
-            <h1 class="titulo-dashboard">Torre de Controle - Dashboard de Multas</h1>
+            <h1 class="titulo-dashboard">Torre de Controle iTracker - Dashboard de Multas</h1>
             <p class="subtitulo-dashboard">Monitore e analise suas multas em tempo real com gráficos e indicadores.</p>
         </div>
     </div>
