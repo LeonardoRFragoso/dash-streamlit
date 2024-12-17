@@ -246,7 +246,7 @@ st.markdown(
     <style>
         /* Configurações globais */
         * {{
-            box-sizing: border-box; /* Inclui padding e borda no tamanho total */
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
         }}
@@ -255,11 +255,11 @@ st.markdown(
         .indicadores-container {{
             display: flex;
             justify-content: center; /* Centraliza horizontalmente */
-            align-items: center; /* Centraliza verticalmente */
-            gap: 30px; /* Espaçamento entre as caixas */
-            flex-wrap: wrap; /* Ajusta em telas menores */
-            margin: 20px auto; /* Centraliza no layout */
-            max-width: 90%; /* Evita que estoure a largura */
+            align-items: center; /* Alinha verticalmente */
+            gap: 20px; /* Espaçamento uniforme entre caixas */
+            flex-wrap: wrap;
+            margin: 20px auto;
+            max-width: 90%;
             padding: 20px 10px;
             background: linear-gradient(to right, #fff, #FDF1E8);
             border-radius: 15px;
@@ -272,16 +272,15 @@ st.markdown(
             flex-direction: column;
             justify-content: center; /* Alinha o conteúdo verticalmente */
             align-items: center; /* Alinha o conteúdo horizontalmente */
-            text-align: center; /* Garante alinhamento do texto */
+            text-align: center; /* Centraliza o texto */
             background-color: #FFFFFF;
             border: 4px solid #F37529;
             border-radius: 15px;
             box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);
-            max-width: 230px;
-            width: 100%; /* Responsivo */
-            min-height: 140px;
-            padding: 15px; /* Padding uniforme */
-            box-sizing: border-box; /* Corrige padding e largura */
+            width: 230px; /* Largura fixa */
+            height: 140px; /* Altura fixa */
+            padding: 10px; /* Padding simétrico */
+            box-sizing: border-box;
         }}
 
         /* Título do indicador */
@@ -289,7 +288,12 @@ st.markdown(
             font-size: 18px;
             font-weight: bold;
             color: #F37529;
-            margin-bottom: 5px; /* Espaçamento entre título e valor */
+            margin: 0; /* Remove margem */
+            white-space: nowrap; /* Evita quebra de linha */
+            flex: 1; /* Ocupa o espaço proporcional */
+            display: flex;
+            justify-content: center; /* Alinha o título horizontalmente */
+            align-items: center; /* Alinha o título verticalmente */
         }}
 
         /* Valor do indicador */
@@ -297,6 +301,11 @@ st.markdown(
             font-size: 28px;
             font-weight: bold;
             color: #F37529;
+            margin: 0; /* Remove margem */
+            flex: 1; /* Ocupa o espaço proporcional */
+            display: flex;
+            justify-content: center; /* Centraliza o valor horizontalmente */
+            align-items: center; /* Centraliza o valor verticalmente */
         }}
     </style>
 
