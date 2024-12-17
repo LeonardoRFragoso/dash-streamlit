@@ -20,7 +20,119 @@ from graph_weekday_infractions import create_weekday_infractions_chart
 # Configuração inicial
 st.set_page_config(page_title="Torre de Controle - Dashboard de Multas", layout="wide")
 
-# CSS customizado
+# Inserir o logo da Itracker no topo usando o link do secrets
+logo_url = st.secrets["image"]["logo_url"]  # Pega o link direto configurado nos secrets
+st.image(logo_url, width=150, use_container_width=False)
+
+
+# Define cache file for coordinates
+CACHE_FILE = "coordinates_cache.json"
+
+def load_cache():
+    """Load the cache from a JSON file."""
+    if os.path.exists(CACHE_FILE):
+        with open(CACHE_FILE, 'r') as f:
+            return json.load(f)
+    return {}
+
+def save_cache(cache):
+    """Save the cache to a JSON file."""
+    with open(CACHE_FILE, 'w') as f:
+        json.dump(cache, f)
+
+def get_cached_coordinates(local, api_key, cache):
+    """Get coordinates from cache or API."""
+    if local in cache:
+        return cache[local]
+    lat, lng = get_coordinates(local, api_key)
+    if lat is not None and lng is not None:
+        cache[local] = (lat, lng)
+    return lat, lng
+
+def get_coordinates(local, api_key):
+    """Fetch coordinates for a given location using OpenCage API."""
+    url = f'https://api.opencagedata.com/geocode/v1/json?q={local}&key={api_key}'
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        if data['results']:
+            geometry = data['results'][0]['geometry']
+            return geometry['lat'], geometry['lng']
+    return None, None
+
+def autenticar_google_drive():
+    """Autentica no Google Drive usando credenciais de serviço."""
+    # Converte explicitamente o conteúdo de CREDENTIALS para string e depois para JSON
+    credentials_str = str(st.secrets["CREDENTIALS"])  # Converte AttrDict para string
+    credentials_dict = json.loads(credentials_str.replace("\n", "\\n"))  # Ajusta quebras de linha e carrega JSON
+    
+    # Cria as credenciais a partir do dicionário
+    credentials = Credentials.from_service_account_info(
+        credentials_dict, 
+        scopes=["https://www.googleapis.com/auth/drive"]
+    )
+    
+    # Retorna o serviço autenticado do Google Drive
+    return build("drive", "v3", credentials=credentials)
+
+def obter_id_ultima_planilha():
+    """Obtém o ID da última planilha salva no JSON."""
+    try:
+        with open(st.secrets["ULTIMA_PLANILHA_JSON"], 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            return data.get("file_id")
+    except Exception as e:
+        st.error(f"Erro ao carregar o ID da última planilha: {e}")
+        st.stop()
+
+def carregar_dados_google_drive():
+    """Carrega os dados da última planilha no Google Drive."""
+    try:
+        drive_service = autenticar_google_drive()
+        file_id = st.secrets["file_data"]["ultima_planilha_id"]
+        request = drive_service.files().get_media(fileId=file_id)
+        file_buffer = io.BytesIO()
+        downloader = MediaIoBaseDownload(file_buffer, request)
+        done = False
+        while not done:
+            status, done = downloader.next_chunk()
+        file_buffer.seek(0)
+        return pd.read_excel(file_buffer)
+    except Exception as e:
+        st.error(f"Erro ao carregar os dados do Google Drive: {e}")
+        st.stop()
+
+# Carregar e limpar os dados
+data = carregar_dados_google_drive()
+data_cleaned = clean_data(data)
+
+# Ajustar campos necessários
+if 'Valor a ser pago R$' in data_cleaned.columns:
+    data_cleaned.loc[:, 'Valor a ser pago R$'] = data_cleaned['Valor a ser pago R$'].replace(
+        {r'[^0-9,]': '', ',': '.'}, regex=True
+    ).astype(float)
+else:
+    st.error("A coluna 'Valor a ser pago R$' não foi encontrada nos dados carregados.")
+    st.stop()
+
+if 'Local da Infração' in data_cleaned.columns:
+    data_cleaned.loc[:, 'Local da Infração'] = data_cleaned['Local da Infração'].fillna('Desconhecido')
+else:
+    st.error("A coluna 'Local da Infração' não foi encontrada nos dados carregados.")
+    st.stop()
+
+# Ajustar datas
+data_cleaned.loc[:, 'Dia da Consulta'] = pd.to_datetime(data_cleaned['Dia da Consulta'], dayfirst=True, errors='coerce')
+data_cleaned.loc[:, 'Data da Infração'] = pd.to_datetime(data_cleaned['Data da Infração'], dayfirst=True, errors='coerce')
+
+# Calcular métricas principais
+total_multas, valor_total_a_pagar, multas_mes_atual = calculate_metrics(data_cleaned)
+
+# Calcular a data da última consulta
+ultima_data_consulta = data_cleaned['Dia da Consulta'].max()
+
+# Streamlit interface (restante do código segue inalterado)
+
 st.markdown(
     """
     <style>
@@ -60,6 +172,58 @@ st.markdown(
             text-align: center;
             font-style: italic;
         }
+
+        /* Seção dos indicadores principais */
+        .indicadores-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            margin: 40px auto;
+            padding: 30px 20px;
+            background: linear-gradient(to right, #fff, #FDF1E8);
+            border-radius: 15px;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 1.5s ease-out;
+        }
+
+        /* Indicador individual */
+        .indicador {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background-color: #FFFFFF;
+            border: 4px solid #F37529; /* Laranja ITracker */
+            border-radius: 15px;
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);
+            width: 260px;
+            height: 160px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeIn 2s ease-out;
+        }
+
+        .indicador:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 18px rgba(0, 0, 0, 0.4);
+            border-color: #F37529;
+        }
+
+        .indicador h3 {
+            color: #F37529; /* Laranja ITracker */
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .indicador p {
+            font-size: 38px;
+            font-weight: bold;
+            color: #F37529; /* Laranja ITracker */
+            margin: 0;
+        }
     </style>
 
     <!-- Container do Título -->
@@ -73,90 +237,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Logo da Itracker
-try:
-    logo_url = st.secrets["image"]["logo_url"]  # Carregar a URL da logo do secrets
-except KeyError:
-    logo_url = "https://via.placeholder.com/150?text=Logo"  # Placeholder caso falhe
-st.image(logo_url, width=200, use_container_width=False)
-
 st.divider()
-
-# Define cache file for coordinates
-CACHE_FILE = "coordinates_cache.json"
-
-def load_cache():
-    """Load the cache from a JSON file."""
-    if os.path.exists(CACHE_FILE):
-        with open(CACHE_FILE, 'r') as f:
-            return json.load(f)
-    return {}
-
-def save_cache(cache):
-    """Save the cache to a JSON file."""
-    with open(CACHE_FILE, 'w') as f:
-        json.dump(cache, f)
-
-def autenticar_google_drive():
-    """Autentica no Google Drive usando credenciais de serviço."""
-    credentials_str = str(st.secrets["CREDENTIALS"])
-    credentials_dict = json.loads(credentials_str.replace("\n", "\\n"))
-    credentials = Credentials.from_service_account_info(
-        credentials_dict, scopes=["https://www.googleapis.com/auth/drive"]
-    )
-    return build("drive", "v3", credentials=credentials)
-
-def carregar_dados_google_drive():
-    """Carrega os dados da última planilha no Google Drive."""
-    try:
-        drive_service = autenticar_google_drive()
-        file_id = st.secrets["file_data"]["ultima_planilha_id"]
-        request = drive_service.files().get_media(fileId=file_id)
-        file_buffer = io.BytesIO()
-        downloader = MediaIoBaseDownload(file_buffer, request)
-        done = False
-        while not done:
-            status, done = downloader.next_chunk()
-        file_buffer.seek(0)
-        return pd.read_excel(file_buffer)
-    except Exception as e:
-        st.error(f"Erro ao carregar os dados do Google Drive: {e}")
-        st.stop()
-
-# Carregar e limpar os dados
-data = carregar_dados_google_drive()
-data_cleaned = clean_data(data)
-
-# Ajustar valores
-if 'Valor a ser pago R$' in data_cleaned.columns:
-    data_cleaned.loc[:, 'Valor a ser pago R$'] = data_cleaned['Valor a ser pago R$'].replace(
-        {r'[^0-9,]': '', ',': '.'}, regex=True
-    ).astype(float)
-else:
-    st.error("A coluna 'Valor a ser pago R$' não foi encontrada.")
-    st.stop()
-
-# Ajustar datas
-data_cleaned.loc[:, 'Dia da Consulta'] = pd.to_datetime(data_cleaned['Dia da Consulta'], dayfirst=True, errors='coerce')
-data_cleaned.loc[:, 'Data da Infração'] = pd.to_datetime(data_cleaned['Data da Infração'], dayfirst=True, errors='coerce')
-
-# Calcular métricas
-total_multas, valor_total_a_pagar, multas_mes_atual = calculate_metrics(data_cleaned)
-ultima_data_consulta = data_cleaned['Dia da Consulta'].max()
-ultima_data_str = ultima_data_consulta.strftime("%d/%m/%Y") if pd.notnull(ultima_data_consulta) else "Data não disponível"
-
-# Exibição das métricas principais
-st.markdown("<h2 style='text-align: center; color: #FF7F00;'>Indicadores Principais</h2>", unsafe_allow_html=True)
-col1, col2, col3, col4 = st.columns(4)
-
-with col1:
-    st.markdown(f"<div class='indicador'><h3>Total de Multas</h3><p>{total_multas}</p></div>", unsafe_allow_html=True)
-with col2:
-    st.markdown(f"<div class='indicador'><h3>Valor Total a Pagar</h3><p>R$ {valor_total_a_pagar:,.2f}</p></div>", unsafe_allow_html=True)
-with col3:
-    st.markdown(f"<div class='indicador'><h3>Multas no Mês Atual</h3><p>{multas_mes_atual}</p></div>", unsafe_allow_html=True)
-with col4:
-    st.markdown(f"<div class='indicador'><h3>Última Consulta</h3><p>{ultima_data_str}</p></div>", unsafe_allow_html=True)
 
 # Subtítulo para os indicadores principais
 st.markdown("<h2 style='text-align: center; color: #F37529; font-size: 36px; font-weight: bold; text-shadow: 1px 1px 4px rgba(0,0,0,0.3);'>Indicadores Principais</h2>", unsafe_allow_html=True)
