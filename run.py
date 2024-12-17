@@ -339,7 +339,7 @@ st.divider()
 st.markdown(
     f"""
     <style>
-        /* Ajustes no container dos filtros */
+        /* Container principal do filtro */
         .filtro-container {{
             display: flex;
             flex-direction: column;
@@ -361,7 +361,7 @@ st.markdown(
             max-width: 500px;
         }}
 
-        /* Containers de Data */
+        /* Container dos campos de data */
         .date-input-container {{
             display: flex;
             justify-content: space-between;
