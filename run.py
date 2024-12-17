@@ -247,11 +247,11 @@ st.markdown(
         /* Contêiner dos indicadores */
         .indicadores-container {{
             display: flex;
-            justify-content: space-around; /* Espaçamento uniforme */
+            justify-content: center; /* Centraliza os indicadores no container */
             align-items: center; /* Alinhamento vertical */
-            gap: 20px;
-            margin: 20px auto;
-            padding: 10px;
+            gap: 40px; /* Espaço entre os indicadores */
+            margin: 40px auto;
+            padding: 30px 20px;
             background: linear-gradient(to right, #fff, #FDF1E8);
             border-radius: 15px;
             box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
@@ -263,37 +263,35 @@ st.markdown(
             flex-direction: column;
             justify-content: center; /* Centraliza verticalmente */
             align-items: center; /* Centraliza horizontalmente */
-            text-align: center; /* Centraliza texto */
+            text-align: center; /* Centraliza o texto */
             background-color: #FFFFFF;
             border: 4px solid #F37529;
             border-radius: 15px;
             box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);
-            width: 230px; /* Largura fixa */
-            height: 140px; /* Altura fixa */
-            padding: 0; /* Remove padding extra */
+            width: 230px;
+            height: 140px;
+            padding: 10px 0; /* Ajusta o padding vertical */
             margin: 0; /* Remove margens extras */
         }}
 
         /* Título do indicador */
         .indicador h3 {{
-            margin: 0; /* Remove todas as margens */
+            margin: 0; /* Remove margens extras */
             padding: 0; /* Remove paddings extras */
-            line-height: 1.2; /* Ajusta a altura da linha */
             font-size: 20px;
             font-weight: bold;
             color: #F37529;
-            text-align: center; /* Alinhamento horizontal */
+            line-height: 1.4; /* Melhora o espaçamento do texto */
         }}
 
         /* Valor do indicador */
         .indicador p {{
-            margin: 0; /* Remove margens */
+            margin: 5px 0 0 0; /* Margem superior mínima */
             font-size: 30px;
             font-weight: bold;
             color: #F37529;
             text-align: center;
         }}
-
     </style>
 
     <div class="indicadores-container">
