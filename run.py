@@ -250,7 +250,9 @@ st.markdown(
             justify-content: center; /* Centraliza caixas horizontalmente */
             align-items: center; /* Centraliza caixas verticalmente */
             gap: 30px; /* Espaço entre as caixas */
-            margin: 20px auto;
+            flex-wrap: wrap; /* Permite quebra de linha em telas menores */
+            margin: 20px auto; /* Centraliza o bloco na página */
+            max-width: 90%; /* Limita a largura máxima */
             padding: 20px 10px;
             background: linear-gradient(to right, #fff, #FDF1E8);
             border-radius: 15px;
@@ -268,38 +270,37 @@ st.markdown(
             border: 4px solid #F37529;
             border-radius: 15px;
             box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);
-            width: 230px; /* Largura fixa */
-            height: 140px; /* Altura fixa */
-            box-sizing: border-box; /* Inclui bordas no cálculo de largura */
-            padding: 0; /* Remove padding extra */
+            max-width: 230px; /* Máximo de largura */
+            width: 100%; /* Responsivo */
+            min-height: 140px; /* Altura flexível */
+            padding: 10px; /* Ajusta o espaçamento interno */
+            box-sizing: border-box;
         }}
 
         /* Título do indicador */
         .indicador h3 {{
-            margin: 0; /* Remove margens */
-            padding: 0; /* Remove padding */
-            font-size: 20px;
+            margin: 5px 0; /* Ajusta margens verticais */
+            font-size: 18px;
             font-weight: bold;
             color: #F37529;
-            text-align: center; /* Centraliza horizontalmente */
-            flex: 1; /* Expande para ocupar o espaço vertical uniformemente */
-            display: flex;
-            align-items: center; /* Alinha verticalmente */
-            justify-content: center; /* Alinha horizontalmente */
         }}
 
         /* Valor do indicador */
         .indicador p {{
-            margin: 0; /* Remove margens */
-            padding: 0; /* Remove padding */
-            font-size: 32px;
+            margin: 5px 0; /* Ajusta margens verticais */
+            font-size: 28px;
             font-weight: bold;
             color: #F37529;
-            text-align: center; /* Centraliza horizontalmente */
-            flex: 1; /* Expande para ocupar o espaço vertical uniformemente */
-            display: flex;
-            align-items: center; /* Alinha verticalmente */
-            justify-content: center; /* Alinha horizontalmente */
+        }}
+
+        /* Responsividade */
+        @media (max-width: 768px) {{
+            .indicadores-container {{
+                gap: 20px; /* Menor espaçamento entre as caixas */
+            }}
+            .indicador {{
+                max-width: 100%; /* Ocupa largura total */
+            }}
         }}
     </style>
 
