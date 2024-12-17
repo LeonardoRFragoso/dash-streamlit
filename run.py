@@ -214,29 +214,37 @@ map_object = folium.Map(location=map_center, zoom_start=5, tiles="CartoDB dark_m
 
 icon_url = "https://cdn-icons-png.flaticon.com/512/1828/1828843.png"  # URL de um triângulo de alerta
 
+# Garantir que a coluna 'Data da Infração' seja datetime antes do loop
+map_data['Data da Infração'] = pd.to_datetime(map_data['Data da Infração'], errors='coerce')
+
 # Adicionar marcadores ao mapa
 for _, row in map_data.iterrows():
     if pd.notnull(row['Latitude']) and pd.notnull(row['Longitude']):
         custom_icon = CustomIcon(icon_url, icon_size=(30, 30))
-        # Garantir que a coluna 'Data da Infração' seja datetime
-        map_data['Data da Infração'] = pd.to_datetime(map_data['Data da Infração'], errors='coerce')
 
-        # Dentro do loop
-        data_infracao = row['Data da Infração'].strftime('%d/%m/%Y') if pd.notnull(row['Data da Infração']) else "Data não disponível"
-
+        # Verificar se 'Data da Infração' é uma data válida
+        if isinstance(row['Data da Infração'], pd.Timestamp):
+            data_infracao = row['Data da Infração'].strftime('%d/%m/%Y')
+        else:
+            data_infracao = "Data não disponível"
         
         # Garantir que 'Valor a ser pago R$' esteja como numérico antes de formatar
-        row['Valor a ser pago R$'] = pd.to_numeric(row['Valor a ser pago R$'], errors='coerce')
-        
+        valor_multa = pd.to_numeric(row['Valor a ser pago R$'], errors='coerce')
+        valor_multa = f"R$ {valor_multa:.2f}" if pd.notnull(valor_multa) else "Valor não disponível"
+
         # Construir o conteúdo do popup com a formatação correta
-        popup_content = f"<b>Local:</b> {row['Local da Infração']}<br><b>Valor:</b> R$ {row['Valor a ser pago R$']:.2f}<br><b>Data da Infração:</b> {data_infracao}"
-        
+        popup_content = (
+            f"<b>Local:</b> {row['Local da Infração']}<br>"
+            f"<b>Valor:</b> {valor_multa}<br>"
+            f"<b>Data da Infração:</b> {data_infracao}"
+        )
+
+        # Adicionar marcador ao mapa
         folium.Marker(
             location=[row['Latitude'], row['Longitude']],
             popup=folium.Popup(popup_content, max_width=300),
             icon=custom_icon
         ).add_to(map_object)
-
 
 # Display map
 st_folium(map_object, width=1800, height=600)
