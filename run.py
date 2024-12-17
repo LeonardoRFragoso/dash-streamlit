@@ -332,15 +332,20 @@ st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>
 # Defina um valor padrão para filtered_data
 filtered_data = data_cleaned.copy()
 
+# Define filtered_data com os dados completos inicialmente
+filtered_data = data_cleaned.copy()
+
 # Botão para aplicar o filtro
-if st.button("Aplicar Filtro"):
+if st.button("Aplicar Filtro", key="filtro_botao"):
     if start_date > end_date:
         st.error("A Data Inicial não pode ser posterior à Data Final.")
     else:
+        # Filtrar os dados com base no intervalo de datas
         filtered_data = data_cleaned[
             (data_cleaned['Dia da Consulta'].dt.date >= start_date) &
             (data_cleaned['Dia da Consulta'].dt.date <= end_date)
         ]
+
         if filtered_data.empty:
             st.warning("Nenhum dado encontrado para o intervalo selecionado.")
         else:
@@ -353,7 +358,6 @@ try:
     st.plotly_chart(top_vehicles_chart, use_container_width=True)
 except Exception as e:
     st.error(f"Erro ao gerar o gráfico: {e}")
-
 
 # Adicionar descrição abaixo do gráfico com estilo consistente
 st.markdown("<p style='text-align: center; font-size: 18px; color: black;'>"
