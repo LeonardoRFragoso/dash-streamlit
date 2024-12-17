@@ -31,7 +31,7 @@ def create_common_infractions_chart(data):
         y='Descrição',
         text='Texto',  # Texto com código e ocorrências lado a lado
         orientation='h',
-        title="Infrações Mais Frequentes",  # Título principal
+        title="",  # Título principal
         labels={'Descrição': '', 'Frequência': ''}  # Remove os nomes dos eixos
     )
 
