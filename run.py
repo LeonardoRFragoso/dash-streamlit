@@ -329,9 +329,31 @@ st.divider()
 
 # Veículos com mais multas
 st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>Top 10 Veículos com Mais Multas e Valores Totais</h2>", unsafe_allow_html=True)
-top_vehicles_chart = create_vehicle_fines_chart(filtered_data)
-top_vehicles_chart.update_layout(template="plotly_dark")  # Forçar o template escuro
-st.plotly_chart(top_vehicles_chart, use_container_width=True)
+# Defina um valor padrão para filtered_data
+filtered_data = data_cleaned.copy()
+
+# Botão para aplicar o filtro
+if st.button("Aplicar Filtro"):
+    if start_date > end_date:
+        st.error("A Data Inicial não pode ser posterior à Data Final.")
+    else:
+        filtered_data = data_cleaned[
+            (data_cleaned['Dia da Consulta'].dt.date >= start_date) &
+            (data_cleaned['Dia da Consulta'].dt.date <= end_date)
+        ]
+        if filtered_data.empty:
+            st.warning("Nenhum dado encontrado para o intervalo selecionado.")
+        else:
+            st.success("Filtro aplicado com sucesso!")
+
+# Gráfico Top 10 Veículos (executado sempre, com filtered_data)
+try:
+    top_vehicles_chart = create_vehicle_fines_chart(filtered_data)
+    top_vehicles_chart.update_layout(template="plotly_dark")
+    st.plotly_chart(top_vehicles_chart, use_container_width=True)
+except Exception as e:
+    st.error(f"Erro ao gerar o gráfico: {e}")
+
 
 # Adicionar descrição abaixo do gráfico com estilo consistente
 st.markdown("<p style='text-align: center; font-size: 18px; color: black;'>"
