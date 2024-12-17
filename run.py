@@ -193,26 +193,6 @@ st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>
 top_vehicles_chart = create_vehicle_fines_chart(filtered_data)
 st.plotly_chart(top_vehicles_chart, use_container_width=True)
 
-# Exibir gráfico de infrações mais comuns
-st.divider()
-st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>Infrações Mais Frequentes</h2>", unsafe_allow_html=True)
-common_infractions_chart = create_common_infractions_chart(filtered_data)
-st.plotly_chart(common_infractions_chart, use_container_width=True)
-
-# Exibir gráfico de multas acumuladas por período
-st.divider()
-st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>Valores das Multas Acumulados por Período</h2>", unsafe_allow_html=True)
-period_option = st.radio("Selecione o período para acumulação:", options=["Mensal", "Semanal"], index=0, horizontal=True)
-period_code = 'M' if period_option == "Mensal" else 'W'
-fines_accumulated_chart = create_fines_accumulated_chart(filtered_data, period=period_code)
-st.plotly_chart(fines_accumulated_chart, use_container_width=True)
-
-# Exibir gráfico de infrações por dia da semana
-st.divider()
-st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>Infrações Mais Frequentes por Dia da Semana</h2>", unsafe_allow_html=True)
-weekday_infractions_chart = create_weekday_infractions_chart(filtered_data)
-st.plotly_chart(weekday_infractions_chart, use_container_width=True)
-
 # Exibir mapa de distribuição geográfica das multas
 st.divider()
 st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>Distribuição Geográfica das Multas</h2>", unsafe_allow_html=True)
@@ -255,6 +235,26 @@ for _, row in map_data.iterrows():
 
 # Display map
 st_folium(map_object, width=1800, height=600)
+
+# Exibir gráfico de infrações mais comuns
+st.divider()
+st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>Infrações Mais Frequentes</h2>", unsafe_allow_html=True)
+common_infractions_chart = create_common_infractions_chart(filtered_data)
+st.plotly_chart(common_infractions_chart, use_container_width=True)
+
+# Exibir gráfico de multas acumuladas por período
+st.divider()
+st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>Valores das Multas Acumulados por Período</h2>", unsafe_allow_html=True)
+period_option = st.radio("Selecione o período para acumulação:", options=["Mensal", "Semanal"], index=0, horizontal=True)
+period_code = 'M' if period_option == "Mensal" else 'W'
+fines_accumulated_chart = create_fines_accumulated_chart(filtered_data, period=period_code)
+st.plotly_chart(fines_accumulated_chart, use_container_width=True)
+
+# Exibir gráfico de infrações por dia da semana
+st.divider()
+st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>Infrações Mais Frequentes por Dia da Semana</h2>", unsafe_allow_html=True)
+weekday_infractions_chart = create_weekday_infractions_chart(filtered_data)
+st.plotly_chart(weekday_infractions_chart, use_container_width=True)
 
 # Footer
 st.markdown(""" 
