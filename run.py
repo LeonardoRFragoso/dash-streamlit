@@ -346,9 +346,8 @@ filter_col1, filter_col2 = st.columns(2)
 min_date = data_cleaned['Dia da Consulta'].min().date() if not data_cleaned['Dia da Consulta'].isnull().all() else None
 max_date = data_cleaned['Dia da Consulta'].max().date() if not data_cleaned['Dia da Consulta'].isnull().all() else None
 
-# Entrada de data inicial
+# Entrada de data inicial e final
 with filter_col1:
-    st.markdown("<p style='text-align: center; font-size: 18px; color: #555;'>Data Inicial:</p>", unsafe_allow_html=True)
     start_date = st.date_input(
         "Data Inicial",
         value=min_date,
@@ -357,9 +356,7 @@ with filter_col1:
         key="start_date"
     )
 
-# Entrada de data final
 with filter_col2:
-    st.markdown("<p style='text-align: center; font-size: 18px; color: #555;'>Data Final:</p>", unsafe_allow_html=True)
     end_date = st.date_input(
         "Data Final",
         value=max_date,
@@ -372,30 +369,22 @@ with filter_col2:
 if start_date > end_date:
     st.error("A Data Inicial não pode ser posterior à Data Final. Por favor, selecione um intervalo válido.")
 else:
-    # Conversão das datas para Timestamp
-    start_date = pd.Timestamp(start_date)
-    end_date = pd.Timestamp(end_date)
-
-    # Aplicar filtro
+    # Filtragem dos dados conforme as datas selecionadas
     filtered_data = data_cleaned[
-        (data_cleaned['Dia da Consulta'] >= start_date) & 
-        (data_cleaned['Dia da Consulta'] <= end_date)
+        (data_cleaned['Dia da Consulta'] >= pd.Timestamp(start_date)) & 
+        (data_cleaned['Dia da Consulta'] <= pd.Timestamp(end_date))
     ]
 
-    # Botão de confirmação do filtro
-    if st.button("Aplicar Filtro"):
-        st.success(f"Dados filtrados entre {start_date.strftime('%d/%m/%Y')} e {end_date.strftime('%d/%m/%Y')}")
-        st.dataframe(filtered_data)  # Exibe os dados filtrados
-
-st.divider()
+    # Exibir mensagem de sucesso
+    st.success(f"Dados filtrados entre {start_date.strftime('%d/%m/%Y')} e {end_date.strftime('%d/%m/%Y')}")
 
 # Veículos com mais multas
+st.divider()
 st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>Top 10 Veículos com Mais Multas e Valores Totais</h2>", unsafe_allow_html=True)
 top_vehicles_chart = create_vehicle_fines_chart(filtered_data)
-top_vehicles_chart.update_layout(template="plotly_dark")  # Forçar o template escuro
 st.plotly_chart(top_vehicles_chart, use_container_width=True)
 
-# Adicionar descrição abaixo do gráfico com estilo consistente
+# Adicionar descrição abaixo do gráfico
 st.markdown("<p style='text-align: center; font-size: 18px; color: black;'>"
     "10 veículos com mais multas e seus valores totais dentro do período selecionado."
     "</p>",
