@@ -442,14 +442,12 @@ st.markdown(
         <div class="date-input-container">
             <div>
                 <p>Data Inicial:</p>
-                <!-- Data inicial de entrada -->
                 <div class='stDateInput'>
                     {start_date}
                 </div>
             </div>
             <div>
                 <p>Data Final:</p>
-                <!-- Data final de entrada -->
                 <div class='stDateInput'>
                     {end_date}
                 </div>
@@ -467,10 +465,10 @@ st.markdown(
 filter_col1, filter_col2 = st.columns(2)
 
 with filter_col1:
-    start_date = st.date_input("Data Inicial", value=data_cleaned['Dia da Consulta'].min().date(), key="start_date")
+    start_date = st.date_input("", value=data_cleaned['Dia da Consulta'].min().date(), key="start_date")
 
 with filter_col2:
-    end_date = st.date_input("Data Final", value=data_cleaned['Dia da Consulta'].max().date(), key="end_date")
+    end_date = st.date_input("", value=data_cleaned['Dia da Consulta'].max().date(), key="end_date")
 
 # Botão aplicar filtro
 st.markdown(
