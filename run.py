@@ -336,7 +336,6 @@ st.markdown(
 st.divider()
 
 # Filtro por Período
-st.divider()
 st.markdown("<h2 style='text-align: center; color: #F37529; font-size: 32px; font-weight: bold;'>Filtro por Período</h2>", unsafe_allow_html=True)
 
 # Criação das colunas para os campos de data
