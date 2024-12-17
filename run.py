@@ -336,6 +336,7 @@ st.markdown(
 st.divider()
 
 # Filtro por Período
+st.divider()
 st.markdown("<h2 style='text-align: center; color: #F37529; font-size: 32px; font-weight: bold;'>Filtro por Período</h2>", unsafe_allow_html=True)
 
 # Criação das colunas para os campos de data
@@ -354,8 +355,8 @@ with filter_col1:
     start_date = st.date_input(
         "Data Inicial",
         value=start_date_default,  # Valor padrão inicial
-        min_value=min_date,
-        max_value=max_date,
+        min_value=min_date,  # Permite selecionar desde a data mínima
+        max_value=max_date,  # Permite selecionar até a data máxima
         key="start_date"
     )
 
@@ -363,8 +364,8 @@ with filter_col2:
     end_date = st.date_input(
         "Data Final",
         value=end_date_default,  # Valor padrão inicial
-        min_value=min_date,
-        max_value=max_date,
+        min_value=min_date,  # Permite selecionar desde a data mínima
+        max_value=max_date,  # Permite selecionar até a data máxima
         key="end_date"
     )
 
@@ -387,7 +388,6 @@ if apply_filter:
 
         # Exibir mensagem de sucesso
         st.success(f"Dados filtrados entre {start_date.strftime('%d/%m/%Y')} e {end_date.strftime('%d/%m/%Y')}")
-
 
 # Veículos com mais multas
 st.divider()
