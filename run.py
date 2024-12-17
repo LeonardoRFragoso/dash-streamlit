@@ -258,42 +258,42 @@ st.markdown(
         }}
 
         /* Indicador individual */
-        .indicador {{
+        .indicador {
             display: flex;
             flex-direction: column;
-            justify-content: center; /* Centraliza conteúdo verticalmente */
-            align-items: center; /* Centraliza conteúdo horizontalmente */
+            justify-content: center; /* Centraliza verticalmente */
+            align-items: center; /* Centraliza horizontalmente */
             text-align: center; /* Centraliza texto */
             background-color: #FFFFFF;
             border: 4px solid #F37529;
             border-radius: 15px;
             box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);
-            width: 230px;
-            height: 140px;
-            padding: 10px;
-            margin: 0;
-        }}
+            width: 230px; /* Largura fixa */
+            height: 140px; /* Altura fixa */
+            padding: 0; /* Remove padding extra */
+            margin: 0; /* Remove margens extras */
+        }
 
         /* Título do indicador */
-        .indicador h3 {{
-            display: flex;
-            justify-content: center; /* Alinhamento horizontal */
-            align-items: center; /* Alinhamento vertical */
-            width: 100%; /* Usa a largura total do contêiner */
-            color: #F37529;
+        .indicador h3 {
+            margin: 0; /* Remove todas as margens */
+            padding: 0; /* Remove paddings extras */
+            line-height: 1.2; /* Ajusta a altura da linha */
             font-size: 20px;
             font-weight: bold;
-            margin: 0 0 5px 0; /* Reduz margens */
-            text-align: center; /* Centraliza texto */
-        }}
+            color: #F37529;
+            text-align: center; /* Alinhamento horizontal */
+        }
 
         /* Valor do indicador */
-        .indicador p {{
+        .indicador p {
+            margin: 0; /* Remove margens */
             font-size: 30px;
             font-weight: bold;
             color: #F37529;
-            margin: 0;
-        }}
+            text-align: center;
+        }
+
     </style>
 
     <div class="indicadores-container">
