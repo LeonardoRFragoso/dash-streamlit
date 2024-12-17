@@ -350,13 +350,13 @@ st.markdown(
 
         /* Título do filtro */
         .filtro-titulo {{
-            font-size: 30px;
-            font-weight: bold;
+            font-size: 32px;
+            font-weight: 600;
             color: #F37529;
             margin-bottom: 20px;
             text-align: center;
-            border-bottom: 2px solid #F37529; /* Adiciona uma linha embaixo do título */
-            padding-bottom: 10px;
+            border-bottom: 2px solid #F37529;
+            padding-bottom: 12px;
             width: 100%;
             max-width: 400px;
         }}
@@ -365,13 +365,13 @@ st.markdown(
         .date-input-container {{
             display: flex;
             justify-content: space-between;
-            gap: 20px;
+            gap: 25px;
             width: 100%;
-            max-width: 400px;
+            max-width: 500px;
             margin-bottom: 20px;
         }}
 
-        /* Estilo das labels dos campos de data */
+        /* Estilo dos labels dos campos de data */
         .date-input-container p {{
             font-size: 20px;
             color: #555555;
@@ -381,11 +381,11 @@ st.markdown(
         /* Estilo dos campos de entrada de data */
         .stDateInput input {{
             font-size: 18px;
-            padding: 10px 15px;
+            padding: 12px 15px;
             border-radius: 8px;
             border: 2px solid #F37529;
             background-color: #FDF1E8;
-            width: 180px;
+            width: 200px;
             transition: all 0.3s ease;
         }}
 
@@ -399,14 +399,14 @@ st.markdown(
         .filtro-btn {{
             background-color: #F37529;
             color: white;
-            font-size: 20px;
-            padding: 12px 25px;
+            font-size: 22px;
+            padding: 14px 30px;
             border: none;
             border-radius: 10px;
             cursor: pointer;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
             transition: background-color 0.3s ease, transform 0.3s ease;
-            margin-top: 20px;
+            margin-top: 25px;
         }}
 
         .filtro-btn:hover {{
@@ -416,6 +416,15 @@ st.markdown(
 
         .filtro-btn:active {{
             transform: translateY(2px);
+        }}
+
+        /* Adicionar um ícone de calendário dentro dos campos de data */
+        .stDateInput .calendar {{
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            font-size: 18px;
+            color: #F37529;
         }}
     </style>
 
