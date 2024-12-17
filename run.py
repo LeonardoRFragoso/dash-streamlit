@@ -140,7 +140,10 @@ st.markdown(
 )
 
 # Filtro por Período
-st.markdown("<h2 class='titulo-centralizado'>Filtro por Período</h2>", unsafe_allow_html=True)
+st.markdown(
+    "<h2 class='titulo-centralizado' style='color: #F37529;'>Filtro por Período</h2>",
+    unsafe_allow_html=True
+)
 data_cleaned['Dia da Consulta'] = pd.to_datetime(data_cleaned['Dia da Consulta'], errors='coerce')
 start_date = st.date_input("Data Inicial", value=data_cleaned['Dia da Consulta'].min())
 end_date = st.date_input("Data Final", value=data_cleaned['Dia da Consulta'].max())
