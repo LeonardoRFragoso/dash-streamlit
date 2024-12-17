@@ -265,64 +265,93 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Filtro por Período
-st.markdown("<h2 style='text-align: center; color: #F37529; font-size: 32px; font-weight: bold;'>Filtro por Período</h2>", unsafe_allow_html=True)
+# Defina o filtro apenas uma vez
+st.markdown(
+    "<h2 style='text-align: center; color: #F37529; font-size: 32px; font-weight: bold;'>"
+    "Filtro por Período</h2>", 
+    unsafe_allow_html=True
+)
 
 filter_col1, filter_col2 = st.columns(2)
 
 min_date = data_cleaned['Dia da Consulta'].dropna().min().date()
 max_date = data_cleaned['Dia da Consulta'].dropna().max().date()
 
-# Captura das datas com valores padrão
 with filter_col1:
-    start_date = st.date_input("Data Inicial", value=min_date, min_value=min_date, max_value=max_date, key="start_date")
+    start_date = st.date_input(
+        "Data Inicial", 
+        value=min_date, 
+        min_value=min_date, 
+        max_value=max_date, 
+        key="start_date"
+    )
 
 with filter_col2:
-    end_date = st.date_input("Data Final", value=max_date, min_value=min_date, max_value=max_date, key="end_date")
+    end_date = st.date_input(
+        "Data Final", 
+        value=max_date, 
+        min_value=min_date, 
+        max_value=max_date, 
+        key="end_date"
+    )
 
-# Defina apenas um botão "Aplicar Filtro"
-if st.button("Aplicar Filtro"):
+# Filtro e processamento
+if st.button("Aplicar Filtro", key="aplicar_filtro"):
     if start_date > end_date:
         st.error("A Data Inicial não pode ser posterior à Data Final.")
+        filtered_data = pd.DataFrame()  # Dados vazios em caso de erro
     else:
-        # Aplicar o filtro com base nas datas selecionadas
         filtered_data = data_cleaned[
             (data_cleaned['Dia da Consulta'].dt.date >= start_date) &
             (data_cleaned['Dia da Consulta'].dt.date <= end_date)
         ]
-
         if filtered_data.empty:
             st.warning("Nenhum dado encontrado para o intervalo selecionado.")
         else:
             st.success("Filtro aplicado com sucesso!")
-            # Gráfico Top 10 Veículos
-            try:
-                top_vehicles_chart = create_vehicle_fines_chart(filtered_data)
-                st.plotly_chart(top_vehicles_chart, use_container_width=True)
-            except Exception as e:
-                st.error(f"Erro ao gerar o gráfico: {e}")
-            
-            # Verificar se a coluna 'Placa Relacionada' tem dados
-            if 'Placa Relacionada' not in filtered_data.columns or filtered_data['Placa Relacionada'].isnull().all():
-                st.error("Os dados filtrados não possuem informações suficientes sobre 'Placa Relacionada'.")
-            else:
-                try:
-                    top_vehicles_chart = create_vehicle_fines_chart(filtered_data)
-                    st.plotly_chart(top_vehicles_chart, use_container_width=True)
+else:
+    filtered_data = data_cleaned.copy()
 
-                    common_infractions_chart = create_common_infractions_chart(filtered_data)
-                    st.plotly_chart(common_infractions_chart, use_container_width=True)
+# Seção: Gráfico Top 10 Veículos
+st.markdown(
+    "<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>"
+    "Top 10 Veículos com Mais Multas e Valores Totais</h2>", 
+    unsafe_allow_html=True
+)
 
-                    period_option = st.radio("Selecione o período para acumulação:", options=["Mensal", "Semanal"], index=0, horizontal=True)
-                    period_code = 'M' if period_option == "Mensal" else 'W'
-                    fines_accumulated_chart = create_fines_accumulated_chart(filtered_data, period=period_code)
-                    st.plotly_chart(fines_accumulated_chart, use_container_width=True)
+try:
+    top_vehicles_chart = create_vehicle_fines_chart(filtered_data)
+    top_vehicles_chart.update_layout(template="plotly_dark")
+    st.plotly_chart(top_vehicles_chart, use_container_width=True)
+except Exception as e:
+    st.error(f"Erro ao gerar o gráfico: {e}")
 
-                    weekday_infractions_chart = create_weekday_infractions_chart(filtered_data)
-                    st.plotly_chart(weekday_infractions_chart, use_container_width=True)
+# Verificar se a coluna 'Placa Relacionada' tem dados
+if 'Placa Relacionada' not in filtered_data.columns or filtered_data['Placa Relacionada'].isnull().all():
+    st.error("Os dados filtrados não possuem informações suficientes sobre 'Placa Relacionada'.")
+else:
+    try:
+        top_vehicles_chart = create_vehicle_fines_chart(filtered_data)
+        st.plotly_chart(top_vehicles_chart, use_container_width=True)
 
-                except Exception as e:
-                    st.error(f"Erro ao gerar os gráficos: {e}")
+        common_infractions_chart = create_common_infractions_chart(filtered_data)
+        st.plotly_chart(common_infractions_chart, use_container_width=True)
+
+        period_option = st.radio(
+            "Selecione o período para acumulação:", 
+            options=["Mensal", "Semanal"], 
+            index=0, 
+            horizontal=True
+        )
+        period_code = 'M' if period_option == "Mensal" else 'W'
+        fines_accumulated_chart = create_fines_accumulated_chart(filtered_data, period=period_code)
+        st.plotly_chart(fines_accumulated_chart, use_container_width=True)
+
+        weekday_infractions_chart = create_weekday_infractions_chart(filtered_data)
+        st.plotly_chart(weekday_infractions_chart, use_container_width=True)
+
+    except Exception as e:
+        st.error(f"Erro ao gerar os gráficos: {e}")
 
 st.divider()
 
