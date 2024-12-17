@@ -56,7 +56,7 @@ st.markdown(
             font-style: italic;
         }
 
-        /* Indicador */
+        /* Indicadores */
         .indicador {
             display: flex;
             justify-content: center;
@@ -69,12 +69,7 @@ st.markdown(
             box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);
             width: 260px;
             height: 160px;
-            animation: fadeIn 2s ease-out;
-        }
-
-        .indicador:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 12px 18px rgba(0, 0, 0, 0.4);
+            margin: 10px 0;
         }
 
         .indicador p {
@@ -88,7 +83,21 @@ st.markdown(
             font-size: 18px;
             color: #555;
         }
+
+        /* Footer */
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background-color: #f9f9f9;
+            padding: 10px;
+            text-align: center;
+            font-size: 14px;
+            color: #6c757d;
+            box-shadow: 0 -1px 5px rgba(0,0,0,0.1);
+        }
     </style>
+
     <div class="titulo-dashboard-container">
         <div>
             <h1 class="titulo-dashboard">Torre de Controle iTracker - Dashboard de Multas</h1>
@@ -107,7 +116,7 @@ st.image(logo_url, width=150, use_container_width=False)
 data = carregar_dados_google_drive()
 data_cleaned = clean_data(data)
 
-# Verificar colunas essenciais antes de prosseguir
+# Verificar colunas essenciais
 required_columns = ['Data da Infração', 'Valor a ser pago R$', 'Auto de Infração', 'Status de Pagamento']
 if not all(col in data_cleaned.columns for col in required_columns):
     st.error(f"Faltam colunas essenciais: {', '.join([col for col in required_columns if col not in data_cleaned.columns])}")
@@ -116,7 +125,7 @@ if not all(col in data_cleaned.columns for col in required_columns):
 # Calcular métricas principais
 total_multas, valor_total_a_pagar, multas_mes_atual = calculate_metrics(data_cleaned)
 
-# Indicadores Principais
+# Exibir Indicadores Principais
 st.markdown("### Indicadores Principais")
 col1, col2, col3 = st.columns(3)
 with col1:
@@ -129,18 +138,16 @@ with col3:
 # Filtro de Período
 st.markdown("### Filtro por Período")
 data_cleaned['Dia da Consulta'] = pd.to_datetime(data_cleaned['Dia da Consulta'], errors='coerce')
+start_date = st.date_input("Data Inicial", value=data_cleaned['Dia da Consulta'].min())
+end_date = st.date_input("Data Final", value=data_cleaned['Dia da Consulta'].max())
 
-start_date_default = data_cleaned['Dia da Consulta'].min().date()
-end_date_default = data_cleaned['Dia da Consulta'].max().date()
-start_date = st.date_input("Data Inicial", value=start_date_default)
-end_date = st.date_input("Data Final", value=end_date_default)
-
+# Filtrar dados
 filtered_data = data_cleaned[
     (data_cleaned['Dia da Consulta'] >= pd.Timestamp(start_date)) &
     (data_cleaned['Dia da Consulta'] <= pd.Timestamp(end_date))
 ]
 
-# Gráfico 1: Veículos com Mais Multas
+# Gráfico 1: Top 10 Veículos
 st.markdown("### Top 10 Veículos com Mais Multas e Valores Totais")
 top_vehicles_chart = create_vehicle_fines_chart(filtered_data)
 top_vehicles_chart.update_layout(title=None)
@@ -153,7 +160,7 @@ common_infractions_chart.update_layout(title=None)
 st.plotly_chart(common_infractions_chart, use_container_width=True)
 
 # Gráfico 3: Multas Acumuladas
-st.markdown("### Multas Acumuladas por Período")
+st.markdown("### Valores das Multas Acumulados por Período")
 period_option = st.radio("Selecione o período:", ["Mensal", "Semanal"], horizontal=True)
 period_code = 'M' if period_option == "Mensal" else 'W'
 fines_accumulated_chart = create_fines_accumulated_chart(filtered_data, period=period_code)
@@ -166,11 +173,10 @@ weekday_infractions_chart = create_weekday_infractions_chart(filtered_data)
 weekday_infractions_chart.update_layout(title=None)
 st.plotly_chart(weekday_infractions_chart, use_container_width=True)
 
-# Mapa de Distribuição
+# Mapa
 st.markdown("### Distribuição Geográfica das Multas")
 API_KEY = st.secrets["API_KEY"]
 coordinates_cache = load_cache()
-
 map_data = filtered_data.dropna(subset=['Local da Infração']).copy()
 map_data[['Latitude', 'Longitude']] = map_data['Local da Infração'].apply(
     lambda x: pd.Series(get_cached_coordinates(x, API_KEY, coordinates_cache))
@@ -182,19 +188,16 @@ map_object = folium.Map(location=map_center, zoom_start=5, tiles="CartoDB dark_m
 icon_url = "https://cdn-icons-png.flaticon.com/512/1828/1828843.png"
 
 for _, row in map_data.iterrows():
-    if pd.notnull(row['Latitude']) and pd.notnull(row['Longitude']):
-        popup_content = f"<b>Local:</b> {row['Local da Infração']}<br><b>Valor:</b> R$ {row['Valor a ser pago R$']:.2f}"
-        folium.Marker(location=[row['Latitude'], row['Longitude']], popup=popup_content,
-                      icon=CustomIcon(icon_url, icon_size=(30, 30))).add_to(map_object)
+    folium.Marker(
+        location=[row['Latitude'], row['Longitude']],
+        popup=folium.Popup(f"<b>Local:</b> {row['Local da Infração']}<br><b>Valor:</b> R$ {row['Valor a ser pago R$']:.2f}"),
+        icon=CustomIcon(icon_url, icon_size=(30, 30))
+    ).add_to(map_object)
 
 st_folium(map_object, width=1800, height=600)
 
 # Footer
 st.markdown(
-    """
-    <div style="text-align: center; font-size: 14px; color: grey;">
-        Dashboard de Multas © 2024 | Desenvolvido pela Equipe de Qualidade
-    </div>
-    """,
+    "<div class='footer'>Dashboard de Multas © 2024 | Desenvolvido pela Equipe de Qualidade</div>",
     unsafe_allow_html=True
 )
