@@ -243,6 +243,74 @@ st.markdown("<h2 style='text-align: center; color: #F37529; font-size: 36px; fon
 # Indicadores principais
 st.markdown(
     f"""
+    <style>
+        /* Configurações globais */
+        * {{
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }}
+
+        /* Contêiner dos indicadores */
+        .indicadores-container {{
+            display: flex;
+            justify-content: center; /* Centraliza horizontalmente */
+            align-items: center; /* Alinha verticalmente */
+            gap: 20px; /* Espaçamento uniforme entre caixas */
+            flex-wrap: wrap;
+            margin: 20px auto;
+            max-width: 90%;
+            padding: 20px 10px;
+            background: linear-gradient(to right, #fff, #FDF1E8);
+            border-radius: 15px;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+        }}
+
+        /* Indicador individual */
+        .indicador {{
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Alinha o conteúdo verticalmente */
+            align-items: center; /* Alinha o conteúdo horizontalmente */
+            text-align: center; /* Centraliza o texto */
+            background-color: #FFFFFF;
+            border: 4px solid #F37529;
+            border-radius: 15px;
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);
+            width: 230px; /* Largura fixa */
+            height: 140px; /* Altura fixa */
+            padding: 10px; /* Padding simétrico */
+            box-sizing: border-box;
+        }}
+
+        /* Título do indicador - Usando span para mais controle */
+        .indicador span {{
+            font-size: 18px;
+            font-weight: bold;
+            color: #F37529;
+            margin: 0; /* Remove margem */
+            white-space: nowrap; /* Evita quebra de linha */
+            flex: 1; /* Ocupa o espaço proporcional */
+            display: flex;
+            justify-content: center; /* Centraliza o título horizontalmente */
+            align-items: center; /* Alinha o título verticalmente */
+            text-align: center; /* Garante o alinhamento do texto */
+        }}
+
+        /* Valor do indicador */
+        .indicador p {{
+            font-size: 28px;
+            font-weight: bold;
+            color: #F37529;
+            margin: 0; /* Remove margem */
+            flex: 1; /* Ocupa o espaço proporcional */
+            display: flex;
+            justify-content: center; /* Centraliza o valor horizontalmente */
+            align-items: center; /* Centraliza o valor verticalmente */
+            text-align: center; /* Garante o alinhamento do valor */
+        }}
+    </style>
+
     <div class="indicadores-container">
         <div class="indicador">
             <span>Total de Multas</span>
@@ -265,133 +333,179 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Defina o filtro apenas uma vez
+st.divider()
+
 st.markdown(
-    "<h2 style='text-align: center; color: #F37529; font-size: 32px; font-weight: bold;'>"
-    "Filtro por Período</h2>", 
+    f"""
+    <style>
+        /* Container principal do filtro */
+        .filtro-container {{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 30px auto;
+            width: 100%;
+            max-width: 600px;
+        }}
+
+        /* Título do filtro */
+        .filtro-titulo {{
+            font-size: 32px;
+            font-weight: bold;
+            color: #F37529;
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #F37529;
+            padding-bottom: 10px;
+            width: 100%;
+        }}
+
+        /* Container das datas */
+        .date-input-container {{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            flex-wrap: wrap; /* Ajusta em telas menores */
+            width: 100%;
+        }}
+
+        /* Labels e inputs */
+        .date-input-label {{
+            font-size: 18px;
+            color: #555555;
+            margin-bottom: 8px;
+            text-align: center;
+        }}
+
+        .stDateInput input {{
+            width: 220px;
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #F37529;
+            border-radius: 8px;
+            background-color: #FDF1E8;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }}
+
+        .stDateInput input:focus {{
+            border-color: #FF7F00;
+            box-shadow: 0 0 8px rgba(243, 117, 41, 0.5);
+            outline: none;
+        }}
+
+        /* Botão aplicar filtro */
+        .filtro-btn {{
+            display: block;
+            background-color: #F37529;
+            color: white;
+            font-size: 20px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 20px auto;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }}
+
+        .filtro-btn:hover {{
+            background-color: #FF7F00;
+            transform: translateY(-2px);
+        }}
+
+        .filtro-btn:active {{
+            transform: translateY(2px);
+        }}
+
+        /* Responsividade para telas menores */
+        @media (max-width: 768px) {{
+            .date-input-container {{
+                flex-direction: column; /* Inputs ficam empilhados */
+                gap: 15px;
+            }}
+
+            .stDateInput input {{
+                width: 100%;
+            }}
+        }}
+    </style>
+
+    <div class="filtro-container">
+        <h2 class="filtro-titulo">Filtro por Período</h2>
+        <div class="date-input-container">
+            <div>
+                <p class="date-input-label">Data Inicial:</p>
+            </div>
+            <div>
+                <p class="date-input-label">Data Final:</p>
+            </div>
+        </div>
+    </div>
+    """,
     unsafe_allow_html=True
 )
 
+# Filtro por Período
+st.divider()
+st.markdown("<h2 style='text-align: center; color: #F37529; font-size: 32px; font-weight: bold;'>Filtro por Período</h2>", unsafe_allow_html=True)
+
+# Criação das colunas para os campos de data
 filter_col1, filter_col2 = st.columns(2)
 
-min_date = data_cleaned['Dia da Consulta'].dropna().min().date()
-max_date = data_cleaned['Dia da Consulta'].dropna().max().date()
+# Definição de valores padrão para as datas
+min_date = data_cleaned['Dia da Consulta'].min().date() if not data_cleaned['Dia da Consulta'].isnull().all() else None
+max_date = data_cleaned['Dia da Consulta'].max().date() if not data_cleaned['Dia da Consulta'].isnull().all() else None
 
+# Entrada de data inicial
 with filter_col1:
+    st.markdown("<p style='text-align: center; font-size: 18px; color: #555;'>Data Inicial:</p>", unsafe_allow_html=True)
     start_date = st.date_input(
-        "Data Inicial", 
-        value=min_date, 
-        min_value=min_date, 
-        max_value=max_date, 
+        "Data Inicial",
+        value=min_date,
+        min_value=min_date,
+        max_value=max_date,
         key="start_date"
     )
 
+# Entrada de data final
 with filter_col2:
+    st.markdown("<p style='text-align: center; font-size: 18px; color: #555;'>Data Final:</p>", unsafe_allow_html=True)
     end_date = st.date_input(
-        "Data Final", 
-        value=max_date, 
-        min_value=min_date, 
-        max_value=max_date, 
+        "Data Final",
+        value=max_date,
+        min_value=min_date,
+        max_value=max_date,
         key="end_date"
     )
 
-# Filtro e processamento
-if st.button("Aplicar Filtro", key="aplicar_filtro"):
-    if start_date > end_date:
-        st.error("A Data Inicial não pode ser posterior à Data Final.")
-        filtered_data = pd.DataFrame()  # Dados vazios em caso de erro
-    else:
-        filtered_data = data_cleaned[
-            (data_cleaned['Dia da Consulta'].dt.date >= start_date) &
-            (data_cleaned['Dia da Consulta'].dt.date <= end_date)
-        ]
-        if filtered_data.empty:
-            st.warning("Nenhum dado encontrado para o intervalo selecionado.")
-        else:
-            st.success("Filtro aplicado com sucesso!")
+# Validação das datas selecionadas
+if start_date > end_date:
+    st.error("A Data Inicial não pode ser posterior à Data Final. Por favor, selecione um intervalo válido.")
 else:
-    filtered_data = data_cleaned.copy()
+    # Conversão das datas para Timestamp
+    start_date = pd.Timestamp(start_date)
+    end_date = pd.Timestamp(end_date)
 
-# Seção: Gráfico Top 10 Veículos
-st.markdown(
-    "<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>"
-    "Top 10 Veículos com Mais Multas e Valores Totais</h2>", 
-    unsafe_allow_html=True
-)
+    # Aplicar filtro
+    filtered_data = data_cleaned[
+        (data_cleaned['Dia da Consulta'] >= start_date) & 
+        (data_cleaned['Dia da Consulta'] <= end_date)
+    ]
 
-try:
-    top_vehicles_chart = create_vehicle_fines_chart(filtered_data)
-    top_vehicles_chart.update_layout(template="plotly_dark")
-    st.plotly_chart(top_vehicles_chart, use_container_width=True)
-except Exception as e:
-    st.error(f"Erro ao gerar o gráfico: {e}")
-
-# Verificar se a coluna 'Placa Relacionada' tem dados
-if 'Placa Relacionada' not in filtered_data.columns or filtered_data['Placa Relacionada'].isnull().all():
-    st.error("Os dados filtrados não possuem informações suficientes sobre 'Placa Relacionada'.")
-else:
-    try:
-        top_vehicles_chart = create_vehicle_fines_chart(filtered_data)
-        st.plotly_chart(top_vehicles_chart, use_container_width=True)
-
-        common_infractions_chart = create_common_infractions_chart(filtered_data)
-        st.plotly_chart(common_infractions_chart, use_container_width=True)
-
-        period_option = st.radio(
-            "Selecione o período para acumulação:", 
-            options=["Mensal", "Semanal"], 
-            index=0, 
-            horizontal=True
-        )
-        period_code = 'M' if period_option == "Mensal" else 'W'
-        fines_accumulated_chart = create_fines_accumulated_chart(filtered_data, period=period_code)
-        st.plotly_chart(fines_accumulated_chart, use_container_width=True)
-
-        weekday_infractions_chart = create_weekday_infractions_chart(filtered_data)
-        st.plotly_chart(weekday_infractions_chart, use_container_width=True)
-
-    except Exception as e:
-        st.error(f"Erro ao gerar os gráficos: {e}")
+    # Botão de confirmação do filtro
+    if st.button("Aplicar Filtro"):
+        st.success(f"Dados filtrados entre {start_date.strftime('%d/%m/%Y')} e {end_date.strftime('%d/%m/%Y')}")
+        st.dataframe(filtered_data)  # Exibe os dados filtrados
 
 st.divider()
 
 # Veículos com mais multas
 st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>Top 10 Veículos com Mais Multas e Valores Totais</h2>", unsafe_allow_html=True)
-# Defina um valor padrão para filtered_data
-filtered_data = data_cleaned.copy()
-
-# Define filtered_data com os dados completos inicialmente
-filtered_data = data_cleaned.copy()
-
-# Botão para aplicar o filtro
-if st.button("Aplicar Filtro"):
-    if start_date > end_date:
-        st.error("A Data Inicial não pode ser posterior à Data Final.")
-    else:
-        # Aplicar o filtro com base nas datas selecionadas
-        filtered_data = data_cleaned[
-            (data_cleaned['Dia da Consulta'].dt.date >= start_date) &
-            (data_cleaned['Dia da Consulta'].dt.date <= end_date)
-        ]
-
-        if filtered_data.empty:
-            st.warning("Nenhum dado encontrado para o intervalo selecionado.")
-        else:
-            st.success("Filtro aplicado com sucesso!")
-            # Gráfico Top 10 Veículos
-            try:
-                top_vehicles_chart = create_vehicle_fines_chart(filtered_data)
-                st.plotly_chart(top_vehicles_chart, use_container_width=True)
-            except Exception as e:
-                st.error(f"Erro ao gerar o gráfico: {e}")
-
-# Gráfico Top 10 Veículos (executado sempre, com filtered_data)
-try:
-    top_vehicles_chart = create_vehicle_fines_chart(filtered_data)
-    top_vehicles_chart.update_layout(template="plotly_dark")
-    st.plotly_chart(top_vehicles_chart, use_container_width=True)
-except Exception as e:
-    st.error(f"Erro ao gerar o gráfico: {e}")
+top_vehicles_chart = create_vehicle_fines_chart(filtered_data)
+top_vehicles_chart.update_layout(template="plotly_dark")  # Forçar o template escuro
+st.plotly_chart(top_vehicles_chart, use_container_width=True)
 
 # Adicionar descrição abaixo do gráfico com estilo consistente
 st.markdown("<p style='text-align: center; font-size: 18px; color: black;'>"
