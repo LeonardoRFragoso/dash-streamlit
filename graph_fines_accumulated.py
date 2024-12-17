@@ -42,16 +42,14 @@ def create_fines_accumulated_chart(data, period='M'):
 
     # Create the line chart with markers
     fig = px.line(
-    monthly_fines,
-    x='Período',
-    y='Quantidade_de_Multas',
-    labels={
-        'Período': 'Período',
-        'Quantidade_de_Multas': 'Quantidade de Multas'
-    }
-    # title="Quantidade de Multas por Mês em 2024"  <- Remova ou comente esta linha
-)
-
+        monthly_fines,
+        x='Período',
+        y='Quantidade_de_Multas',
+        labels={
+            'Período': 'Período',
+            'Quantidade_de_Multas': 'Quantidade de Multas'
+        }
+    )
 
     # Add markers and customize style
     fig.update_traces(
@@ -65,9 +63,8 @@ def create_fines_accumulated_chart(data, period='M'):
         xaxis_title="",
         yaxis_title="Quantidade de Multas",
         template="plotly_white",  # Light theme
+        title="",  # Remove completely the undefined title
         title_x=0.5,  # Center the title
-        title_font_size=20,
-        title_font=dict(family="Arial", weight="bold"),
         hovermode="x unified"  # Unified hover
     )
 
