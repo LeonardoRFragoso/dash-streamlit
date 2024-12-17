@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from data_loader import clean_data  # Apenas a função de limpeza de dados é necessária aqui
-from metrics import calculate_metrics  # Importando a função para calcular métricas
+from metrics import calculate_metrics
 from graph_vehicles_fines import create_vehicle_fines_chart  # Importando a função de gráfico de veículos
 from graph_common_infractions import create_common_infractions_chart  # Importando a função de gráfico de infrações comuns
 from graph_fines_accumulated import create_fines_accumulated_chart  # Importando a função de gráfico de multas acumuladas
