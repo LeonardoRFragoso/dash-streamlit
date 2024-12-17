@@ -62,8 +62,17 @@ def get_coordinates(local, api_key):
 
 def autenticar_google_drive():
     """Autentica no Google Drive usando credenciais de serviço."""
-    credentials_dict = json.loads(st.secrets["CREDENTIALS"])  # Carrega as credenciais diretamente do segredo
-    credentials = Credentials.from_service_account_info(credentials_dict, scopes=["https://www.googleapis.com/auth/drive"])
+    # Converte explicitamente o conteúdo de CREDENTIALS para string e depois para JSON
+    credentials_str = str(st.secrets["CREDENTIALS"])  # Converte AttrDict para string
+    credentials_dict = json.loads(credentials_str.replace("\n", "\\n"))  # Ajusta quebras de linha e carrega JSON
+    
+    # Cria as credenciais a partir do dicionário
+    credentials = Credentials.from_service_account_info(
+        credentials_dict, 
+        scopes=["https://www.googleapis.com/auth/drive"]
+    )
+    
+    # Retorna o serviço autenticado do Google Drive
     return build("drive", "v3", credentials=credentials)
 
 def obter_id_ultima_planilha():
