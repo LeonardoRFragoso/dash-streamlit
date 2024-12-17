@@ -283,8 +283,8 @@ st.markdown(
             box-sizing: border-box;
         }}
 
-        /* Título do indicador */
-        .indicador h3 {{
+        /* Título do indicador - Usando span para mais controle */
+        .indicador span {{
             font-size: 18px;
             font-weight: bold;
             color: #F37529;
@@ -292,7 +292,7 @@ st.markdown(
             white-space: nowrap; /* Evita quebra de linha */
             flex: 1; /* Ocupa o espaço proporcional */
             display: flex;
-            justify-content: center; /* Alinha o título horizontalmente */
+            justify-content: center; /* Centraliza o título horizontalmente */
             align-items: center; /* Alinha o título verticalmente */
             text-align: center; /* Garante o alinhamento do texto */
         }}
@@ -313,19 +313,19 @@ st.markdown(
 
     <div class="indicadores-container">
         <div class="indicador">
-            <h3>  Total de Multas</h3>
+            <span>Total de Multas</span>
             <p>{total_multas}</p>
         </div>
         <div class="indicador">
-            <h3>  Valor Total a Pagar</h3>
+            <span>Valor Total a Pagar</span>
             <p>R$ {valor_total_a_pagar:,.2f}</p>
         </div>
         <div class="indicador">
-            <h3>  Multas no Mês Atual</h3>
+            <span>Multas no Mês Atual</span>
             <p>{multas_mes_atual}</p>
         </div>
         <div class="indicador">
-            <h3>  Última Consulta</h3>
+            <span>Última Consulta</span>
             <p>{ultima_data_consulta.strftime("%d/%m/%Y") if pd.notnull(ultima_data_consulta) else "Data não disponível"}</p>
         </div>
     </div>
