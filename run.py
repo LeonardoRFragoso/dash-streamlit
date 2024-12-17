@@ -365,20 +365,21 @@ st.markdown(
         .date-input-container {{
             display: flex;
             justify-content: space-between;
-            gap: 25px;
+            gap: 15px; /* Ajuste no espaçamento */
             width: 100%;
             max-width: 550px;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }}
 
-        .date-input-container p {{
+        .date-input-container span {{
             font-size: 22px;
             color: #555555;
-            margin: 0;
+            display: inline-block;
+            width: 100%; /* Controla o alinhamento dos campos */
+            text-align: center;
         }}
 
-        /* Ajuste nos campos de data */
-        .stDateInput input {{
+        .date-input-container input {{
             font-size: 20px;
             padding: 12px 15px;
             border-radius: 8px;
@@ -386,6 +387,9 @@ st.markdown(
             background-color: #FDF1E8;
             width: 240px;
             transition: all 0.3s ease;
+            display: block;
+            margin-top: 5px;
+            text-align: center;
         }}
 
         /* Efeito de foco nos campos de data */
@@ -417,14 +421,13 @@ st.markdown(
         .filtro-btn:active {{
             transform: translateY(2px);
         }}
-
     </style>
 
     <div class="filtro-container">
         <h2 class="filtro-titulo">Filtro por Período</h2>
         <div class="date-input-container">
-            <p>Data Inicial:</p>
-            <p>Data Final:</p>
+            <span>Data Inicial:</span>
+            <span>Data Final:</span>
         </div>
     </div>
     """,
@@ -438,7 +441,7 @@ with filter_col1:
     st.markdown(
         """
         <div class='date-input-container'>
-            <p style='text-align: center; font-size: 22px; color: #555;'>Data Inicial:</p>
+            <span style='text-align: center;'>Data Inicial:</span>
         </div>
         """, 
         unsafe_allow_html=True
@@ -449,7 +452,7 @@ with filter_col2:
     st.markdown(
         """
         <div class='date-input-container'>
-            <p style='text-align: center; font-size: 22px; color: #555;'>Data Final:</p>
+            <span style='text-align: center;'>Data Final:</span>
         </div>
         """, 
         unsafe_allow_html=True
