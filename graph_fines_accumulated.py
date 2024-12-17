@@ -4,15 +4,14 @@ from datetime import datetime
 
 def create_fines_accumulated_chart(data, period='M'):
     """
-    Create a line chart to display the accumulated fine values and count of fines by month or week.
-    Ensure all months of the current year are displayed, even with no data.
+    Create a line chart to display the count of fines per month with better relevance.
 
     Parameters:
         data (DataFrame): The filtered data containing fines information.
         period (str): The period for grouping ('M' for monthly, 'W' for weekly).
 
     Returns:
-        fig (plotly.graph_objects.Figure): A line chart showing accumulated fine values and fine counts.
+        fig (plotly.graph_objects.Figure): A line chart showing the number of fines by period.
     """
     # Check if required columns exist
     required_columns = ['Data da Infração', 'Valor a ser pago R$']
@@ -33,46 +32,42 @@ def create_fines_accumulated_chart(data, period='M'):
 
     # Aggregate data by month
     data['Período'] = data['Data da Infração'].dt.to_period('M').dt.to_timestamp()
-    accumulated_fines = data.groupby('Período').agg(
-        Valor_Acumulado=('Valor a ser pago R$', 'sum'),
+    monthly_fines = data.groupby('Período').agg(
         Quantidade_de_Multas=('Valor a ser pago R$', 'size')
     ).reset_index()
 
     # Merge the complete months list with the aggregated data
-    accumulated_fines = pd.merge(months_df, accumulated_fines, on='Período', how='left')
-    accumulated_fines['Valor_Acumulado'].fillna(0, inplace=True)  # Fill missing values with 0
-    accumulated_fines['Quantidade_de_Multas'].fillna(0, inplace=True)
+    monthly_fines = pd.merge(months_df, monthly_fines, on='Período', how='left')
+    monthly_fines['Quantidade_de_Multas'].fillna(0, inplace=True)  # Fill missing values with 0
 
     # Create the line chart with markers
     fig = px.line(
-        accumulated_fines,
+        monthly_fines,
         x='Período',
-        y='Valor_Acumulado',
+        y='Quantidade_de_Multas',
         labels={
             'Período': 'Período',
-            'Valor_Acumulado': 'Valor Acumulado (R$)',
             'Quantidade_de_Multas': 'Quantidade de Multas'
         },
-        title="Valores das Multas Acumulados por Período",
-        hover_data=['Quantidade_de_Multas']
+        title="Quantidade de Multas por Mês em 2024"
     )
 
-    # Adicionar marcadores e personalizar o estilo
+    # Add markers and customize style
     fig.update_traces(
-        mode='lines+markers',  # Adiciona marcadores nos pontos da linha
-        marker=dict(size=8, symbol='circle', color='blue', line=dict(width=2, color='DarkSlateGrey')),
+        mode='lines+markers',  # Add markers on the line
+        marker=dict(size=8, color='blue', line=dict(width=2, color='DarkSlateGrey')),
         line=dict(color='royalblue', width=2)
     )
 
     # Update layout for better readability
     fig.update_layout(
         xaxis_title="",
-        yaxis_title="Valor Acumulado (R$)",
+        yaxis_title="Quantidade de Multas",
         template="plotly_white",  # Light theme
         title_x=0.5,  # Center the title
         title_font_size=20,
         title_font=dict(family="Arial", weight="bold"),
-        hovermode="x unified"  # Hover unificado na vertical
+        hovermode="x unified"  # Unified hover
     )
 
     return fig
