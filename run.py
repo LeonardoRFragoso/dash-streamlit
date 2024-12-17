@@ -20,8 +20,8 @@ from graph_weekday_infractions import create_weekday_infractions_chart
 # Configuração inicial
 st.set_page_config(page_title="Torre de Controle - Dashboard de Multas", layout="wide")
 
-# Inserir o logo da Itracker no topo
-logo_url = "https://drive.google.com/uc?id=1zaNfqETj9AacKHOPMDIrTE9TZfX5OUc1"  # URL direta para a imagem no Google Drive
+# Inserir o logo da Itracker no topo usando o link do secrets
+logo_url = st.secrets["image"]["logo_url"]  # Pega o link direto configurado nos secrets
 st.image(logo_url, width=150, use_container_width=False)
 
 
