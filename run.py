@@ -258,7 +258,7 @@ st.markdown(
         }}
 
         /* Indicador individual */
-        .indicador {
+        .indicador {{
             display: flex;
             flex-direction: column;
             justify-content: center; /* Centraliza verticalmente */
@@ -272,10 +272,10 @@ st.markdown(
             height: 140px; /* Altura fixa */
             padding: 0; /* Remove padding extra */
             margin: 0; /* Remove margens extras */
-        }
+        }}
 
         /* Título do indicador */
-        .indicador h3 {
+        .indicador h3 {{
             margin: 0; /* Remove todas as margens */
             padding: 0; /* Remove paddings extras */
             line-height: 1.2; /* Ajusta a altura da linha */
@@ -283,16 +283,16 @@ st.markdown(
             font-weight: bold;
             color: #F37529;
             text-align: center; /* Alinhamento horizontal */
-        }
+        }}
 
         /* Valor do indicador */
-        .indicador p {
+        .indicador p {{
             margin: 0; /* Remove margens */
             font-size: 30px;
             font-weight: bold;
             color: #F37529;
             text-align: center;
-        }
+        }}
 
     </style>
 
