@@ -167,25 +167,6 @@ st.markdown(
 )
 st.plotly_chart(create_vehicle_fines_chart(filtered_data), use_container_width=True)
 
-st.markdown(
-    "<h2 class='titulo-centralizado' style='color: #F37529;'>Infrações Mais Frequentes</h2>",
-    unsafe_allow_html=True
-)
-st.plotly_chart(create_common_infractions_chart(filtered_data), use_container_width=True)
-
-st.markdown(
-    "<h2 class='titulo-centralizado' style='color: #F37529;'>Valores das Multas Acumulados por Período</h2>",
-    unsafe_allow_html=True
-)
-period_option = st.radio("Selecione o período:", ["Mensal", "Semanal"], horizontal=True)
-st.plotly_chart(create_fines_accumulated_chart(filtered_data, 'M' if period_option == "Mensal" else 'W'), use_container_width=True)
-
-st.markdown(
-    "<h2 class='titulo-centralizado' style='color: #F37529;'>Infrações Mais Frequentes por Dia da Semana</h2>",
-    unsafe_allow_html=True
-)
-st.plotly_chart(create_weekday_infractions_chart(filtered_data), use_container_width=True)
-
 # Mapa
 st.markdown(
     "<h2 class='titulo-centralizado' style='color: #F37529;'>Distribuição Geográfica das Multas</h2>",
@@ -213,6 +194,25 @@ for _, row in map_data.iterrows():
     ).add_to(map_object)
 
 st_folium(map_object, width=1800, height=600)
+
+st.markdown(
+    "<h2 class='titulo-centralizado' style='color: #F37529;'>Infrações Mais Frequentes</h2>",
+    unsafe_allow_html=True
+)
+st.plotly_chart(create_common_infractions_chart(filtered_data), use_container_width=True)
+
+st.markdown(
+    "<h2 class='titulo-centralizado' style='color: #F37529;'>Valores das Multas Acumulados por Período</h2>",
+    unsafe_allow_html=True
+)
+period_option = st.radio("Selecione o período:", ["Mensal", "Semanal"], horizontal=True)
+st.plotly_chart(create_fines_accumulated_chart(filtered_data, 'M' if period_option == "Mensal" else 'W'), use_container_width=True)
+
+st.markdown(
+    "<h2 class='titulo-centralizado' style='color: #F37529;'>Infrações Mais Frequentes por Dia da Semana</h2>",
+    unsafe_allow_html=True
+)
+st.plotly_chart(create_weekday_infractions_chart(filtered_data), use_container_width=True)
 
 # Footer
 st.markdown("<div class='footer'>Dashboard de Multas © 2024 | Desenvolvido pela Equipe de Qualidade</div>", unsafe_allow_html=True)
