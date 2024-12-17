@@ -397,9 +397,6 @@ else:
     # Exibir mensagem de sucesso
     st.success(f"Dados filtrados entre {start_date.strftime('%d/%m/%Y')} e {end_date.strftime('%d/%m/%Y')}")
 
-    # Visualização dos dados filtrados
-    st.dataframe(filtered_data, use_container_width=True)
-
 # Veículos com mais multas
 st.divider()
 st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>Top 10 Veículos com Mais Multas e Valores Totais</h2>", unsafe_allow_html=True)
