@@ -1,5 +1,6 @@
 import pandas as pd
 import plotly.express as px
+import streamlit as st
 
 def create_common_infractions_chart(data):
     """
@@ -24,15 +25,14 @@ def create_common_infractions_chart(data):
         infraction_data['Frequência'].astype(str) + " ocorrências"
     )
 
-    # Criar o gráfico de barras
+    # Criar o gráfico de barras sem título
     fig = px.bar(
         infraction_data,
         x='Frequência',
         y='Descrição',
         text='Texto',
         orientation='h',
-        title="Infrações Mais Frequentes",
-        labels={'Descrição': ''}  # Remove o título automático do eixo Y
+        labels={'Descrição': ''}  # Remove título automático do eixo Y
     )
 
     # Ajustar a legibilidade do texto
@@ -44,14 +44,22 @@ def create_common_infractions_chart(data):
         marker_color='#007bff'
     )
 
-    # Ajustar layout para remover o subtítulo duplicado
+    # Ajustar layout removendo o eixo X e mantendo apenas o título padrão
     fig.update_layout(
-        xaxis=dict(visible=False),  # Remove eixo X
-        yaxis=dict(title=None, showticklabels=True),  # Remove título do eixo Y
-        title_x=0.5,  # Centraliza o título
+        xaxis=dict(visible=False),
+        yaxis=dict(title=None),
         margin=dict(l=50, r=50, t=50, b=50),
-        template="plotly_white",
-        showlegend=False  # Remove qualquer legenda
+        template="plotly_white"
     )
 
     return fig
+
+# Exibir título com estilização no Streamlit
+st.markdown(
+    "<h2 style='text-align: center; color: #F37529; font-weight: bold;'>Infrações Mais Frequentes</h2>",
+    unsafe_allow_html=True
+)
+
+# Gerar e exibir o gráfico no Streamlit
+fig = create_common_infractions_chart(data)  # Substitua "data" pela variável correta no seu contexto
+st.plotly_chart(fig, use_container_width=True)
