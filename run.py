@@ -247,11 +247,11 @@ st.markdown(
         /* Contêiner dos indicadores */
         .indicadores-container {{
             display: flex;
-            justify-content: space-around; /* Espaçamento uniforme horizontal */
-            align-items: center; /* Centraliza verticalmente */
-            gap: 20px; /* Reduz o espaço entre os indicadores */
-            margin: 20px auto; /* Reduz margem superior e inferior */
-            padding: 10px; /* Espaço dentro do contêiner */
+            justify-content: space-around; /* Espaçamento uniforme */
+            align-items: center; /* Alinhamento vertical */
+            gap: 20px;
+            margin: 20px auto;
+            padding: 10px;
             background: linear-gradient(to right, #fff, #FDF1E8);
             border-radius: 15px;
             box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
@@ -261,37 +261,38 @@ st.markdown(
         .indicador {{
             display: flex;
             flex-direction: column;
-            justify-content: center; /* Alinhamento vertical */
-            align-items: center; /* Alinhamento horizontal */
+            justify-content: center; /* Centraliza conteúdo verticalmente */
+            align-items: center; /* Centraliza conteúdo horizontalmente */
             text-align: center; /* Centraliza texto */
             background-color: #FFFFFF;
             border: 4px solid #F37529;
             border-radius: 15px;
             box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);
-            width: 230px; /* Largura consistente */
-            height: 140px; /* Altura consistente */
-            padding: 10px; /* Ajusta espaço interno */
-            margin: 0; /* Remove margens extras */
+            width: 230px;
+            height: 140px;
+            padding: 10px;
+            margin: 0;
         }}
 
+        /* Título do indicador */
         .indicador h3 {{
+            display: flex;
+            justify-content: center; /* Alinhamento horizontal */
+            align-items: center; /* Alinhamento vertical */
+            width: 100%; /* Usa a largura total do contêiner */
             color: #F37529;
             font-size: 20px;
             font-weight: bold;
-            margin: 0 0 5px 0; /* Espaçamento entre título e valor */
+            margin: 0 0 5px 0; /* Reduz margens */
+            text-align: center; /* Centraliza texto */
         }}
 
+        /* Valor do indicador */
         .indicador p {{
             font-size: 30px;
             font-weight: bold;
             color: #F37529;
-            margin: 0; /* Remove margens extras */
-        }}
-
-        /* Ajuste de hover */
-        .indicador:hover {{
-            transform: scale(1.03);
-            box-shadow: 0 12px 18px rgba(0, 0, 0, 0.4);
+            margin: 0;
         }}
     </style>
 
