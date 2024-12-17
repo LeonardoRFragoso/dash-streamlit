@@ -270,18 +270,21 @@ st.markdown(
             box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);
             width: 230px; /* Largura fixa */
             height: 140px; /* Altura fixa */
-            padding: 10px; /* Uniformiza o espaço interno */
-            box-sizing: border-box; /* Garante que padding não afete largura */
+            padding: 0 10px; /* Espaçamento interno horizontal */
+            margin: 0; /* Remove margens extras */
+            box-sizing: border-box; /* Garante que padding não altere dimensões */
         }}
 
         /* Título do indicador */
         .indicador h3 {{
             margin: 0; /* Remove margens extras */
-            padding-bottom: 8px; /* Adiciona espaçamento inferior */
+            padding: 0; /* Remove paddings extras */
+            line-height: 1.2; /* Altura da linha otimizada */
             font-size: 20px;
             font-weight: bold;
             color: #F37529;
-            line-height: 1.2; /* Altura da linha otimizada */
+            text-align: center; /* Centraliza horizontalmente */
+            width: 100%; /* Usa a largura total */
         }}
 
         /* Valor do indicador */
@@ -290,7 +293,8 @@ st.markdown(
             font-size: 32px;
             font-weight: bold;
             color: #F37529;
-            line-height: 1.2; /* Garante alinhamento vertical */
+            text-align: center; /* Centraliza horizontalmente */
+            width: 100%; /* Usa a largura total */
         }}
     </style>
 
