@@ -341,12 +341,59 @@ st.markdown(
     <style>
         /* Container principal do filtro */
         .filtro-container {{
+            display: flex;
+            justify-content: center; /* Centraliza horizontalmente */
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+            margin-top: 30px;
+        }}
 
-        }} /* Continue with the remaining style unchanged */
+        .filtro-titulo {{
+            font-size: 24px;
+            font-weight: bold;
+            color: #F37529;
+        }}
 
+        /* Estilo para o contêiner de datas */
+        .date-input-container {{
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }}
+
+        .date-input-container p {{
+            font-size: 20px;
+            color: #555555;
+        }}
+
+        .stDateInput input {{
+            font-size: 20px;
+            padding: 10px;
+        }}
+
+        /* Estilo do botão aplicar filtro */
+        .filtro-btn {{
+            background-color: #F37529;
+            color: white;
+            font-size: 18px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }}
+
+        .filtro-btn:hover {{
+            background-color: #e5671d;
+        }}
     </style>
     <div class="filtro-container">
         <h2 class="filtro-titulo">Filtro por Período</h2>
+        <div class="date-input-container">
+            <p>Data Inicial:</p>
+            <p>Data Final:</p>
+        </div>
     </div>
     """,
     unsafe_allow_html=True
