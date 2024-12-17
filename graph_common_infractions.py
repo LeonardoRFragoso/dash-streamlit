@@ -43,12 +43,13 @@ def create_common_infractions_chart(data):
         marker_color='#007bff'
     )
 
-    # Ajustar layout removendo o subtítulo duplicado
+    # Ajustar layout para remover o subtítulo e eixo desnecessário
     fig.update_layout(
-        xaxis=dict(visible=False),  # Remove eixo X
-        yaxis=dict(title=None),  # Remove título duplicado do eixo Y
-        title_x=0.5,
-        margin=dict(l=50, r=50, t=50, b=50),
+        xaxis=dict(visible=False),  # Remove o eixo X
+        yaxis=dict(title=None, showticklabels=True),  # Remove título do eixo Y
+        title_x=0.5,  # Centraliza o título
+        margin=dict(l=50, r=50, t=50, b=50),  # Ajusta margens
+        showlegend=False,  # Remove qualquer legenda
         template="plotly_white"
     )
 
