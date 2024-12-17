@@ -6,7 +6,7 @@ from streamlit_folium import st_folium
 from data_loader import clean_data  # Apenas a função de limpeza de dados é necessária aqui
 from metrics import calculate_metrics
 from graph_vehicles_fines import create_vehicle_fines_chart  # Importando a função de gráfico de veículos
-from graph_common_infractions import create_common_infractions_chart  # Importando a função de gráfico de infrações comuns
+common_infractions_chart = create_common_infractions_chart(filtered_data)
 from graph_fines_accumulated import create_fines_accumulated_chart  # Importando a função de gráfico de multas acumuladas
 from graph_weekday_infractions import create_weekday_infractions_chart  # Importando a função de gráfico de infrações por dia
 from geo_utils import load_cache, save_cache, get_cached_coordinates  # Funções para lidar com o cache geográfico
