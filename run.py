@@ -108,10 +108,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Função para estilizar os títulos
-def styled_title(title):
-    st.markdown(f"<h2 class='titulo-centralizado'>{title}</h2>", unsafe_allow_html=True)
-
 # Logo
 logo_url = st.secrets["image"]["logo_url"]
 st.image(logo_url, width=150, use_container_width=False)
@@ -144,7 +140,7 @@ st.markdown(
 )
 
 # Filtro por Período
-styled_title("Filtro por Período")
+st.markdown("<h2 class='titulo-centralizado'>Filtro por Período</h2>", unsafe_allow_html=True)
 data_cleaned['Dia da Consulta'] = pd.to_datetime(data_cleaned['Dia da Consulta'], errors='coerce')
 start_date = st.date_input("Data Inicial", value=data_cleaned['Dia da Consulta'].min())
 end_date = st.date_input("Data Final", value=data_cleaned['Dia da Consulta'].max())
@@ -154,22 +150,29 @@ filtered_data = data_cleaned[
     (data_cleaned['Dia da Consulta'] <= pd.Timestamp(end_date))
 ]
 
+# Função auxiliar para tratar valores monetários
+def safe_float(value):
+    try:
+        return float(str(value).replace(",", ".").replace("R$", "").strip())
+    except (ValueError, TypeError):
+        return 0.00
+
 # Gráficos
-styled_title("Top 10 Veículos com Mais Multas e Valores Totais")
+st.markdown("<h2 class='titulo-centralizado'>Top 10 Veículos com Mais Multas e Valores Totais</h2>", unsafe_allow_html=True)
 st.plotly_chart(create_vehicle_fines_chart(filtered_data), use_container_width=True)
 
-styled_title("Infrações Mais Frequentes")
+st.markdown("<h2 class='titulo-centralizado'>Infrações Mais Frequentes</h2>", unsafe_allow_html=True)
 st.plotly_chart(create_common_infractions_chart(filtered_data), use_container_width=True)
 
-styled_title("Valores das Multas Acumulados por Período")
+st.markdown("<h2 class='titulo-centralizado'>Valores das Multas Acumulados por Período</h2>", unsafe_allow_html=True)
 period_option = st.radio("Selecione o período:", ["Mensal", "Semanal"], horizontal=True)
 st.plotly_chart(create_fines_accumulated_chart(filtered_data, 'M' if period_option == "Mensal" else 'W'), use_container_width=True)
 
-styled_title("Infrações Mais Frequentes por Dia da Semana")
+st.markdown("<h2 class='titulo-centralizado'>Infrações Mais Frequentes por Dia da Semana</h2>", unsafe_allow_html=True)
 st.plotly_chart(create_weekday_infractions_chart(filtered_data), use_container_width=True)
 
 # Mapa
-styled_title("Distribuição Geográfica das Multas")
+st.markdown("<h2 class='titulo-centralizado'>Distribuição Geográfica das Multas</h2>", unsafe_allow_html=True)
 API_KEY = st.secrets["API_KEY"]
 coordinates_cache = load_cache()
 map_data = filtered_data.dropna(subset=['Local da Infração']).copy()
