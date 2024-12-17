@@ -247,11 +247,11 @@ st.markdown(
         /* Contêiner dos indicadores */
         .indicadores-container {{
             display: flex;
-            justify-content: center; /* Centraliza os indicadores no container */
-            align-items: center; /* Alinhamento vertical */
-            gap: 40px; /* Espaço entre os indicadores */
+            justify-content: center; /* Centraliza horizontalmente */
+            align-items: center; /* Alinha verticalmente */
+            gap: 40px; /* Espaçamento entre as caixas */
             margin: 40px auto;
-            padding: 30px 20px;
+            padding: 20px;
             background: linear-gradient(to right, #fff, #FDF1E8);
             border-radius: 15px;
             box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
@@ -268,29 +268,29 @@ st.markdown(
             border: 4px solid #F37529;
             border-radius: 15px;
             box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);
-            width: 230px;
-            height: 140px;
-            padding: 10px 0; /* Ajusta o padding vertical */
-            margin: 0; /* Remove margens extras */
+            width: 230px; /* Largura fixa */
+            height: 140px; /* Altura fixa */
+            padding: 10px; /* Uniformiza o espaço interno */
+            box-sizing: border-box; /* Garante que padding não afete largura */
         }}
 
         /* Título do indicador */
         .indicador h3 {{
             margin: 0; /* Remove margens extras */
-            padding: 0; /* Remove paddings extras */
+            padding-bottom: 8px; /* Adiciona espaçamento inferior */
             font-size: 20px;
             font-weight: bold;
             color: #F37529;
-            line-height: 1.4; /* Melhora o espaçamento do texto */
+            line-height: 1.2; /* Altura da linha otimizada */
         }}
 
         /* Valor do indicador */
         .indicador p {{
-            margin: 5px 0 0 0; /* Margem superior mínima */
-            font-size: 30px;
+            margin: 0; /* Remove margens extras */
+            font-size: 32px;
             font-weight: bold;
             color: #F37529;
-            text-align: center;
+            line-height: 1.2; /* Garante alinhamento vertical */
         }}
     </style>
 
