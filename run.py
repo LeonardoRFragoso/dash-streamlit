@@ -336,11 +336,11 @@ filtered_data = data_cleaned.copy()
 filtered_data = data_cleaned.copy()
 
 # Botão para aplicar o filtro
-if st.button("Aplicar Filtro", key="filtro_botao"):
+if st.button("Aplicar Filtro"):
     if start_date > end_date:
         st.error("A Data Inicial não pode ser posterior à Data Final.")
     else:
-        # Filtrar os dados com base no intervalo de datas
+        # Aplicar o filtro com base nas datas selecionadas
         filtered_data = data_cleaned[
             (data_cleaned['Dia da Consulta'].dt.date >= start_date) &
             (data_cleaned['Dia da Consulta'].dt.date <= end_date)
@@ -350,6 +350,12 @@ if st.button("Aplicar Filtro", key="filtro_botao"):
             st.warning("Nenhum dado encontrado para o intervalo selecionado.")
         else:
             st.success("Filtro aplicado com sucesso!")
+            # Gráfico Top 10 Veículos
+            try:
+                top_vehicles_chart = create_vehicle_fines_chart(filtered_data)
+                st.plotly_chart(top_vehicles_chart, use_container_width=True)
+            except Exception as e:
+                st.error(f"Erro ao gerar o gráfico: {e}")
 
 # Gráfico Top 10 Veículos (executado sempre, com filtered_data)
 try:
