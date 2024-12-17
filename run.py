@@ -227,7 +227,8 @@ ranking_localidades = filtered_data.groupby('Local da Infração', as_index=Fals
 
 st.dataframe(
     ranking_localidades.rename(columns={"Valor_Total": "Valor Total (R$)", "Total_Multas": "Total de Multas"}),
-    use_container_width=True
+    use_container_width=True,
+    hide_index=True  # Esconde a coluna do índice
 )
 
 st.markdown(
