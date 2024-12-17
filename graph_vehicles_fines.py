@@ -1,4 +1,3 @@
-
 import pandas as pd
 import plotly.express as px
 
@@ -28,9 +27,10 @@ def get_vehicle_fines_data(df):
     df[value_column] = (
         df[value_column]
         .astype(str)
-        .replace({r'[^\d,.-]': '', r'\\.(?=\\d{3,})': '', ',': '.'}, regex=True)
+        .replace({r'[^\d,.-]': ''}, regex=True)  # Remover caracteres não numéricos
     )
-    df[value_column] = pd.to_numeric(df[value_column], errors='coerce')
+    df[value_column] = df[value_column].apply(lambda x: x.replace(',', '.'))  # Garantir que as vírgulas se tornem pontos
+    df[value_column] = pd.to_numeric(df[value_column], errors='coerce')  # Converter para numérico
 
     # Agrupar os dados por 'Placa Relacionada'
     fines_by_vehicle = df.groupby('Placa Relacionada').agg(
@@ -55,6 +55,10 @@ def create_vehicle_fines_chart(df):
     """
     # Processar os dados
     fines_by_vehicle = get_vehicle_fines_data(df)
+
+    # Verificar se há dados suficientes para gerar o gráfico
+    if fines_by_vehicle.empty:
+        raise ValueError("Nenhum dado disponível para gerar o gráfico. Verifique os dados filtrados.")
 
     # Criar o gráfico
     fig = px.bar(

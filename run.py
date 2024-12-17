@@ -144,51 +144,7 @@ def save_cache(cache):
     with open(CACHE_FILE, 'w') as f:
         json.dump(cache, f)
 
-def get_cached_coordinates(local, api_key, cache):
-    """Get coordinates from cache or API."""
-    if local in cache:
-        return cache[local]
-    lat, lng = get_coordinates(local, api_key)
-    if lat is not None and lng is not None:
-        cache[local] = (lat, lng)
-    return lat, lng
-
-def get_coordinates(local, api_key):
-    """Fetch coordinates for a given location using OpenCage API."""
-    url = f'https://api.opencagedata.com/geocode/v1/json?q={local}&key={api_key}'
-    response = requests.get(url)
-    if response.status_code == 200:
-        data = response.json()
-        if data['results']:
-            geometry = data['results'][0]['geometry']
-            return geometry['lat'], geometry['lng']
-    return None, None
-
-def autenticar_google_drive():
-    """Autentica no Google Drive usando credenciais de serviço."""
-    # Converte explicitamente o conteúdo de CREDENTIALS para string e depois para JSON
-    credentials_str = str(st.secrets["CREDENTIALS"])  # Converte AttrDict para string
-    credentials_dict = json.loads(credentials_str.replace("\n", "\\n"))  # Ajusta quebras de linha e carrega JSON
-    
-    # Cria as credenciais a partir do dicionário
-    credentials = Credentials.from_service_account_info(
-        credentials_dict, 
-        scopes=["https://www.googleapis.com/auth/drive"]
-    )
-    
-    # Retorna o serviço autenticado do Google Drive
-    return build("drive", "v3", credentials=credentials)
-
-def obter_id_ultima_planilha():
-    """Obtém o ID da última planilha salva no JSON."""
-    try:
-        with open(st.secrets["ULTIMA_PLANILHA_JSON"], 'r', encoding='utf-8') as f:
-            data = json.load(f)
-            return data.get("file_id")
-    except Exception as e:
-        st.error(f"Erro ao carregar o ID da última planilha: {e}")
-        st.stop()
-
+# Função para carregar os dados do Google Drive
 def carregar_dados_google_drive():
     """Carrega os dados da última planilha no Google Drive."""
     try:
@@ -243,74 +199,6 @@ st.markdown("<h2 style='text-align: center; color: #F37529; font-size: 36px; fon
 # Indicadores principais
 st.markdown(
     f"""
-    <style>
-        /* Configurações globais */
-        * {{
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }}
-
-        /* Contêiner dos indicadores */
-        .indicadores-container {{
-            display: flex;
-            justify-content: center; /* Centraliza horizontalmente */
-            align-items: center; /* Alinha verticalmente */
-            gap: 20px; /* Espaçamento uniforme entre caixas */
-            flex-wrap: wrap;
-            margin: 20px auto;
-            max-width: 90%;
-            padding: 20px 10px;
-            background: linear-gradient(to right, #fff, #FDF1E8);
-            border-radius: 15px;
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
-        }}
-
-        /* Indicador individual */
-        .indicador {{
-            display: flex;
-            flex-direction: column;
-            justify-content: center; /* Alinha o conteúdo verticalmente */
-            align-items: center; /* Alinha o conteúdo horizontalmente */
-            text-align: center; /* Centraliza o texto */
-            background-color: #FFFFFF;
-            border: 4px solid #F37529;
-            border-radius: 15px;
-            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);
-            width: 230px; /* Largura fixa */
-            height: 140px; /* Altura fixa */
-            padding: 10px; /* Padding simétrico */
-            box-sizing: border-box;
-        }}
-
-        /* Título do indicador - Usando span para mais controle */
-        .indicador span {{
-            font-size: 18px;
-            font-weight: bold;
-            color: #F37529;
-            margin: 0; /* Remove margem */
-            white-space: nowrap; /* Evita quebra de linha */
-            flex: 1; /* Ocupa o espaço proporcional */
-            display: flex;
-            justify-content: center; /* Centraliza o título horizontalmente */
-            align-items: center; /* Alinha o título verticalmente */
-            text-align: center; /* Garante o alinhamento do texto */
-        }}
-
-        /* Valor do indicador */
-        .indicador p {{
-            font-size: 28px;
-            font-weight: bold;
-            color: #F37529;
-            margin: 0; /* Remove margem */
-            flex: 1; /* Ocupa o espaço proporcional */
-            display: flex;
-            justify-content: center; /* Centraliza o valor horizontalmente */
-            align-items: center; /* Centraliza o valor verticalmente */
-            text-align: center; /* Garante o alinhamento do valor */
-        }}
-    </style>
-
     <div class="indicadores-container">
         <div class="indicador">
             <span>Total de Multas</span>
@@ -333,53 +221,51 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.divider()
-
 # Filtro por Período
 st.markdown("<h2 style='text-align: center; color: #F37529; font-size: 32px; font-weight: bold;'>Filtro por Período</h2>", unsafe_allow_html=True)
 
-# Criação das colunas para os campos de data
 filter_col1, filter_col2 = st.columns(2)
 
-# Definição de valores padrão para as datas
 min_date = data_cleaned['Dia da Consulta'].min().date() if not data_cleaned['Dia da Consulta'].isnull().all() else None
 max_date = data_cleaned['Dia da Consulta'].max().date() if not data_cleaned['Dia da Consulta'].isnull().all() else None
 
-# Entrada de data inicial
 with filter_col1:
-    st.markdown("<p style='text-align: center; font-size: 18px; color: #555;'>Data Inicial:</p>", unsafe_allow_html=True)
-    start_date = st.date_input(
-        "Data Inicial",
-        value=min_date,
-        min_value=min_date,
-        max_value=max_date,
-        key="start_date"
-    )
+    start_date = st.date_input("Data Inicial", value=min_date, min_value=min_date, max_value=max_date)
 
-# Entrada de data final
 with filter_col2:
-    st.markdown("<p style='text-align: center; font-size: 18px; color: #555;'>Data Final:</p>", unsafe_allow_html=True)
-    end_date = st.date_input(
-        "Data Final",
-        value=max_date,
-        min_value=min_date,
-        max_value=max_date,
-        key="end_date"
-    )
+    end_date = st.date_input("Data Final", value=max_date, min_value=min_date, max_value=max_date)
 
-# Validação das datas selecionadas
-if start_date > end_date:
-    st.error("A Data Inicial não pode ser posterior à Data Final. Por favor, selecione um intervalo válido.")
-else:
-    # Conversão das datas para Timestamp
-    start_date = pd.Timestamp(start_date)
-    end_date = pd.Timestamp(end_date)
+apply_button = st.button("Aplicar Filtro")
 
-    # Aplicar filtro
-    filtered_data = data_cleaned[(
-        data_cleaned['Dia da Consulta'] >= start_date) & 
-        (data_cleaned['Dia da Consulta'] <= end_date)
-    ]
+if apply_button:
+    if start_date > end_date:
+        st.error("A Data Inicial não pode ser posterior à Data Final. Por favor, selecione um intervalo válido.")
+    else:
+        start_date = pd.Timestamp(start_date)
+        end_date = pd.Timestamp(end_date)
+
+        filtered_data = data_cleaned[(data_cleaned['Dia da Consulta'] >= start_date) & (data_cleaned['Dia da Consulta'] <= end_date)]
+
+        if filtered_data.empty:
+            st.warning("Nenhum dado encontrado para o intervalo de datas selecionado.")
+        else:
+            try:
+                top_vehicles_chart = create_vehicle_fines_chart(filtered_data)
+                st.plotly_chart(top_vehicles_chart, use_container_width=True)
+
+                common_infractions_chart = create_common_infractions_chart(filtered_data)
+                st.plotly_chart(common_infractions_chart, use_container_width=True)
+
+                period_option = st.radio("Selecione o período para acumulação:", options=["Mensal", "Semanal"], index=0, horizontal=True)
+                period_code = 'M' if period_option == "Mensal" else 'W'
+                fines_accumulated_chart = create_fines_accumulated_chart(filtered_data, period=period_code)
+                st.plotly_chart(fines_accumulated_chart, use_container_width=True)
+
+                weekday_infractions_chart = create_weekday_infractions_chart(filtered_data)
+                st.plotly_chart(weekday_infractions_chart, use_container_width=True)
+
+            except Exception as e:
+                st.error(f"Erro ao gerar os gráficos: {e}")
 
 st.divider()
 
