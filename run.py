@@ -294,6 +294,7 @@ st.markdown(
             display: flex;
             justify-content: center; /* Alinha o título horizontalmente */
             align-items: center; /* Alinha o título verticalmente */
+            text-align: center; /* Garante o alinhamento do texto */
         }}
 
         /* Valor do indicador */
@@ -306,6 +307,7 @@ st.markdown(
             display: flex;
             justify-content: center; /* Centraliza o valor horizontalmente */
             align-items: center; /* Centraliza o valor verticalmente */
+            text-align: center; /* Garante o alinhamento do valor */
         }}
     </style>
 
