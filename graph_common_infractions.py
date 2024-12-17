@@ -20,8 +20,8 @@ def create_common_infractions_chart(data):
 
     # Criar texto combinando código da infração e número de ocorrências
     infraction_data['Texto'] = (
-        "Código: " + infraction_data['Enquadramento da Infração'] + 
-        "<br>" + infraction_data['Frequência'].astype(str) + " ocorrências"
+        infraction_data['Enquadramento da Infração'] + 
+        "<br><b>" + infraction_data['Frequência'].astype(str) + " ocorrências</b>"
     )
 
     # Create bar chart
@@ -29,24 +29,26 @@ def create_common_infractions_chart(data):
         infraction_data,
         x='Frequência',
         y='Descrição',
-        text='Texto',  # Texto personalizado com código e quantidade
+        text='Texto',  # Exibe o texto personalizado dentro das barras
         orientation='h',
-        labels={'Descrição': 'Descrição da Infração', 'Frequência': 'Número de Ocorrências'},
+        labels={'Descrição': 'Descrição da Infração', 'Frequência': ''},  # Remove título desnecessário do eixo X
         title="Infrações Mais Frequentes e suas Descrições"
     )
 
     # Personalizar o texto dentro das barras
     fig.update_traces(
-        texttemplate='%{text}',  # Exibe o texto criado acima
-        textposition='inside'  # Texto dentro da barra
+        texttemplate='%{text}',  # Exibe texto com código e ocorrências
+        textposition='inside',  # Texto dentro da barra
+        insidetextanchor='start',  # Alinha o texto à esquerda para legibilidade
+        textfont=dict(size=12, color='white'),  # Ajusta o tamanho e cor do texto
     )
 
-    # Atualiza o layout para melhor visualização
+    # Remover o eixo X
     fig.update_layout(
+        xaxis=dict(visible=False),  # Remove o eixo inferior
         yaxis=dict(autorange="reversed"),  # Inverte a ordem do eixo Y
-        xaxis_title="",  # Remove título do eixo X
         template="plotly_white",  # Define um tema claro
-        showlegend=False  # Remove legenda desnecessária
+        title_x=0.5,  # Centraliza o título
     )
 
     return fig
