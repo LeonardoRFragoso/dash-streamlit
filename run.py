@@ -244,12 +244,12 @@ st.markdown("<h2 style='text-align: center; color: #F37529; font-size: 36px; fon
 st.markdown(
     f"""
     <style>
-        /* Contêiner principal */
+        /* Contêiner dos indicadores */
         .indicadores-container {{
             display: flex;
-            justify-content: center; /* Centraliza as caixas horizontalmente */
-            align-items: center; /* Centraliza as caixas verticalmente */
-            gap: 20px; /* Espaçamento entre as caixas */
+            justify-content: center; /* Centraliza caixas horizontalmente */
+            align-items: center; /* Centraliza caixas verticalmente */
+            gap: 30px; /* Espaço entre as caixas */
             margin: 20px auto;
             padding: 20px 10px;
             background: linear-gradient(to right, #fff, #FDF1E8);
@@ -261,18 +261,17 @@ st.markdown(
         .indicador {{
             display: flex;
             flex-direction: column;
-            justify-content: center; /* Centraliza o conteúdo verticalmente */
-            align-items: center; /* Centraliza o conteúdo horizontalmente */
+            justify-content: center; /* Centraliza conteúdo verticalmente */
+            align-items: center; /* Centraliza conteúdo horizontalmente */
             text-align: center; /* Centraliza o texto */
             background-color: #FFFFFF;
             border: 4px solid #F37529;
             border-radius: 15px;
             box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);
-            width: 230px;
-            height: 140px;
-            box-sizing: border-box; /* Garante que padding não afeta dimensões */
+            width: 230px; /* Largura fixa */
+            height: 140px; /* Altura fixa */
+            box-sizing: border-box; /* Inclui bordas no cálculo de largura */
             padding: 0; /* Remove padding extra */
-            margin: 0; /* Remove margens extras */
         }}
 
         /* Título do indicador */
@@ -282,20 +281,25 @@ st.markdown(
             font-size: 20px;
             font-weight: bold;
             color: #F37529;
-            line-height: 1.5; /* Melhor ajuste vertical */
-            text-align: center;
-            width: 100%;
+            text-align: center; /* Centraliza horizontalmente */
+            flex: 1; /* Expande para ocupar o espaço vertical uniformemente */
+            display: flex;
+            align-items: center; /* Alinha verticalmente */
+            justify-content: center; /* Alinha horizontalmente */
         }}
 
         /* Valor do indicador */
         .indicador p {{
-            margin: 5px 0 0 0; /* Espaçamento mínimo entre título e valor */
-            padding: 0;
+            margin: 0; /* Remove margens */
+            padding: 0; /* Remove padding */
             font-size: 32px;
             font-weight: bold;
             color: #F37529;
-            text-align: center;
-            width: 100%;
+            text-align: center; /* Centraliza horizontalmente */
+            flex: 1; /* Expande para ocupar o espaço vertical uniformemente */
+            display: flex;
+            align-items: center; /* Alinha verticalmente */
+            justify-content: center; /* Alinha horizontalmente */
         }}
     </style>
 
