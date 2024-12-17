@@ -389,8 +389,6 @@ if apply_filter:
         # Exibir mensagem de sucesso
         st.success(f"Dados filtrados entre {start_date.strftime('%d/%m/%Y')} e {end_date.strftime('%d/%m/%Y')}")
 
-# Exibição do resultado após filtro
-st.write(filtered_data)
 
 # Veículos com mais multas
 st.divider()
