@@ -144,10 +144,19 @@ st.markdown(
     "<h2 class='titulo-centralizado' style='color: #F37529;'>Filtro por Período</h2>",
     unsafe_allow_html=True
 )
-data_cleaned['Dia da Consulta'] = pd.to_datetime(data_cleaned['Dia da Consulta'], errors='coerce')
-start_date = st.date_input("Data Inicial", value=data_cleaned['Dia da Consulta'].min())
-end_date = st.date_input("Data Final", value=data_cleaned['Dia da Consulta'].max())
 
+# Garantir que o período padrão inicie em 01/01 do ano atual
+data_cleaned['Dia da Consulta'] = pd.to_datetime(data_cleaned['Dia da Consulta'], errors='coerce')
+
+# Definir o período inicial
+start_date = pd.Timestamp(f"{pd.Timestamp.today().year}-01-01")
+end_date = data_cleaned['Dia da Consulta'].max() if not data_cleaned['Dia da Consulta'].isnull().all() else pd.Timestamp.today()
+
+# Inputs no Streamlit
+start_date = st.date_input("Data Inicial", value=start_date)
+end_date = st.date_input("Data Final", value=end_date)
+
+# Filtragem dos dados pelo período selecionado
 filtered_data = data_cleaned[
     (data_cleaned['Dia da Consulta'] >= pd.Timestamp(start_date)) &
     (data_cleaned['Dia da Consulta'] <= pd.Timestamp(end_date))
