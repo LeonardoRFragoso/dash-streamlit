@@ -129,83 +129,6 @@ st.markdown(
 logo_url = st.secrets["image"]["logo_url"]
 st.image(logo_url, width=150, use_container_width=False)
 
-# Define cache file for coordinates
-CACHE_FILE = "coordinates_cache.json"
-
-def load_cache():
-    """Load the cache from a JSON file."""
-    if os.path.exists(CACHE_FILE):
-        with open(CACHE_FILE, 'r') as f:
-            return json.load(f)
-    return {}
-
-def save_cache(cache):
-    """Save the cache to a JSON file."""
-    with open(CACHE_FILE, 'w') as f:
-        json.dump(cache, f)
-
-def get_cached_coordinates(local, api_key, cache):
-    """Get coordinates from cache or API."""
-    if local in cache:
-        return cache[local]
-    lat, lng = get_coordinates(local, api_key)
-    if lat is not None and lng is not None:
-        cache[local] = (lat, lng)
-    return lat, lng
-
-def get_coordinates(local, api_key):
-    """Fetch coordinates for a given location using OpenCage API."""
-    url = f'https://api.opencagedata.com/geocode/v1/json?q={local}&key={api_key}'
-    response = requests.get(url)
-    if response.status_code == 200:
-        data = response.json()
-        if data['results']:
-            geometry = data['results'][0]['geometry']
-            return geometry['lat'], geometry['lng']
-    return None, None
-
-def autenticar_google_drive():
-    """Autentica no Google Drive usando credenciais de serviço."""
-    # Converte explicitamente o conteúdo de CREDENTIALS para string e depois para JSON
-    credentials_str = str(st.secrets["CREDENTIALS"])  # Converte AttrDict para string
-    credentials_dict = json.loads(credentials_str.replace("\n", "\\n"))  # Ajusta quebras de linha e carrega JSON
-    
-    # Cria as credenciais a partir do dicionário
-    credentials = Credentials.from_service_account_info(
-        credentials_dict, 
-        scopes=["https://www.googleapis.com/auth/drive"]
-    )
-    
-    # Retorna o serviço autenticado do Google Drive
-    return build("drive", "v3", credentials=credentials)
-
-def obter_id_ultima_planilha():
-    """Obtém o ID da última planilha salva no JSON."""
-    try:
-        with open(st.secrets["ULTIMA_PLANILHA_JSON"], 'r', encoding='utf-8') as f:
-            data = json.load(f)
-            return data.get("file_id")
-    except Exception as e:
-        st.error(f"Erro ao carregar o ID da última planilha: {e}")
-        st.stop()
-
-def carregar_dados_google_drive():
-    """Carrega os dados da última planilha no Google Drive."""
-    try:
-        drive_service = autenticar_google_drive()
-        file_id = st.secrets["file_data"]["ultima_planilha_id"]
-        request = drive_service.files().get_media(fileId=file_id)
-        file_buffer = io.BytesIO()
-        downloader = MediaIoBaseDownload(file_buffer, request)
-        done = False
-        while not done:
-            status, done = downloader.next_chunk()
-        file_buffer.seek(0)
-        return pd.read_excel(file_buffer)
-    except Exception as e:
-        st.error(f"Erro ao carregar os dados do Google Drive: {e}")
-        st.stop()
-
 # Carregar e limpar os dados
 data = carregar_dados_google_drive()
 data_cleaned = clean_data(data)
@@ -367,23 +290,48 @@ with filter_col2:
         key="end_date"
     )
 
-# Validação das datas selecionadas
-if start_date > end_date:
-    st.error("A Data Inicial não pode ser posterior à Data Final. Por favor, selecione um intervalo válido.")
-else:
-    # Conversão das datas para Timestamp
-    start_date = pd.Timestamp(start_date)
-    end_date = pd.Timestamp(end_date)
+# Botão para aplicar filtro
+if st.button("Aplicar Filtro"):
+    # Validação das datas selecionadas
+    if start_date > end_date:
+        st.error("A Data Inicial não pode ser posterior à Data Final. Por favor, selecione um intervalo válido.")
+    else:
+        # Conversão das datas para Timestamp
+        start_date = pd.Timestamp(start_date)
+        end_date = pd.Timestamp(end_date)
 
-    # Aplicar filtro
-    filtered_data = data_cleaned[(
-        data_cleaned['Dia da Consulta'] >= start_date) & 
-        (data_cleaned['Dia da Consulta'] <= end_date)
-    ]
+        # Aplicar filtro para os gráficos
+        filtered_data = data_cleaned[(
+            data_cleaned['Dia da Consulta'] >= start_date) & 
+            (data_cleaned['Dia da Consulta'] <= end_date)
+        ]
+        
+        if filtered_data.empty:
+            st.warning("Nenhum dado encontrado para o intervalo de datas selecionado.")
+        else:
+            try:
+                # Atualizar gráficos com dados filtrados
+                top_vehicles_chart = create_vehicle_fines_chart(filtered_data)
+                st.plotly_chart(top_vehicles_chart, use_container_width=True)
 
-    # Exibição dos dados filtrados
-    st.success(f"Dados filtrados entre {start_date.strftime('%d/%m/%Y')} e {end_date.strftime('%d/%m/%Y')}")
-    st.dataframe(filtered_data)  # Exibe os dados filtrados
+                common_infractions_chart = create_common_infractions_chart(filtered_data)
+                st.plotly_chart(common_infractions_chart, use_container_width=True)
+
+                period_option = st.radio(
+                    "Selecione o período para acumulação:",
+                    options=["Mensal", "Semanal"],
+                    index=0,
+                    horizontal=True
+                )
+                period_code = 'M' if period_option == "Mensal" else 'W'
+                fines_accumulated_chart = create_fines_accumulated_chart(filtered_data, period=period_code)
+                st.plotly_chart(fines_accumulated_chart, use_container_width=True)
+
+                weekday_infractions_chart = create_weekday_infractions_chart(filtered_data)
+                st.plotly_chart(weekday_infractions_chart, use_container_width=True)
+
+            except Exception as e:
+                st.error(f"Erro ao gerar os gráficos: {e}")
 
 st.divider()
 
