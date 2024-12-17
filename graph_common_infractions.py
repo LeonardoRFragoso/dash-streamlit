@@ -20,7 +20,7 @@ def create_common_infractions_chart(data):
 
     # Criar o texto formatado lado a lado
     infraction_data['Texto'] = (
-        infraction_data['Enquadramento da Infração'] + " | " + 
+        infraction_data['Enquadramento da Infração'] + " | " +
         infraction_data['Frequência'].astype(str) + " ocorrências"
     )
 
@@ -31,26 +31,26 @@ def create_common_infractions_chart(data):
         y='Descrição',
         text='Texto',  # Texto com código e ocorrências lado a lado
         orientation='h',
-        title="Infrações Mais Frequentes e suas Descrições",
-        labels={'Descrição': 'Descrição da Infração', 'Frequência': 'Ocorrências'}
+        title="Infrações Mais Frequentes",  # Título principal
+        labels={'Descrição': '', 'Frequência': ''}  # Remove os nomes dos eixos
     )
 
     # Ajustar a legibilidade do texto
     fig.update_traces(
         texttemplate='%{text}',  # Formata o texto
         textposition='inside',   # Mantém texto dentro da barra
-        insidetextanchor='middle',  # Centraliza o texto dentro da barra
-        textfont=dict(size=16, color='white'),  # Aumenta tamanho e define cor branca
-        marker_color='#007bff'  # Cor das barras em azul
+        insidetextanchor='middle',  # Centraliza o texto
+        textfont=dict(size=16, color='white'),  # Ajusta tamanho e cor do texto
+        marker_color='#007bff'  # Define cor das barras
     )
 
     # Ajustar layout
     fig.update_layout(
-        xaxis_title="",  # Remove título do eixo X
+        xaxis=dict(visible=False),  # Remove a numeração do eixo X
         yaxis_title="",  # Remove título do eixo Y
-        template="plotly_white",  # Tema claro
         title_x=0.5,  # Centraliza o título
-        margin=dict(l=50, r=50, t=50, b=50)  # Ajusta margens
+        margin=dict(l=50, r=50, t=50, b=50),  # Ajusta margens
+        template="plotly_white"  # Define tema claro
     )
 
     return fig
