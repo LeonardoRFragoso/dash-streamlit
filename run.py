@@ -178,6 +178,16 @@ map_data[['Latitude', 'Longitude']] = map_data['Local da Infração'].apply(
 )
 save_cache(coordinates_cache)
 
+# Converter "Valor a ser pago R$" para float (corrige valores monetários)
+if 'Valor a ser pago R$' in map_data.columns:
+    map_data['Valor a ser pago R$'] = map_data['Valor a ser pago R$'].replace(
+        {r'[^0-9,]': '', ',': '.'}, regex=True
+    ).astype(float)
+else:
+    st.error("A coluna 'Valor a ser pago R$' não foi encontrada nos dados.")
+    st.stop()
+
+# Criação do mapa
 map_center = [map_data['Latitude'].mean(), map_data['Longitude'].mean()] if not map_data.empty else [0, 0]
 map_object = folium.Map(location=map_center, zoom_start=5, tiles="CartoDB dark_matter")
 
@@ -190,8 +200,7 @@ for _, row in map_data.iterrows():
         icon=CustomIcon(icon_url, icon_size=(30, 30))
     ).add_to(map_object)
 
-# Definir map_click_data com valor padrão vazio
-map_click_data = st_folium(map_object, width=1800, height=600) or {}
+map_click_data = st_folium(map_object, width=1800, height=600)
 
 # Tabela de Detalhes ao Clicar no Mapa
 if map_click_data.get("last_object_clicked"):
