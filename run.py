@@ -447,11 +447,57 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Filtrar dados pelo intervalo selecionado
-filtered_data = data_cleaned[ 
-    (data_cleaned['Dia da Consulta'] >= pd.Timestamp(start_date)) & 
-    (data_cleaned['Dia da Consulta'] <= pd.Timestamp(end_date)) 
-]
+# Filtro por Período
+st.divider()
+st.markdown("<h2 style='text-align: center; color: #F37529; font-size: 32px; font-weight: bold;'>Filtro por Período</h2>", unsafe_allow_html=True)
+
+# Criação das colunas para os campos de data
+filter_col1, filter_col2 = st.columns(2)
+
+# Definição de valores padrão para as datas
+min_date = data_cleaned['Dia da Consulta'].min().date() if not data_cleaned['Dia da Consulta'].isnull().all() else None
+max_date = data_cleaned['Dia da Consulta'].max().date() if not data_cleaned['Dia da Consulta'].isnull().all() else None
+
+# Entrada de data inicial
+with filter_col1:
+    st.markdown("<p style='text-align: center; font-size: 18px; color: #555;'>Data Inicial:</p>", unsafe_allow_html=True)
+    start_date = st.date_input(
+        "Data Inicial",
+        value=min_date,
+        min_value=min_date,
+        max_value=max_date,
+        key="start_date"
+    )
+
+# Entrada de data final
+with filter_col2:
+    st.markdown("<p style='text-align: center; font-size: 18px; color: #555;'>Data Final:</p>", unsafe_allow_html=True)
+    end_date = st.date_input(
+        "Data Final",
+        value=max_date,
+        min_value=min_date,
+        max_value=max_date,
+        key="end_date"
+    )
+
+# Validação das datas selecionadas
+if start_date > end_date:
+    st.error("A Data Inicial não pode ser posterior à Data Final. Por favor, selecione um intervalo válido.")
+else:
+    # Conversão das datas para Timestamp
+    start_date = pd.Timestamp(start_date)
+    end_date = pd.Timestamp(end_date)
+
+    # Aplicar filtro
+    filtered_data = data_cleaned[
+        (data_cleaned['Dia da Consulta'] >= start_date) & 
+        (data_cleaned['Dia da Consulta'] <= end_date)
+    ]
+
+    # Botão de confirmação do filtro
+    if st.button("Aplicar Filtro"):
+        st.success(f"Dados filtrados entre {start_date.strftime('%d/%m/%Y')} e {end_date.strftime('%d/%m/%Y')}")
+        st.dataframe(filtered_data)  # Exibe os dados filtrados
 
 st.divider()
 
