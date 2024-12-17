@@ -24,7 +24,6 @@ st.markdown(
             100% { opacity: 1; transform: translateY(0); }
         }
 
-        /* Título principal */
         .titulo-dashboard-container {
             display: flex;
             justify-content: center;
@@ -46,7 +45,6 @@ st.markdown(
             margin: 0;
         }
 
-        /* Centralizar títulos de seção */
         .titulo-centralizado {
             text-align: center;
             font-size: 28px;
@@ -55,7 +53,6 @@ st.markdown(
             margin: 20px 0;
         }
 
-        /* Container dos Indicadores */
         .indicadores-container {
             display: flex;
             justify-content: center;
@@ -77,7 +74,6 @@ st.markdown(
             box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);
             width: 260px;
             height: 160px;
-            animation: fadeIn 1.5s ease-out;
         }
 
         .indicador p {
@@ -93,7 +89,6 @@ st.markdown(
             margin-bottom: 8px;
         }
 
-        /* Footer */
         .footer {
             text-align: center;
             font-size: 14px;
@@ -155,12 +150,26 @@ filtered_data = data_cleaned[
     (data_cleaned['Dia da Consulta'] <= pd.Timestamp(end_date))
 ]
 
-# Função auxiliar para valores
+# Função auxiliar para tratar valores monetários
 def safe_float(value):
     try:
         return float(str(value).replace(",", ".").replace("R$", "").strip())
     except (ValueError, TypeError):
         return 0.00
+
+# Gráficos
+st.markdown("<h2 class='titulo-centralizado'>Top 10 Veículos com Mais Multas e Valores Totais</h2>", unsafe_allow_html=True)
+st.plotly_chart(create_vehicle_fines_chart(filtered_data), use_container_width=True)
+
+st.markdown("<h2 class='titulo-centralizado'>Infrações Mais Frequentes</h2>", unsafe_allow_html=True)
+st.plotly_chart(create_common_infractions_chart(filtered_data), use_container_width=True)
+
+st.markdown("<h2 class='titulo-centralizado'>Valores das Multas Acumulados por Período</h2>", unsafe_allow_html=True)
+period_option = st.radio("Selecione o período:", ["Mensal", "Semanal"], horizontal=True)
+st.plotly_chart(create_fines_accumulated_chart(filtered_data, 'M' if period_option == "Mensal" else 'W'), use_container_width=True)
+
+st.markdown("<h2 class='titulo-centralizado'>Infrações Mais Frequentes por Dia da Semana</h2>", unsafe_allow_html=True)
+st.plotly_chart(create_weekday_infractions_chart(filtered_data), use_container_width=True)
 
 # Mapa
 st.markdown("<h2 class='titulo-centralizado'>Distribuição Geográfica das Multas</h2>", unsafe_allow_html=True)
