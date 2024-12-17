@@ -367,52 +367,19 @@ with filter_col2:
         key="end_date"
     )
 
-# Botão para aplicar filtro
-apply_button = st.button("Aplicar Filtro")
+# Validação das datas selecionadas
+if start_date > end_date:
+    st.error("A Data Inicial não pode ser posterior à Data Final. Por favor, selecione um intervalo válido.")
+else:
+    # Conversão das datas para Timestamp
+    start_date = pd.Timestamp(start_date)
+    end_date = pd.Timestamp(end_date)
 
-# Ações ao clicar no botão
-if apply_button:
-    # Validação das datas selecionadas
-    if start_date > end_date:
-        st.error("A Data Inicial não pode ser posterior à Data Final. Por favor, selecione um intervalo válido.")
-    else:
-        # Conversão das datas para Timestamp
-        start_date = pd.Timestamp(start_date)
-        end_date = pd.Timestamp(end_date)
-
-        # Aplicar filtro para os gráficos
-        filtered_data = data_cleaned[(
-            data_cleaned['Dia da Consulta'] >= start_date) & 
-            (data_cleaned['Dia da Consulta'] <= end_date)
-        ]
-
-        # Verificar se os dados filtrados são válidos
-        if filtered_data.empty:
-            st.warning("Nenhum dado encontrado para o intervalo de datas selecionado.")
-        else:
-            try:
-                # Atualizar gráficos com os dados filtrados
-                top_vehicles_chart = create_vehicle_fines_chart(filtered_data)
-                st.plotly_chart(top_vehicles_chart, use_container_width=True)
-
-                common_infractions_chart = create_common_infractions_chart(filtered_data)
-                st.plotly_chart(common_infractions_chart, use_container_width=True)
-
-                period_option = st.radio(
-                    "Selecione o período para acumulação:",
-                    options=["Mensal", "Semanal"],
-                    index=0,
-                    horizontal=True
-                )
-                period_code = 'M' if period_option == "Mensal" else 'W'
-                fines_accumulated_chart = create_fines_accumulated_chart(filtered_data, period=period_code)
-                st.plotly_chart(fines_accumulated_chart, use_container_width=True)
-
-                weekday_infractions_chart = create_weekday_infractions_chart(filtered_data)
-                st.plotly_chart(weekday_infractions_chart, use_container_width=True)
-
-            except Exception as e:
-                st.error(f"Erro ao gerar os gráficos: {e}")
+    # Aplicar filtro
+    filtered_data = data_cleaned[(
+        data_cleaned['Dia da Consulta'] >= start_date) & 
+        (data_cleaned['Dia da Consulta'] <= end_date)
+    ]
 
 st.divider()
 
