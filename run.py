@@ -226,33 +226,38 @@ st.markdown("<h2 style='text-align: center; color: #F37529; font-size: 32px; fon
 
 filter_col1, filter_col2 = st.columns(2)
 
-min_date = data_cleaned['Dia da Consulta'].min().date() if not data_cleaned['Dia da Consulta'].isnull().all() else None
-max_date = data_cleaned['Dia da Consulta'].max().date() if not data_cleaned['Dia da Consulta'].isnull().all() else None
+min_date = data_cleaned['Dia da Consulta'].dropna().min().date()
+max_date = data_cleaned['Dia da Consulta'].dropna().max().date()
 
+# Captura das datas com valores padrão
 with filter_col1:
-    start_date = st.date_input("Data Inicial", value=min_date, min_value=min_date, max_value=max_date)
+    start_date = st.date_input("Data Inicial", value=min_date, min_value=min_date, max_value=max_date, key="start_date")
 
 with filter_col2:
-    end_date = st.date_input("Data Final", value=max_date, min_value=min_date, max_value=max_date)
+    end_date = st.date_input("Data Final", value=max_date, min_value=min_date, max_value=max_date, key="end_date")
 
-apply_button = st.button("Aplicar Filtro")
-
-if apply_button:
+# Botão para aplicar o filtro
+if st.button("Aplicar Filtro"):
     if start_date > end_date:
-        st.error("A Data Inicial não pode ser posterior à Data Final. Por favor, selecione um intervalo válido.")
+        st.error("A Data Inicial não pode ser posterior à Data Final.")
     else:
-        start_date = pd.Timestamp(start_date)
-        end_date = pd.Timestamp(end_date)
-
+        # Aplicar o filtro com base nas datas selecionadas
         filtered_data = data_cleaned[
-            (data_cleaned['Dia da Consulta'] >= start_date) & 
-            (data_cleaned['Dia da Consulta'] <= end_date)
+            (data_cleaned['Dia da Consulta'].dt.date >= start_date) &
+            (data_cleaned['Dia da Consulta'].dt.date <= end_date)
         ]
 
         if filtered_data.empty:
-            st.warning("Nenhum dado encontrado para o intervalo de datas selecionado. Ajuste as datas ou verifique os dados.")
+            st.warning("Nenhum dado encontrado para o intervalo selecionado.")
         else:
-            st.success("Dados filtrados com sucesso!")
+            st.success("Filtro aplicado com sucesso!")
+            # Gráfico Top 10 Veículos
+            try:
+                top_vehicles_chart = create_vehicle_fines_chart(filtered_data)
+                st.plotly_chart(top_vehicles_chart, use_container_width=True)
+            except Exception as e:
+                st.error(f"Erro ao gerar o gráfico: {e}")
+
             
             # Verificar se a coluna 'Placa Relacionada' tem dados
             if 'Placa Relacionada' not in filtered_data.columns or filtered_data['Placa Relacionada'].isnull().all():
