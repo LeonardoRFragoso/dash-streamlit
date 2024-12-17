@@ -365,18 +365,25 @@ with filter_col2:
         key="end_date"
     )
 
-# Validação das datas selecionadas
-if start_date > end_date:
-    st.error("A Data Inicial não pode ser posterior à Data Final. Por favor, selecione um intervalo válido.")
-else:
-    # Filtragem dos dados conforme as datas selecionadas
-    filtered_data = data_cleaned[
-        (data_cleaned['Dia da Consulta'] >= pd.Timestamp(start_date)) & 
-        (data_cleaned['Dia da Consulta'] <= pd.Timestamp(end_date))
-    ]
+# Inicializa filtered_data como data_cleaned para uso antes do botão ser clicado
+filtered_data = data_cleaned.copy()
 
-    # Exibir mensagem de sucesso
-    st.success(f"Dados filtrados entre {start_date.strftime('%d/%m/%Y')} e {end_date.strftime('%d/%m/%Y')}")
+# Adiciona botão para confirmar o filtro
+apply_filter = st.button("Aplicar Filtro")
+
+# Validação das datas selecionadas e aplicação do filtro após o clique no botão
+if apply_filter:
+    if start_date > end_date:
+        st.error("A Data Inicial não pode ser posterior à Data Final. Por favor, selecione um intervalo válido.")
+    else:
+        # Filtragem dos dados conforme as datas selecionadas
+        filtered_data = data_cleaned[
+            (data_cleaned['Dia da Consulta'] >= pd.Timestamp(start_date)) & 
+            (data_cleaned['Dia da Consulta'] <= pd.Timestamp(end_date))
+        ]
+
+        # Exibir mensagem de sucesso
+        st.success(f"Dados filtrados entre {start_date.strftime('%d/%m/%Y')} e {end_date.strftime('%d/%m/%Y')}")
 
 # Veículos com mais multas
 st.divider()
@@ -397,10 +404,10 @@ st.divider()
 st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>Distribuição Geográfica das Multas e Ranking</h2>", unsafe_allow_html=True)
 
 # Prepare data for the map
-API_KEY = st.secrets["API_KEY"]  # Adicione esta linha
+API_KEY = st.secrets["API_KEY"]
 coordinates_cache = load_cache()
 
-# Prepare data for the map
+# Filtra dados para o mapa usando filtered_data
 map_data = filtered_data.dropna(subset=['Local da Infração']).copy()
 map_data[['Latitude', 'Longitude']] = map_data['Local da Infração'].apply(
     lambda x: pd.Series(get_cached_coordinates(x, API_KEY, coordinates_cache))
@@ -409,12 +416,13 @@ map_data[['Latitude', 'Longitude']] = map_data['Local da Infração'].apply(
 # Save updated cache
 save_cache(coordinates_cache)
 
-# Create map
+# Criação do mapa
 map_center = [map_data['Latitude'].mean(), map_data['Longitude'].mean()] if not map_data.empty else [0, 0]
 map_object = folium.Map(location=map_center, zoom_start=5, tiles="CartoDB dark_matter")
 
 icon_url = "https://cdn-icons-png.flaticon.com/512/1828/1828843.png"  # URL de um triângulo de alerta
 
+# Adicionar marcadores ao mapa
 for _, row in map_data.iterrows():
     if pd.notnull(row['Latitude']) and pd.notnull(row['Longitude']):
         custom_icon = CustomIcon(icon_url, icon_size=(30, 30))
