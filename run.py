@@ -365,36 +365,31 @@ with filter_col2:
         key="end_date"
     )
 
-# Adiciona botão para confirmar o filtro
-apply_filter = st.button("Aplicar Filtro")
+# Validação das datas selecionadas
+if start_date > end_date:
+    st.error("A Data Inicial não pode ser posterior à Data Final. Por favor, selecione um intervalo válido.")
+else:
+    # Filtragem dos dados conforme as datas selecionadas
+    filtered_data = data_cleaned[
+        (data_cleaned['Dia da Consulta'] >= pd.Timestamp(start_date)) & 
+        (data_cleaned['Dia da Consulta'] <= pd.Timestamp(end_date))
+    ]
 
-# Validação das datas selecionadas e aplicação do filtro após o clique no botão
-if apply_filter:
-    if start_date > end_date:
-        st.error("A Data Inicial não pode ser posterior à Data Final. Por favor, selecione um intervalo válido.")
-    else:
-        # Filtragem dos dados conforme as datas selecionadas
-        filtered_data = data_cleaned[
-            (data_cleaned['Dia da Consulta'] >= pd.Timestamp(start_date)) & 
-            (data_cleaned['Dia da Consulta'] <= pd.Timestamp(end_date))
-        ]
+    # Exibir mensagem de sucesso
+    st.success(f"Dados filtrados entre {start_date.strftime('%d/%m/%Y')} e {end_date.strftime('%d/%m/%Y')}")
 
-        # Exibir mensagem de sucesso
-        st.success(f"Dados filtrados entre {start_date.strftime('%d/%m/%Y')} e {end_date.strftime('%d/%m/%Y')}")
+# Veículos com mais multas
+st.divider()
+st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>Top 10 Veículos com Mais Multas e Valores Totais</h2>", unsafe_allow_html=True)
+top_vehicles_chart = create_vehicle_fines_chart(filtered_data)
+st.plotly_chart(top_vehicles_chart, use_container_width=True)
 
-        # Veículos com mais multas
-        st.divider()
-        st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>Top 10 Veículos com Mais Multas e Valores Totais</h2>", unsafe_allow_html=True)
-        top_vehicles_chart = create_vehicle_fines_chart(filtered_data)
-        st.plotly_chart(top_vehicles_chart, use_container_width=True)
-
-        # Adicionar descrição abaixo do gráfico
-        st.markdown("<p style='text-align: center; font-size: 18px; color: black;'>"
-            "10 veículos com mais multas e seus valores totais dentro do período selecionado."
-            "</p>",
-            unsafe_allow_html=True
-        )
-
+# Adicionar descrição abaixo do gráfico
+st.markdown("<p style='text-align: center; font-size: 18px; color: black;'>"
+    "10 veículos com mais multas e seus valores totais dentro do período selecionado."
+    "</p>",
+    unsafe_allow_html=True
+)
 
 st.divider()
 
