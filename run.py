@@ -21,8 +21,9 @@ from graph_weekday_infractions import create_weekday_infractions_chart
 st.set_page_config(page_title="Torre de Controle - Dashboard de Multas", layout="wide")
 
 # Inserir o logo da Itracker no topo
-logo_path = r"C:\Users\leonardo.fragoso\Documents\dash-streamlit\itracker logo.jpg"
-st.image(logo_path, width=150, use_container_width=False)
+logo_url = "https://drive.google.com/uc?id=1zaNfqETj9AacKHOPMDIrTE9TZfX5OUc1"  # URL direta para a imagem no Google Drive
+st.image(logo_url, width=150, use_container_width=False)
+
 
 # Define cache file for coordinates
 CACHE_FILE = "coordinates_cache.json"
@@ -79,7 +80,7 @@ def carregar_dados_google_drive():
     """Carrega os dados da última planilha no Google Drive."""
     try:
         drive_service = autenticar_google_drive()
-        file_id = obter_id_ultima_planilha()
+        file_id = st.secrets["file_data"]["ultima_planilha_id"]
         request = drive_service.files().get_media(fileId=file_id)
         file_buffer = io.BytesIO()
         downloader = MediaIoBaseDownload(file_buffer, request)
