@@ -71,8 +71,7 @@ def create_vehicle_fines_chart(df):
             'Placa Relacionada': 'Veículo (Placa Relacionada)',
             'total_fines': 'Total das Multas (R$)',
             'num_fines': 'Número de Multas'
-        },
-        title='Top 10 Veículos com Mais Multas e Valores Totais'
+        }
     )
 
     fig.update_traces(
@@ -81,6 +80,7 @@ def create_vehicle_fines_chart(df):
     )
 
     fig.update_layout(
+        title="",  # Remover título automático do gráfico
         xaxis_title='',
         yaxis_title='Total das Multas (R$)',
         coloraxis_colorbar=dict(title='Número de Multas'),
