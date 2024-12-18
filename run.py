@@ -93,9 +93,10 @@ st.markdown(
         .stDateInput input {
             box-shadow: none; /* Remove a sombra padrão */
             border: 1px solid #ddd; /* Adiciona uma borda leve */
+            width: 120px;  /* Diminui a largura das caixas de data */
         }
         .stDateInput {
-            width: 150px;  /* Define o tamanho do campo de data */
+            width: 120px;  /* Define o tamanho das caixas de data */
         }
         /* Centralizar o botão "Aplicar Filtro" */
         .stButton {
