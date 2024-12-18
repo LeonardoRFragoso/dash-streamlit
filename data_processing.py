@@ -1,112 +1,168 @@
+import streamlit as st
 import pandas as pd
+import folium
 from datetime import datetime
+from folium.features import CustomIcon
+from streamlit_folium import st_folium
+from google_drive import carregar_dados_google_drive
+from data_processing import (
+    carregar_e_limpar_dados,
+    verificar_colunas_essenciais,
+    calcular_metricas,
+    filtrar_dados_por_periodo,
+)
+from graph_vehicles_fines import create_vehicle_fines_chart
+from graph_common_infractions import create_common_infractions_chart
+from graph_fines_accumulated import create_fines_accumulated_chart
+from graph_weekday_infractions import create_weekday_infractions_chart
+from geo_utils import load_cache, save_cache, get_cached_coordinates
 
-def carregar_e_limpar_dados(carregar_dados_func):
-    """
-    Carrega e faz o pré-processamento básico dos dados.
-    """
-    try:
-        df = carregar_dados_func()
+# Configuração inicial do Streamlit
+st.set_page_config(page_title="Torre de Controle iTracker - Dashboard de Multas", layout="wide")
 
-        # Padronizar nomes das colunas
-        column_mapping = {
-            "Valor a ser pago R$": "Valor a ser pago R$",
-            "Data da Infração": "Data da Infração",
-            "Dia da Consulta": "Dia da Consulta",
-            "Auto de Infração": "Auto de Infração",
-            "Status de Pagamento": "Status de Pagamento",
-            "Local da Infração": "Local da Infração"
+# Estilização CSS e HTML
+st.markdown(
+    """
+    <style>
+        .titulo-dashboard-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            margin: 0 auto;
+            padding: 25px 20px;
+            background: linear-gradient(to right, #F37529, rgba(255, 255, 255, 0.8));
+            border-radius: 15px;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
         }
-        df.rename(columns=column_mapping, inplace=True)
+        .titulo-dashboard {
+            font-size: 50px;
+            font-weight: bold;
+            color: #F37529;
+            text-transform: uppercase;
+            margin: 0;
+        }
+        .titulo-secao {
+            text-align: center;
+            font-size: 36px;
+            font-weight: bold;
+            color: #0066B4;
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+        .footer {
+            text-align: center;
+            font-size: 14px;
+            color: #0066B4;
+            margin-top: 40px;
+            padding: 10px 0;
+            border-top: 1px solid #ddd;
+        }
+        .indicadores-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            margin-top: 30px;
+        }
+        .indicador {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;  /* Centraliza verticalmente */
+            align-items: center;      /* Centraliza horizontalmente */
+            text-align: center;
+            background-color: #FFFFFF;
+            border: 4px solid #0066B4;
+            border-radius: 15px;
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);
+            width: 260px;
+            height: 160px;
+            padding: 10px;            /* Adiciona espaçamento interno */
+        }
+        .indicador span {
+            font-size: 18px;
+            color: #0066B4;
+        }
+        .indicador p {
+            font-size: 38px;
+            color: #0066B4;
+            margin: 0;
+            font-weight: bold;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
-        # Garantir que as colunas de data estão no formato correto
-        df['Dia da Consulta'] = pd.to_datetime(df['Dia da Consulta'], errors='coerce', dayfirst=True)
-        df['Data da Infração'] = pd.to_datetime(df['Data da Infração'], errors='coerce', dayfirst=True)
+# Exibir o logo da empresa acima do título
+logo_url = st.secrets["image"]["logo_url"]  # URL do logo fornecido no secrets
+st.markdown(
+    f"""
+    <div style='display: flex; justify-content: center; margin-bottom: 20px;'>
+        <img src="{logo_url}" width="200" alt="Logo">
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
-        # Remover linhas sem datas válidas
-        df = df.dropna(subset=['Data da Infração', 'Dia da Consulta'])
-
-        # Filtrar apenas o ano atual
-        ano_atual = pd.Timestamp.now().year
-        df = df[df['Data da Infração'].dt.year == ano_atual]
-
-        # Preprocessar valores monetários
-        df = preprocessar_valores(df)
-
-        # Remover duplicatas com base no 'Auto de Infração'
-        df = df.drop_duplicates(subset=['Auto de Infração'])
-
-        # Garantir que as colunas essenciais estejam presentes
-        required_columns = ['Data da Infração', 'Valor a ser pago R$', 'Auto de Infração', 
-                            'Status de Pagamento', 'Dia da Consulta', 'Local da Infração']
-        verificar_colunas_essenciais(df, required_columns)
-
-        return df
-    except Exception as e:
-        print(f"Erro ao carregar os dados: {e}")
-        raise
-
-def verificar_colunas_essenciais(df, required_columns):
+# Título do Dashboard
+st.markdown(
     """
-    Verifica se as colunas essenciais estão presentes nos dados.
-    """
-    missing_columns = [col for col in required_columns if col not in df.columns]
-    if missing_columns:
-        raise ValueError(f"Colunas essenciais ausentes: {', '.join(missing_columns)}")
+    <div class="titulo-dashboard-container">
+        <h1 class="titulo-dashboard">Torre de Controle iTracker - Dashboard de Multas</h1>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
-def preprocessar_valores(df):
-    """
-    Preprocessa valores monetários no DataFrame.
-    """
-    if 'Valor a ser pago R$' in df.columns:
-        # Limpar e converter os valores monetários
-        df['Valor a ser pago R$'] = (
-            df['Valor a ser pago R$']
-            .astype(str)
-            .str.replace(r'[^\d,.-]', '', regex=True)
-            .str.replace(r'\.(?=\d{3,})', '', regex=True)
-            .str.replace(',', '.')
-            .apply(lambda x: float(x) if x.replace('.', '', 1).isdigit() else 0)
-        )
-    return df
+# Carregar e processar dados
+data_cleaned = carregar_e_limpar_dados(carregar_dados_google_drive)
 
-def calcular_metricas(df):
-    """
-    Calcula métricas principais:
-    - Total de multas
-    - Valor total a pagar
-    - Multas do mês atual
-    """
-    # Calcular o total de multas considerando 'Auto de Infração' único
-    total_multas = df['Auto de Infração'].nunique()
+# Verificar colunas essenciais
+required_columns = ['Data da Infração', 'Valor a ser pago R$', 'Auto de Infração', 
+                    'Status de Pagamento', 'Dia da Consulta', 'Local da Infração']
+try:
+    verificar_colunas_essenciais(data_cleaned, required_columns)
+except ValueError as e:
+    st.error(str(e))
+    st.stop()
 
-    # Calcular o valor total a pagar, considerando apenas a última entrada por 'Auto de Infração'
-    valor_total_a_pagar = df['Valor a ser pago R$'].sum()
+# Filtrar apenas registros com Status de Pagamento = 'NÃO PAGO' ao iniciar
+data_inicial_default = data_cleaned[data_cleaned['Status de Pagamento'] == 'NÃO PAGO']
 
-    # Filtrar multas do mês atual
-    mes_atual = pd.Timestamp.now().month
-    multas_mes_atual = df[df['Data da Infração'].dt.month == mes_atual].shape[0]
+# Remover duplicatas baseadas em 'Auto de Infração'
+data_inicial_default = data_inicial_default.drop_duplicates(subset=['Auto de Infração'])
 
-    return total_multas, valor_total_a_pagar, multas_mes_atual
+# Converter valores monetários para float
+data_inicial_default['Valor a ser pago R$'] = pd.to_numeric(
+    data_inicial_default['Valor a ser pago R$'].str.replace(',', '.'), errors='coerce'
+)
 
-def filtrar_dados_por_periodo(df, data_inicial, data_final, coluna='Dia da Consulta'):
-    """
-    Filtra os dados pelo período especificado entre data_inicial e data_final.
+# Calcular métricas iniciais (antes da aplicação de filtros)
+total_multas = data_inicial_default['Auto de Infração'].nunique()
+valor_total_a_pagar = data_inicial_default['Valor a ser pago R$'].sum()
+ultima_consulta = data_inicial_default['Dia da Consulta'].max().strftime('%d/%m/%Y')
 
-    Parameters:
-        df (DataFrame): Dados a serem filtrados.
-        data_inicial (str or datetime): Data inicial do filtro.
-        data_final (str or datetime): Data final do filtro.
-        coluna (str): Coluna de data usada para o filtro ('Dia da Consulta' ou 'Data da Infração').
+# Indicadores Principais
+st.markdown(
+    f"""
+    <div class="indicadores-container">
+        <div class="indicador">
+            <span>Total de Multas</span>
+            <p>{total_multas}</p>
+        </div>
+        <div class="indicador">
+            <span>Valor Total a Pagar</span>
+            <p>R$ {valor_total_a_pagar:,.2f}</p>
+        </div>
+        <div class="indicador">
+            <span>Última Consulta</span>
+            <p>{ultima_consulta}</p>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
-    Returns:
-        DataFrame: Dados filtrados.
-    """
-    if coluna not in df.columns:
-        raise ValueError(f"A coluna '{coluna}' não existe no DataFrame.")
-
-    # Garantir que a coluna de datas está no formato correto
-    df[coluna] = pd.to_datetime(df[coluna], errors='coerce')
-
-    return df[(df[coluna] >= pd.Timestamp(data_inicial)) & 
-              (df[coluna] <= pd.Timestamp(data_final))]
+# Footer
+st.markdown("<div class='footer'>Dashboard de Multas © 2024 | Desenvolvido pela Equipe de Qualidade</div>", unsafe_allow_html=True)
