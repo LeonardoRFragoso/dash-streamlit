@@ -42,6 +42,14 @@ st.markdown(
             text-transform: uppercase;
             margin: 0;
         }
+        .titulo-secao {
+            text-align: center;
+            font-size: 36px;
+            font-weight: bold;
+            color: #F37529;
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
         .footer {
             text-align: center;
             font-size: 14px;
@@ -100,6 +108,7 @@ st.markdown(
 )
 
 # Filtro por Período
+st.markdown("<h2 class='titulo-secao'>Filtro por Período</h2>", unsafe_allow_html=True)
 data_inicial = st.date_input("Data Inicial", value=datetime(2024, 1, 1), key="start_date")
 data_final = st.date_input("Data Final", value=datetime.now(), key="end_date")
 
@@ -109,11 +118,11 @@ else:
     filtered_data = data_cleaned
 
 # Gráfico de Top 10 Veículos
-st.markdown("### Top 10 Veículos com Mais Multas e Valores Totais")
+st.markdown("<h2 class='titulo-secao'>Top 10 Veículos com Mais Multas e Valores Totais</h2>", unsafe_allow_html=True)
 st.plotly_chart(create_vehicle_fines_chart(filtered_data), use_container_width=True)
 
 # Mapa de Distribuição Geográfica
-st.markdown("### Distribuição Geográfica das Multas")
+st.markdown("<h2 class='titulo-secao'>Distribuição Geográfica das Multas</h2>", unsafe_allow_html=True)
 API_KEY = st.secrets["API_KEY"]
 coordinates_cache = load_cache()
 
@@ -160,7 +169,7 @@ if map_click_data and map_click_data.get("last_object_clicked"):
     selected_fines = map_data[(map_data['Latitude'] == lat) & (map_data['Longitude'] == lng)]
 
     if not selected_fines.empty:
-        st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>Detalhes das Multas para a Localização Selecionada</h2>", unsafe_allow_html=True)
+        st.markdown("<h2 class='titulo-secao'>Detalhes das Multas para a Localização Selecionada</h2>", unsafe_allow_html=True)
         st.dataframe(
             selected_fines[['Local da Infração', 'Valor a ser pago R$', 'Data da Infração', 'Descrição']].reset_index(drop=True),
             use_container_width=True,
@@ -170,7 +179,7 @@ if map_click_data and map_click_data.get("last_object_clicked"):
         st.info("Nenhuma multa encontrada para a localização selecionada.")
 
 # Ranking das Localidades
-st.markdown("### Ranking das Localidades com Mais Multas")
+st.markdown("<h2 class='titulo-secao'>Ranking das Localidades com Mais Multas</h2>", unsafe_allow_html=True)
 ranking_localidades = filtered_data.groupby('Local da Infração', as_index=False).agg(
     Valor_Total=('Valor a ser pago R$', 'sum'),
     Total_Multas=('Local da Infração', 'count')
@@ -183,14 +192,14 @@ st.dataframe(
 )
 
 # Gráficos adicionais
-st.markdown("### Infrações Mais Frequentes")
+st.markdown("<h2 class='titulo-secao'>Infrações Mais Frequentes</h2>", unsafe_allow_html=True)
 st.plotly_chart(create_common_infractions_chart(filtered_data), use_container_width=True)
 
-st.markdown("### Valores das Multas Acumulados por Período")
+st.markdown("<h2 class='titulo-secao'>Valores das Multas Acumulados por Período</h2>", unsafe_allow_html=True)
 period_option = st.radio("Selecione o período:", ["Mensal", "Semanal"], horizontal=True)
 st.plotly_chart(create_fines_accumulated_chart(filtered_data, 'M' if period_option == "Mensal" else 'W'), use_container_width=True)
 
-st.markdown("### Infrações Mais Frequentes por Dia da Semana")
+st.markdown("<h2 class='titulo-secao'>Infrações Mais Frequentes por Dia da Semana</h2>", unsafe_allow_html=True)
 st.plotly_chart(create_weekday_infractions_chart(filtered_data), use_container_width=True)
 
 # Footer
