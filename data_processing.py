@@ -55,3 +55,11 @@ def calcular_metricas(df):
     multas_mes_atual = df[df['Data da Infração'].dt.month == mes_atual].shape[0]
 
     return total_multas, valor_total_a_pagar, multas_mes_atual
+
+def filtrar_dados_por_periodo(df, data_inicial, data_final):
+    """
+    Filtra os dados pelo período especificado entre data_inicial e data_final.
+    """
+    df['Dia da Consulta'] = pd.to_datetime(df['Dia da Consulta'], errors='coerce')
+    return df[(df['Dia da Consulta'] >= pd.Timestamp(data_inicial)) & 
+              (df['Dia da Consulta'] <= pd.Timestamp(data_final))]
