@@ -124,46 +124,48 @@ map_data[['Latitude', 'Longitude']] = map_data['Local da Infração'].apply(
 )
 save_cache(coordinates_cache)
 
-# Criação do mapa
+# Criar mapa
 map_center = [map_data['Latitude'].mean(), map_data['Longitude'].mean()] if not map_data.empty else [0, 0]
 map_object = folium.Map(location=map_center, zoom_start=5, tiles="CartoDB dark_matter")
 
-# Lista para capturar cliques específicos
-markers_data = {}
+icon_url = "https://cdn-icons-png.flaticon.com/512/1828/1828843.png"  # Ícone personalizado
+for _, row in map_data.iterrows():
+    if pd.notnull(row['Latitude']) and pd.notnull(row['Longitude']):
+        data_infracao = row['Data da Infração'].strftime('%d/%m/%Y') if pd.notnull(row['Data da Infração']) else "Não disponível"
+        popup_content = f"""
+        <b>Local:</b> {row['Local da Infração']}<br>
+        <b>Valor:</b> R$ {row['Valor a ser pago R$']:.2f}<br>
+        <b>Data da Infração:</b> {data_infracao}
+        """
+        folium.Marker(
+            location=[row['Latitude'], row['Longitude']],
+            popup=folium.Popup(popup_content, max_width=300),
+            icon=CustomIcon(icon_url, icon_size=(30, 30)),
+        ).add_to(map_object)
 
-# Adicionar marcadores ao mapa com IDs únicos para identificar cliques
-for index, row in map_data.iterrows():
-    popup_content = f"<b>Local:</b> {row['Local da Infração']}<br><b>Valor:</b> R$ {row['Valor a ser pago R$']:.2f}"
-    marker = folium.Marker(
-        location=[row['Latitude'], row['Longitude']],
-        popup=folium.Popup(popup_content, max_width=300),
-        icon=CustomIcon("https://cdn-icons-png.flaticon.com/512/1828/1828843.png", icon_size=(30, 30)),
-    )
-    marker.add_to(map_object)
-    markers_data[f"{row['Latitude']},{row['Longitude']}"] = row
-
-# Exibir o mapa no Streamlit
+# Capturar cliques no mapa
 map_click_data = st_folium(map_object, width=1800, height=600)
 
-# Verificar o clique no mapa e filtrar os dados
-if map_click_data and "last_clicked" in map_click_data and map_click_data["last_clicked"]:
-    lat = round(map_click_data["last_clicked"]["lat"], 5)
-    lng = round(map_click_data["last_clicked"]["lng"], 5)
-    clicked_key = f"{lat},{lng}"
+# Exibir detalhes das multas ao clicar no marcador
+if map_click_data and "last_object_clicked" in map_click_data and map_click_data["last_object_clicked"]:
+    lat = map_click_data["last_object_clicked"]["lat"]
+    lng = map_click_data["last_object_clicked"]["lng"]
 
-    # Verificar se a coordenada clicada corresponde a um marcador
-    if clicked_key in markers_data:
-        st.markdown("### Detalhes da Multa na Localização Selecionada")
-        selected_row = markers_data[clicked_key]
-        st.table({
-            "Data da Infração": [selected_row['Data da Infração']],
-            "Valor a ser pago R$": [f"R$ {selected_row['Valor a ser pago R$']:.2f}"],
-            "Enquadramento": [selected_row.get('Enquadramento', 'N/A')],
-            "Descrição da Multa": [selected_row.get('Descrição da Infração', 'N/A')]
-        })
+    # Filtrar dados correspondentes à coordenada clicada
+    selected_fines = map_data[
+        (map_data['Latitude'] == lat) & (map_data['Longitude'] == lng)
+    ]
+
+    # Renderizar tabela com detalhes
+    if not selected_fines.empty:
+        st.markdown("### Detalhes das Multas na Localização Selecionada")
+        st.dataframe(
+            selected_fines[['Local da Infração', 'Data da Infração', 'Valor a ser pago R$', 'Descrição']],
+            hide_index=True,
+            use_container_width=True
+        )
     else:
         st.info("Nenhuma multa encontrada para a localização selecionada.")
-
 
 # Ranking das Localidades
 st.markdown("### Ranking das Localidades com Mais Multas")
