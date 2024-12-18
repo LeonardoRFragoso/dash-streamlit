@@ -167,20 +167,21 @@ except ValueError as e:
     st.error(str(e))
     st.stop()
 
-# Filtrar dados com Status de Pagamento = 'NÃO PAGO' e Auto de Infração únicos
-dados_iniciais = data_cleaned[
-    (data_cleaned['Status de Pagamento'] == 'NÃO PAGO')
-].drop_duplicates(subset=['Auto de Infração'])
+# Filtrar apenas registros com Status de Pagamento = 'NÃO PAGO'
+dados_iniciais = data_cleaned[data_cleaned['Status de Pagamento'].str.upper() == 'NÃO PAGO']
 
-# Garantir que não haja NaN em colunas críticas
-dados_iniciais = dados_iniciais.dropna(subset=['Dia da Consulta', 'Data da Infração'])
+# Remover duplicatas baseadas em 'Auto de Infração'
+dados_iniciais = dados_iniciais.drop_duplicates(subset=['Auto de Infração'])
 
-# Calcular métricas para os indicadores principais
+# Calcular métricas iniciais para os indicadores principais
 total_multas = dados_iniciais['Auto de Infração'].nunique()
 valor_total_a_pagar = dados_iniciais['Valor a ser pago R$'].sum()
-ultima_consulta = dados_iniciais['Dia da Consulta'].max().strftime('%d/%m/%Y')
 
-# Multas no mês atual
+# Obter a última data de consulta
+ultima_consulta = dados_iniciais['Dia da Consulta'].max()
+ultima_consulta = ultima_consulta.strftime('%d/%m/%Y') if pd.notnull(ultima_consulta) else 'N/A'
+
+# Contar multas no mês atual
 mes_atual = pd.Timestamp.now().month
 multas_mes_atual = dados_iniciais[dados_iniciais['Data da Infração'].dt.month == mes_atual].shape[0]
 
