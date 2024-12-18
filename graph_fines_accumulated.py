@@ -2,47 +2,54 @@ import pandas as pd
 import plotly.express as px
 from datetime import datetime
 
-def create_fines_accumulated_chart(data, period='M'):
+def create_fines_accumulated_chart(data, data_inicial=None, data_final=None, period='M'):
     """
-    Create a line chart to display the count of fines per month with better relevance.
+    Cria um gráfico de linhas para exibir a contagem de multas acumuladas por período.
 
-    Parameters:
-        data (DataFrame): The filtered data containing fines information.
-        period (str): The period for grouping ('M' for monthly, 'W' for weekly).
+    Parâmetros:
+        data (DataFrame): Os dados filtrados contendo informações sobre as multas.
+        data_inicial (str ou datetime, opcional): Data inicial para o filtro do período.
+        data_final (str ou datetime, opcional): Data final para o filtro do período.
+        period (str): O período para agrupamento ('M' para mensal, 'W' para semanal).
 
-    Returns:
-        fig (plotly.graph_objects.Figure): A line chart showing the number of fines by period.
+    Retorna:
+        fig (plotly.graph_objects.Figure): Um gráfico de linhas mostrando a quantidade de multas por período.
     """
-    # Check if required columns exist
+    # Verificar se as colunas essenciais existem
     required_columns = ['Data da Infração', 'Valor a ser pago R$']
     for col in required_columns:
         if col not in data.columns:
             raise KeyError(f"A coluna '{col}' não está presente no DataFrame.")
 
-    # Ensure 'Data da Infração' is a datetime object
+    # Garantir que 'Data da Infração' seja um objeto datetime
     data['Data da Infração'] = pd.to_datetime(data['Data da Infração'], errors='coerce')
 
-    # Filter for the current year
-    current_year = datetime.now().year
-    data = data[data['Data da Infração'].dt.year == current_year]
+    # Filtrar os dados pelo período especificado
+    if data_inicial is None:
+        data_inicial = data['Data da Infração'].min()
+    if data_final is None:
+        data_final = data['Data da Infração'].max()
 
-    # Create a complete list of months for the current year
-    all_months = pd.date_range(start=f"{current_year}-01-01", end=f"{current_year}-12-31", freq='MS')
-    months_df = pd.DataFrame({'Período': all_months})
+    data = data[(data['Data da Infração'] >= pd.to_datetime(data_inicial)) &
+                (data['Data da Infração'] <= pd.to_datetime(data_final))]
 
-    # Aggregate data by month
-    data['Período'] = data['Data da Infração'].dt.to_period('M').dt.to_timestamp()
-    monthly_fines = data.groupby('Período').agg(
+    # Criar lista completa de períodos dentro do intervalo
+    all_periods = pd.date_range(start=data_inicial, end=data_final, freq='MS' if period == 'M' else 'W')
+    periods_df = pd.DataFrame({'Período': all_periods})
+
+    # Agregar dados pelo período
+    data['Período'] = data['Data da Infração'].dt.to_period(period).dt.to_timestamp()
+    fines_by_period = data.groupby('Período').agg(
         Quantidade_de_Multas=('Valor a ser pago R$', 'size')
     ).reset_index()
 
-    # Merge the complete months list with the aggregated data
-    monthly_fines = pd.merge(months_df, monthly_fines, on='Período', how='left')
-    monthly_fines['Quantidade_de_Multas'].fillna(0, inplace=True)  # Fill missing values with 0
+    # Mesclar lista de períodos completa com os dados agregados
+    fines_by_period = pd.merge(periods_df, fines_by_period, on='Período', how='left')
+    fines_by_period['Quantidade_de_Multas'].fillna(0, inplace=True)  # Preencher valores ausentes com 0
 
-    # Create the line chart with markers
+    # Criar o gráfico de linhas com marcadores
     fig = px.line(
-        monthly_fines,
+        fines_by_period,
         x='Período',
         y='Quantidade_de_Multas',
         labels={
@@ -51,21 +58,21 @@ def create_fines_accumulated_chart(data, period='M'):
         }
     )
 
-    # Add markers and customize style
+    # Adicionar marcadores e personalizar estilo
     fig.update_traces(
-        mode='lines+markers',  # Add markers on the line
+        mode='lines+markers',  # Adicionar marcadores na linha
         marker=dict(size=8, color='blue', line=dict(width=2, color='DarkSlateGrey')),
         line=dict(color='royalblue', width=2)
     )
 
-    # Update layout for better readability
+    # Atualizar layout para melhor legibilidade
     fig.update_layout(
         xaxis_title="",
         yaxis_title="Quantidade de Multas",
-        template="plotly_white",  # Light theme
-        title="",  # Remove completely the undefined title
-        title_x=0.5,  # Center the title
-        hovermode="x unified"  # Unified hover
+        template="plotly_white",  # Tema claro
+        title="",  # Remover o título automático
+        title_x=0.5,  # Centralizar o título
+        hovermode="x unified"  # Hover unificado
     )
 
     return fig
