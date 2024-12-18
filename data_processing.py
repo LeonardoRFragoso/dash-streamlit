@@ -110,22 +110,3 @@ def filtrar_dados_por_periodo(df, data_inicial, data_final, coluna='Dia da Consu
 
     return df[(df[coluna] >= pd.Timestamp(data_inicial)) & 
               (df[coluna] <= pd.Timestamp(data_final))]
-
-# Filtro por Período
-st.markdown("<h2 class='titulo-secao' style='color: #F37529;'>Filtro por Período</h2>", unsafe_allow_html=True)
-data_inicial = st.date_input("Data Inicial", value=datetime(2024, 1, 1), key="start_date")
-data_final = st.date_input("Data Final", value=datetime.now(), key="end_date")
-
-if st.button("Aplicar Filtro"):
-    filtered_data = filtrar_dados_por_periodo(data_cleaned, data_inicial, data_final, coluna='Data da Infração')
-    # Recalcular métricas com base nos dados filtrados
-    total_multas, valor_total_a_pagar, multas_mes_atual = calcular_metricas(filtered_data)
-    st.write(f"Total de Multas: {total_multas}")
-    st.write(f"Valor Total a Pagar: R$ {valor_total_a_pagar:,.2f}")
-    st.write(f"Multas no Mês Atual: {multas_mes_atual}")
-else:
-    filtered_data = data_cleaned
-    total_multas, valor_total_a_pagar, multas_mes_atual = calcular_metricas(filtered_data)
-    st.write(f"Total de Multas: {total_multas}")
-    st.write(f"Valor Total a Pagar: R$ {valor_total_a_pagar:,.2f}")
-    st.write(f"Multas no Mês Atual: {multas_mes_atual}")
