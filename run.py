@@ -152,25 +152,30 @@ for _, row in map_data.iterrows():
 map_click_data = st_folium(map_object, width=1800, height=600)
 
 # Exibir detalhes das multas ao clicar no mapa
-if map_click_data and "last_clicked" in map_click_data:
-    lat = round(map_click_data["last_clicked"]["lat"], 5)
-    lng = round(map_click_data["last_clicked"]["lng"], 5)
+if map_click_data and map_click_data.get("last_clicked"):
+    last_clicked = map_click_data["last_clicked"]
+    
+    if last_clicked:  # Verificar se não é None
+        lat = round(last_clicked.get("lat", 0), 5)
+        lng = round(last_clicked.get("lng", 0), 5)
 
-    # Filtrar dados correspondentes às coordenadas clicadas
-    selected_fines = map_data[
-        (map_data['Latitude'].round(5) == lat) & (map_data['Longitude'].round(5) == lng)
-    ]
+        # Filtrar dados correspondentes às coordenadas clicadas
+        selected_fines = map_data[
+            (map_data['Latitude'].round(5) == lat) & (map_data['Longitude'].round(5) == lng)
+        ]
 
-    # Renderizar tabela com detalhes
-    if not selected_fines.empty:
-        st.markdown("### Detalhes das Multas na Localização Selecionada")
-        st.dataframe(
-            selected_fines[['Local da Infração', 'Data da Infração', 'Valor a ser pago R$', 'Descrição']],
-            hide_index=True,
-            use_container_width=True
-        )
+        # Renderizar tabela com detalhes
+        if not selected_fines.empty:
+            st.markdown("### Detalhes das Multas na Localização Selecionada")
+            st.dataframe(
+                selected_fines[['Local da Infração', 'Data da Infração', 'Valor a ser pago R$', 'Descrição']],
+                hide_index=True,
+                use_container_width=True
+            )
+        else:
+            st.info(f"Nenhuma multa encontrada para as coordenadas selecionadas: {lat}, {lng}.")
     else:
-        st.info(f"Nenhuma multa encontrada para as coordenadas selecionadas: {lat}, {lng}.")
+        st.warning("Nenhum clique válido foi detectado no mapa.")
 
 # Ranking das Localidades
 st.markdown("### Ranking das Localidades com Mais Multas")
