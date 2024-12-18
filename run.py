@@ -167,15 +167,16 @@ except ValueError as e:
     st.error(str(e))
     st.stop()
 
-# Filtrar apenas registros com Status de Pagamento = 'NÃO PAGO'
-dados_iniciais = data_cleaned[data_cleaned['Status de Pagamento'].str.upper() == 'NÃO PAGO']
+# Filtrar apenas registros com Status de Pagamento = 'NÃO PAGO' ao iniciar
+data_cleaned = carregar_e_limpar_dados(carregar_dados_google_drive)
 
-# Remover duplicatas baseadas em 'Auto de Infração'
-dados_iniciais = dados_iniciais.drop_duplicates(subset=['Auto de Infração'])
+# Aplicar filtro inicial: Status de Pagamento = 'NÃO PAGO' e garantir unicidade de Auto de Infração
+data_inicial_default = data_cleaned[data_cleaned['Status de Pagamento'].str.upper() == 'NÃO PAGO']
+data_inicial_default = data_inicial_default.drop_duplicates(subset=['Auto de Infração'])
 
-# Calcular métricas iniciais para os indicadores principais
-total_multas = dados_iniciais['Auto de Infração'].nunique()
-valor_total_a_pagar = dados_iniciais['Valor a ser pago R$'].sum()
+# Calcular métricas iniciais com base nos dados filtrados
+total_multas, valor_total_a_pagar, multas_mes_atual = calcular_metricas(data_inicial_default)
+ultima_consulta = data_inicial_default['Dia da Consulta'].max().strftime('%d/%m/%Y')
 
 # Obter a última data de consulta
 ultima_consulta = dados_iniciais['Dia da Consulta'].max()
