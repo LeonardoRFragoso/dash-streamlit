@@ -102,6 +102,11 @@ st.markdown(
             <span style="font-size: 18px; color: #F37529;">Última Consulta</span>
             <p style="font-size: 38px; color: #F37529; margin: 0;">{ultima_consulta}</p>
         </div>
+        <div class="indicador" style="text-align: center; background-color: #FFFFFF; border: 4px solid #F37529; 
+            border-radius: 15px; box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3); width: 260px; height: 160px;">
+            <span style="font-size: 18px; color: #F37529;">Multas no Mês Atual</span>
+            <p style="font-size: 38px; color: #F37529; margin: 0;">{multas_mes_atual}</p>
+        </div>
     </div>
     """,
     unsafe_allow_html=True,
