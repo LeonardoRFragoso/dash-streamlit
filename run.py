@@ -96,22 +96,24 @@ st.markdown(
 
 # Exibir o logo da empresa acima do título
 logo_url = st.secrets["image"]["logo_url"]  # URL do logo fornecido no secrets
+st.image(logo_url, width=200, use_container_width=False)# Exibir o logo da empresa acima do título
+logo_url = st.secrets["image"]["logo_url"]  # URL do logo fornecido no secrets
 
 # Centralizar a logo com CSS
 st.markdown(
-    """
+    f"""
     <style>
-        .logo-container {
+        .logo-container {{
             display: flex;
             justify-content: center;
             align-items: center;
             margin-bottom: 20px;  /* Espaçamento entre a logo e o título */
-        }
+        }}
     </style>
     <div class="logo-container">
-        <img src="{}" width="200" alt="Logo">
+        <img src="{logo_url}" width="200" alt="Logo">
     </div>
-    """.format(logo_url),  # Ajuste para garantir que o caminho da logo seja corretamente inserido
+    """,
     unsafe_allow_html=True
 )
 
