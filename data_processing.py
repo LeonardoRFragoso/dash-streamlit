@@ -23,19 +23,22 @@ def carregar_e_limpar_dados(carregar_dados_func):
         df['Dia da Consulta'] = pd.to_datetime(df['Dia da Consulta'], errors='coerce', dayfirst=True)
         df['Data da Infração'] = pd.to_datetime(df['Data da Infração'], errors='coerce', dayfirst=True)
 
-        # Remover linhas sem datas válidas
-        df = df.dropna(subset=['Data da Infração', 'Dia da Consulta'])
-
-        # Filtrar apenas o ano atual
-        ano_atual = pd.Timestamp.now().year
-        df = df[(df['Data da Infração'].dt.year == ano_atual) &
-                (df['Status de Pagamento'] == 'NÃO PAGO')]
-
-        # Preprocessar valores monetários
+        # Processar valores monetários
         df = preprocessar_valores(df)
 
-        # Remover duplicatas com base no 'Auto de Infração'
+        # Calcular métricas antes de remover duplicatas
+        total_multas = df['Auto de Infração'].nunique()
+        valor_total_a_pagar = df['Valor a ser pago R$'].sum()
+
+        # Remover duplicatas com base em 'Auto de Infração'
         df = df.sort_values('Dia da Consulta').drop_duplicates(subset=['Auto de Infração'], keep='last')
+
+        # Garantir que 'Data da Infração' está válida
+        df['Data da Infração'] = pd.to_datetime(df['Data da Infração'], errors='coerce', dayfirst=True)
+
+        # Filtrar apenas registros com Status de Pagamento = 'NÃO PAGO' e ano atual
+        ano_atual = pd.Timestamp.now().year
+        df = df[(df['Status de Pagamento'] == 'NÃO PAGO') & (df['Data da Infração'].dt.year == ano_atual)]
 
         # Garantir que as colunas essenciais estejam presentes
         required_columns = ['Data da Infração', 'Valor a ser pago R$', 'Auto de Infração', 
@@ -60,14 +63,17 @@ def preprocessar_valores(df):
     Preprocessa valores monetários no DataFrame.
     """
     if 'Valor a ser pago R$' in df.columns:
-        # Limpar e converter os valores monetários
+        # Remover espaços e símbolos inválidos
         df['Valor a ser pago R$'] = (
             df['Valor a ser pago R$']
             .astype(str)
-            .str.replace(r'[^\d,.-]', '', regex=True)
-            .str.replace(',', '.', regex=False)
-            .astype(float)
+            .str.replace(r'[^\d,.-]', '', regex=True)  # Remove caracteres inválidos
+            .str.replace('.', '', regex=False)        # Remove separador de milhar
+            .str.replace(',', '.', regex=False)       # Converte vírgula decimal para ponto
+            .astype(float)                            # Converte para float
         )
+        # Substituir NaN por 0
+        df['Valor a ser pago R$'].fillna(0, inplace=True)
     return df
 
 def calcular_metricas(df):
