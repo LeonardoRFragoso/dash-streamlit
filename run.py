@@ -113,20 +113,20 @@ except ValueError as e:
     st.error(str(e))
     st.stop()
 
-# Filtro por Período
-st.markdown("<h2 class='titulo-secao' style='color: #F37529;'>Filtro por Período</h2>", unsafe_allow_html=True)
-data_inicial = st.date_input("Data Inicial", value=datetime(2024, 1, 1), key="start_date")
-data_final = st.date_input("Data Final", value=datetime.now(), key="end_date")
+# Cálculo do número de multas no mês atual
+data_atual = pd.to_datetime(datetime.now()).date()  # Data de hoje
+data_cleaned['Dia da Consulta'] = pd.to_datetime(data_cleaned['Dia da Consulta'], errors='coerce').dt.date
 
-# Aplicar o filtro
-if st.button("Aplicar Filtro"):
-    filtered_data = filtrar_dados_por_periodo(data_cleaned, data_inicial, data_final)
-else:
-    filtered_data = data_cleaned
+# Filtra apenas as multas do mês atual (dezembro de 2024)
+multas_mes_atual = len(data_cleaned[
+    (data_cleaned['Dia da Consulta'] == data_atual) & 
+    (data_cleaned['Data da Infração'].dt.month == 12) & 
+    (data_cleaned['Data da Infração'].dt.year == 2024)
+])
 
-# **Recalcular as métricas com os dados filtrados**:
-total_multas, valor_total_a_pagar, multas_mes_atual = calcular_metricas(filtered_data)
-ultima_consulta = filtered_data['Dia da Consulta'].max().strftime('%d/%m/%Y')
+# Calcular métricas
+total_multas, valor_total_a_pagar, _ = calcular_metricas(data_cleaned)
+ultima_consulta = data_cleaned['Dia da Consulta'].max().strftime('%d/%m/%Y')
 
 # Indicadores Principais
 st.markdown(
@@ -152,6 +152,16 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
+# Filtro por Período
+st.markdown("<h2 class='titulo-secao' style='color: #F37529;'>Filtro por Período</h2>", unsafe_allow_html=True)
+data_inicial = st.date_input("Data Inicial", value=datetime(2024, 1, 1), key="start_date")
+data_final = st.date_input("Data Final", value=datetime.now(), key="end_date")
+
+if st.button("Aplicar Filtro"):
+    filtered_data = filtrar_dados_por_periodo(data_cleaned, data_inicial, data_final)
+else:
+    filtered_data = data_cleaned
 
 # Gráfico de Top 10 Veículos
 st.markdown("<h2 class='titulo-secao' style='color: #F37529;'>Top 10 Veículos com Mais Multas e Valores Totais</h2>", unsafe_allow_html=True)
