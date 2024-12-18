@@ -156,9 +156,7 @@ if map_click_data and map_click_data.get("last_object_clicked"):
     lat = map_click_data["last_object_clicked"].get("lat")
     lng = map_click_data["last_object_clicked"].get("lng")
 
-    if 'Descrição' not in map_data.columns:
-        map_data['Descrição'] = "Não especificado"
-
+    # Filtrando as multas que correspondem ao local clicado
     selected_fines = map_data[(map_data['Latitude'] == lat) & (map_data['Longitude'] == lng)]
 
     if not selected_fines.empty:
