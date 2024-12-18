@@ -29,7 +29,7 @@ st.markdown(
             justify-content: center;
             align-items: center;
             text-align: center;
-            margin: 40px auto;
+            margin: 0 auto;
             padding: 25px 20px;
             background: linear-gradient(to right, #F37529, rgba(255, 255, 255, 0.8));
             border-radius: 15px;
@@ -89,7 +89,17 @@ st.markdown(
             margin: 0;
             font-weight: bold;
         }
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;  /* Ocupa a altura total da tela */
+            flex-direction: column;
+        }
     </style>
+    <div class="logo-container">
+        <img src="https://link-da-sua-imagem/logo.png" width="200" alt="Logo">
+    </div>
     <div class="titulo-dashboard-container">
         <h1 class="titulo-dashboard">Torre de Controle iTracker - Dashboard de Multas</h1>
     </div>
