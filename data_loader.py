@@ -1,25 +1,41 @@
 import pandas as pd
 
-def load_data(file_path, sheet_name='Multas'):
+def load_data(file_path, sheet_name=None):
     """Load and preprocess the data."""
     try:
-        # Carrega a planilha
+        # Detectar a aba automaticamente se não especificada
+        sheet_name = sheet_name or 0
+
+        # Carregar a planilha
         df = pd.read_excel(file_path, sheet_name=sheet_name)
 
-        # Converte colunas de datas para o formato datetime
+        # Padronizar os nomes das colunas
+        column_mapping = {
+            "Valor a ser pago R$": "Valor a ser pago R$",
+            "Data da Infração": "Data da Infração",
+            "Dia da Consulta": "Dia da Consulta",
+            "Auto de Infração": "Auto de Infração",
+        }
+        df.rename(columns=column_mapping, inplace=True)
+
+        # Verificar se as colunas essenciais existem
+        required_columns = ['Dia da Consulta', 'Data da Infração', 'Valor a ser pago R$', 'Auto de Infração']
+        if not all(col in df.columns for col in required_columns):
+            raise ValueError(f"As colunas essenciais estão ausentes: {', '.join([col for col in required_columns if col not in df.columns])}")
+
+        # Converter colunas de datas para o formato datetime
         df['Dia da Consulta'] = pd.to_datetime(df['Dia da Consulta'], errors='coerce', dayfirst=True)
         df['Data da Infração'] = pd.to_datetime(df['Data da Infração'], errors='coerce', dayfirst=True)
 
-        # Verificar se as colunas essenciais existem
-        if 'Dia da Consulta' not in df.columns or 'Data da Infração' not in df.columns:
-            raise ValueError("As colunas 'Dia da Consulta' e 'Data da Infração' são essenciais e não foram encontradas.")
-
-        # Preprocessa o campo 'Valor a Ser Pago (R$)'
-        df['Valor a Ser Pago (R$)'] = df['Valor a Ser Pago (R$)'].astype(str)\
-            .str.replace(r'[^\d,.-]', '', regex=True)\
-            .str.replace(r'\.(?=\d{3,})', '', regex=True)\
-            .str.replace(',', '.')\
+        # Preprocessar o campo 'Valor a ser pago R$'
+        df['Valor a ser pago R$'] = (
+            df['Valor a ser pago R$']
+            .astype(str)
+            .str.replace(r'[^\d,.-]', '', regex=True)
+            .str.replace(r'\.(?=\d{3,})', '', regex=True)
+            .str.replace(',', '.')
             .apply(lambda x: float(x) if x.replace('.', '', 1).isdigit() else 0)
+        )
 
         return df
 
