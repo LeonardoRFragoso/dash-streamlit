@@ -20,10 +20,6 @@ from geo_utils import load_cache, save_cache, get_cached_coordinates
 # Configuração inicial do Streamlit
 st.set_page_config(page_title="Torre de Controle iTracker - Dashboard de Multas", layout="wide")
 
-# Exibir o logo da empresa acima do título
-logo_url = st.secrets["image"]["logo_url"]  # URL do logo fornecido no secrets
-st.image(logo_url, width=200, use_container_width=False)
-
 # Estilização CSS e HTML
 st.markdown(
     """
@@ -93,17 +89,18 @@ st.markdown(
             margin: 0;
             font-weight: bold;
         }
-        .logo-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 30vh;  /* Ajustado para ocupar uma parte da tela */
-            flex-direction: column;
-        }
     </style>
-    <div class="logo-container">
-        <img src="https://link-da-sua-imagem/logo.png" width="200" alt="Logo">
-    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+# Exibir o logo da empresa acima do título
+logo_url = st.secrets["image"]["logo_url"]  # URL do logo fornecido no secrets
+st.image(logo_url, width=200, use_container_width=False)
+
+# Título do Dashboard
+st.markdown(
+    """
     <div class="titulo-dashboard-container">
         <h1 class="titulo-dashboard">Torre de Controle iTracker - Dashboard de Multas</h1>
     </div>
