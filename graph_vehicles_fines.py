@@ -3,39 +3,47 @@ import plotly.express as px
 
 def get_vehicle_fines_data(df):
     """
-    Process data to get vehicles with the most fines and their total amounts.
+    Processa os dados para obter veículos com mais multas e seus valores totais.
 
-    Parameters:
-        df (DataFrame): The dataset containing fines information.
+    Parâmetros:
+        df (DataFrame): O conjunto de dados contendo informações sobre multas.
 
-    Returns:
-        DataFrame: A DataFrame with aggregated data for fines by vehicle.
+    Retorna:
+        DataFrame: Um DataFrame com os dados agregados por veículo.
     """
     # Nome correto da coluna de valor de multas
     value_column = 'Valor a ser pago R$'
+    date_column = 'Data da Infração'
 
-    # Verificar se as colunas necessárias existem
-    required_columns = ['Placa Relacionada', value_column, 'Auto de Infração']
+    # Verificar colunas essenciais
+    required_columns = ['Placa Relacionada', value_column, 'Auto de Infração', date_column]
     for col in required_columns:
         if col not in df.columns:
             raise KeyError(f"A coluna '{col}' não está presente no DataFrame.")
 
-    # Fazer uma cópia do DataFrame para evitar modificar o original
+    # Copiar o DataFrame
     df = df.copy()
 
-    # Garantir que a coluna de valores está no formato numérico
+    # Converter 'Data da Infração' para datetime e filtrar apenas o ano atual
+    df[date_column] = pd.to_datetime(df[date_column], errors='coerce')
+    df = df[df[date_column].dt.year == 2024]
+
+    # Garantir que 'Valor a ser pago R$' esteja no formato numérico
     df[value_column] = (
         df[value_column]
         .astype(str)
-        .replace({r'[^\d,.-]': ''}, regex=True)  # Remover caracteres não numéricos
+        .str.replace(r'[^\d,.-]', '', regex=True)  # Remove caracteres não numéricos
+        .str.replace(',', '.')
+        .astype(float)
     )
-    df[value_column] = df[value_column].apply(lambda x: x.replace(',', '.'))  # Garantir que as vírgulas se tornem pontos
-    df[value_column] = pd.to_numeric(df[value_column], errors='coerce')  # Converter para numérico
+
+    # Remover duplicatas baseadas no 'Auto de Infração' (registro único de multa)
+    df = df.drop_duplicates(subset=['Auto de Infração'])
 
     # Agrupar os dados por 'Placa Relacionada'
     fines_by_vehicle = df.groupby('Placa Relacionada').agg(
         total_fines=(value_column, 'sum'),
-        num_fines=('Auto de Infração', 'count')
+        num_fines=('Auto de Infração', 'nunique')  # Contar apenas multas únicas
     ).reset_index()
 
     # Ordenar por número de multas em ordem decrescente
@@ -45,28 +53,28 @@ def get_vehicle_fines_data(df):
 
 def create_vehicle_fines_chart(df):
     """
-    Create a bar chart for vehicles with the most fines.
+    Cria um gráfico de barras para os veículos com mais multas.
 
-    Parameters:
-        df (DataFrame): The dataset containing fines information.
+    Parâmetros:
+        df (DataFrame): O conjunto de dados contendo informações sobre multas.
 
-    Returns:
-        plotly.graph_objects.Figure: A bar chart showing the top 10 vehicles with the most fines.
+    Retorna:
+        plotly.graph_objects.Figure: Um gráfico de barras mostrando os 10 veículos principais.
     """
     # Processar os dados
     fines_by_vehicle = get_vehicle_fines_data(df)
 
-    # Verificar se há dados suficientes para gerar o gráfico
+    # Verificar se há dados suficientes
     if fines_by_vehicle.empty:
         raise ValueError("Nenhum dado disponível para gerar o gráfico. Verifique os dados filtrados.")
 
     # Criar o gráfico
     fig = px.bar(
-        fines_by_vehicle.head(10),  # Limitar aos 10 veículos principais
+        fines_by_vehicle.head(10),  # Top 10 veículos
         x='Placa Relacionada',
         y='total_fines',
         color='num_fines',
-        text='num_fines',  # Exibir o número de multas dentro das barras
+        text='num_fines',
         labels={
             'Placa Relacionada': 'Veículo (Placa Relacionada)',
             'total_fines': 'Total das Multas (R$)',
@@ -74,19 +82,18 @@ def create_vehicle_fines_chart(df):
         }
     )
 
+    # Ajustar o estilo do gráfico
     fig.update_traces(
-        texttemplate='R$ %{y:,.2f}<br>%{text} multas',  # Exibe valores e número de multas
-        textposition='inside'  # Texto dentro das barras
+        texttemplate='R$ %{y:,.2f}<br>%{text} multas',
+        textposition='inside'
     )
 
     fig.update_layout(
-        title="",  # Remover título automático do gráfico
+        title="Top 10 Veículos com Mais Multas (Ano Atual)",
         xaxis_title='',
         yaxis_title='Total das Multas (R$)',
         coloraxis_colorbar=dict(title='Número de Multas'),
-        uniformtext_minsize=8,
-        uniformtext_mode='hide',
-        template="plotly_dark"  # Tema opcional escuro
+        template="plotly_white"
     )
 
     return fig
