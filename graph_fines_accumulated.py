@@ -22,15 +22,19 @@ def create_fines_accumulated_chart(data, data_inicial=None, data_final=None, per
     data = data.dropna(subset=['Data da Infração'])
     
     # Validar datas iniciais e finais
-    if data_inicial is None or not pd.to_datetime(data_inicial, errors='coerce'):
+    if data_inicial is None or pd.isna(pd.to_datetime(data_inicial, errors='coerce')):
         data_inicial = data['Data da Infração'].min()
     else:
         data_inicial = pd.to_datetime(data_inicial, errors='coerce')
     
-    if data_final is None or not pd.to_datetime(data_final, errors='coerce'):
+    if data_final is None or pd.isna(pd.to_datetime(data_final, errors='coerce')):
         data_final = data['Data da Infração'].max()
     else:
         data_final = pd.to_datetime(data_final, errors='coerce')
+
+    # Verificar se as datas são válidas
+    if pd.isna(data_inicial) or pd.isna(data_final):
+        raise ValueError("As datas fornecidas são inválidas. Verifique os valores de data_inicial e data_final.")
 
     # Filtrar os dados pelo período
     data = data[(data['Data da Infração'] >= data_inicial) & (data['Data da Infração'] <= data_final)]
