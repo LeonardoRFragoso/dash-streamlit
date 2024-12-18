@@ -1,3 +1,11 @@
+
+Se o gráfico de Top 10 Veículos com Mais Multas e Valores Totais não está sendo exibido, o problema pode estar relacionado à chamada da função create_vehicle_fines_chart ou ao resultado de filtered_data.
+
+Vou revisar e corrigir o trecho completo do run.py, assegurando que todos os gráficos, tabelas, e estilizações funcionem corretamente, com o gráfico de Top 10 Veículos aparecendo acima do mapa.
+
+Versão Corrigida do run.py
+python
+Copiar código
 import streamlit as st
 import pandas as pd
 import folium
@@ -77,43 +85,52 @@ ultima_consulta = data_cleaned['Dia da Consulta'].max().strftime('%d/%m/%Y')
 # Indicadores Principais
 st.markdown(
     f"""
-    <div class="indicadores-container" style="...">
-        <!-- Indicadores aqui -->
+    <div class="indicadores-container" style="
+        display: flex; justify-content: center; align-items: center; gap: 40px; margin-top: 30px;">
+        <div class="indicador" style="text-align: center; background-color: #FFFFFF; border: 4px solid #F37529; 
+            border-radius: 15px; box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3); width: 260px; height: 160px;">
+            <span style="font-size: 18px; color: #F37529;">Total de Multas</span>
+            <p style="font-size: 38px; color: #F37529; margin: 0;">{total_multas}</p>
+        </div>
+        <div class="indicador" style="text-align: center; background-color: #FFFFFF; border: 4px solid #F37529; 
+            border-radius: 15px; box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3); width: 260px; height: 160px;">
+            <span style="font-size: 18px; color: #F37529;">Valor Total a Pagar</span>
+            <p style="font-size: 38px; color: #F37529; margin: 0;">R$ {valor_total_a_pagar:,.2f}</p>
+        </div>
+        <div class="indicador" style="text-align: center; background-color: #FFFFFF; border: 4px solid #F37529; 
+            border-radius: 15px; box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3); width: 260px; height: 160px;">
+            <span style="font-size: 18px; color: #F37529;">Última Consulta</span>
+            <p style="font-size: 38px; color: #F37529; margin: 0;">{ultima_consulta}</p>
+        </div>
     </div>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
 
 # Filtro por Período
-data_inicial_default = datetime(2024, 1, 1)
-data_final_default = datetime.now()
-data_inicial = st.date_input("Data Inicial", value=data_inicial_default, key="start_date")
-data_final = st.date_input("Data Final", value=data_final_default, key="end_date")
+data_inicial = st.date_input("Data Inicial", value=datetime(2024, 1, 1), key="start_date")
+data_final = st.date_input("Data Final", value=datetime.now(), key="end_date")
 
 if st.button("Aplicar Filtro"):
     filtered_data = filtrar_dados_por_periodo(data_cleaned, data_inicial, data_final)
 else:
     filtered_data = data_cleaned
 
-# Gráficos
+# Gráfico de Top 10 Veículos
 st.markdown("### Top 10 Veículos com Mais Multas e Valores Totais")
 st.plotly_chart(create_vehicle_fines_chart(filtered_data), use_container_width=True)
 
 # Mapa de Distribuição Geográfica
 st.markdown("### Distribuição Geográfica das Multas")
-# Carregar cache de coordenadas
 API_KEY = st.secrets["API_KEY"]
 coordinates_cache = load_cache()
 
-# Filtrar dados e aplicar geolocalização
 map_data = filtered_data.dropna(subset=['Local da Infração']).copy()
 map_data[['Latitude', 'Longitude']] = map_data['Local da Infração'].apply(
     lambda x: pd.Series(get_cached_coordinates(x, API_KEY, coordinates_cache))
 )
+save_cache(coordinates_cache)
 
-save_cache(coordinates_cache)  # Salva o cache atualizado
-
-# Criação do mapa
 map_center = [map_data['Latitude'].mean(), map_data['Longitude'].mean()] if not map_data.empty else [0, 0]
 map_object = folium.Map(location=map_center, zoom_start=5, tiles="CartoDB dark_matter")
 for _, row in map_data.iterrows():
