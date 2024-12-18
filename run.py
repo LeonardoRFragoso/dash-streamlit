@@ -118,7 +118,9 @@ st.markdown("<h2 class='titulo-secao' style='color: #F37529;'>Filtro por Períod
 data_inicial = st.date_input("Data Inicial", value=datetime(2024, 1, 1), key="start_date")
 data_final = st.date_input("Data Final", value=datetime.now(), key="end_date")
 
+# Aguardar o usuário clicar no filtro para realizar as alterações
 if st.button("Aplicar Filtro"):
+    # Aplicar o filtro
     filtered_data = filtrar_dados_por_periodo(data_cleaned, data_inicial, data_final)
 else:
     filtered_data = data_cleaned
