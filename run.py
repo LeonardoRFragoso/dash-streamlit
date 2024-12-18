@@ -155,14 +155,14 @@ ultima_consulta = data_cleaned['Dia da Consulta'].max().strftime('%d/%m/%Y')
 # Filtro por Período com layout otimizado
 st.markdown("<h2 class='titulo-secao' style='color: #F37529;'>Filtro por Período</h2>", unsafe_allow_html=True)
 
-# Organizar os campos em uma única coluna para que ocupem menos espaço horizontal
-col1 = st.columns(1)  # Uma coluna
+# Organizar os campos em duas colunas menores
+col1, col2 = st.columns([0.5, 0.5])  # Definindo o peso das colunas
 
-# Acessando a coluna diretamente sem o `with`
-data_inicial = col1[0].date_input("Data Inicial", value=datetime(2024, 1, 1), key="start_date")
-data_final = col1[0].date_input("Data Final", value=datetime.now(), key="end_date")
+# Acessando as colunas diretamente sem o `with`
+data_inicial = col1.date_input("Data Inicial", value=datetime(2024, 1, 1), key="start_date")
+data_final = col2.date_input("Data Final", value=datetime.now(), key="end_date")
 
-# Usar um `key` único para cada botão
+# Usar um `key` único para o botão "Aplicar Filtro"
 if st.button("Aplicar Filtro", key="filtro_aplicar_1"):
     # Filtrar dados usando a 'Data da Infração'
     filtered_data = filtrar_dados_por_periodo(data_cleaned, data_inicial, data_final, coluna='Data da Infração')
