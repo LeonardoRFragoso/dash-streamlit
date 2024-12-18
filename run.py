@@ -117,14 +117,18 @@ st.markdown("### Distribuição Geográfica das Multas")
 API_KEY = st.secrets["API_KEY"]
 coordinates_cache = load_cache()
 
+# Filtrar dados e aplicar geolocalização
 map_data = filtered_data.dropna(subset=['Local da Infração']).copy()
 map_data[['Latitude', 'Longitude']] = map_data['Local da Infração'].apply(
     lambda x: pd.Series(get_cached_coordinates(x, API_KEY, coordinates_cache))
 )
 save_cache(coordinates_cache)
 
+# Criação do mapa
 map_center = [map_data['Latitude'].mean(), map_data['Longitude'].mean()] if not map_data.empty else [0, 0]
 map_object = folium.Map(location=map_center, zoom_start=5, tiles="CartoDB dark_matter")
+
+# Adicionar marcadores ao mapa
 for _, row in map_data.iterrows():
     popup_content = f"<b>Local:</b> {row['Local da Infração']}<br><b>Valor:</b> R$ {row['Valor a ser pago R$']:.2f}"
     folium.Marker(
@@ -133,7 +137,31 @@ for _, row in map_data.iterrows():
         icon=CustomIcon("https://cdn-icons-png.flaticon.com/512/1828/1828843.png", icon_size=(30, 30)),
     ).add_to(map_object)
 
-st_folium(map_object, width=1800, height=600)
+# Exibir o mapa no Streamlit
+map_click_data = st_folium(map_object, width=1800, height=600)
+
+# Exibir tabela com detalhes das multas ao clicar no mapa
+if map_click_data and "last_clicked" in map_click_data and map_click_data["last_clicked"]:
+    # Capturar coordenadas clicadas no mapa
+    lat = map_click_data["last_clicked"]["lat"]
+    lng = map_click_data["last_clicked"]["lng"]
+
+    # Filtrar as multas baseadas na coordenada clicada
+    selected_fines = map_data[
+        (map_data['Latitude'].round(5) == round(lat, 5)) &
+        (map_data['Longitude'].round(5) == round(lng, 5))
+    ]
+
+    # Verificar se há multas para a coordenada selecionada
+    if not selected_fines.empty:
+        st.markdown("### Detalhes das Multas na Localização Selecionada")
+        st.dataframe(
+            selected_fines[['Data da Infração', 'Valor a ser pago R$', 'Enquadramento', 'Descrição da Infração']],
+            use_container_width=True,
+            hide_index=True
+        )
+    else:
+        st.info("Nenhuma multa encontrada para a localização selecionada.")
 
 # Ranking das Localidades
 st.markdown("### Ranking das Localidades com Mais Multas")
