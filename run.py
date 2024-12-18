@@ -203,8 +203,8 @@ for _, row in map_data.iterrows():
             icon=CustomIcon(icon_url, icon_size=(30, 30)),
         ).add_to(map_object)
 
-# Exibição do mapa
-map_click_data = st_folium(map_object, width=1800, height=600)
+# Exibição do mapa ocupando toda a largura da tela
+map_click_data = st_folium(map_object, width="100%", height=600)
 
 # Detalhes das multas para a localização selecionada
 if map_click_data and map_click_data.get("last_object_clicked"):
