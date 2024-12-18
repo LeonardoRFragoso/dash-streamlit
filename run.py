@@ -95,6 +95,10 @@ if st.button("Aplicar Filtro"):
 else:
     filtered_data = data_cleaned
 
+# Gráficos
+st.markdown("### Top 10 Veículos com Mais Multas e Valores Totais")
+st.plotly_chart(create_vehicle_fines_chart(filtered_data), use_container_width=True)
+
 # Mapa de Distribuição Geográfica
 st.markdown("### Distribuição Geográfica das Multas")
 # Carregar cache de coordenadas
