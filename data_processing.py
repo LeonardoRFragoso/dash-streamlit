@@ -135,7 +135,9 @@ data_inicial_default = data_inicial_default.drop_duplicates(subset=['Auto de Inf
 
 # Converter valores monetários para float
 data_inicial_default['Valor a ser pago R$'] = pd.to_numeric(
-    data_inicial_default['Valor a ser pago R$'].str.replace(',', '.'), errors='coerce'
+    data_inicial_default['Valor a ser pago R$'].astype(str)
+    .str.replace(',', '.', regex=False)
+    .str.replace('[^\d.]', '', regex=True), errors='coerce'
 )
 
 # Calcular métricas iniciais (antes da aplicação de filtros)
