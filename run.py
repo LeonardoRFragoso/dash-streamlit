@@ -167,20 +167,15 @@ except ValueError as e:
     st.error(str(e))
     st.stop()
 
-# Cálculo do número de multas no mês atual
-data_atual = pd.to_datetime(datetime.now()).date()  # Data de hoje
-data_cleaned['Dia da Consulta'] = pd.to_datetime(data_cleaned['Dia da Consulta'], errors='coerce').dt.date
+# Filtrar apenas registros com Status de Pagamento = 'NÃO PAGO' ao iniciar
+data_inicial_default = data_cleaned[data_cleaned['Status de Pagamento'] == 'NÃO PAGO']
 
-# Filtra apenas as multas do mês atual (dezembro de 2024)
-multas_mes_atual = len(data_cleaned[
-    (data_cleaned['Dia da Consulta'] == data_atual) & 
-    (data_cleaned['Data da Infração'].dt.month == 12) & 
-    (data_cleaned['Data da Infração'].dt.year == 2024)
-])
+# Remover duplicatas baseadas em 'Auto de Infração'
+data_inicial_default = data_inicial_default.drop_duplicates(subset=['Auto de Infração'])
 
-# Calcular métricas
-total_multas, valor_total_a_pagar, _ = calcular_metricas(data_cleaned)
-ultima_consulta = data_cleaned['Dia da Consulta'].max().strftime('%d/%m/%Y')
+# Calcular métricas iniciais (antes da aplicação de filtros)
+total_multas, valor_total_a_pagar, multas_mes_atual = calcular_metricas(data_inicial_default)
+ultima_consulta = data_inicial_default['Dia da Consulta'].max().strftime('%d/%m/%Y')
 
 # Filtro por Período com layout otimizado
 st.markdown("<h2 class='titulo-secao' style='color: #0066B4;'>Filtro por Período</h2>", unsafe_allow_html=True)
