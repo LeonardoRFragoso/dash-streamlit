@@ -1,11 +1,3 @@
-
-Se o gráfico de Top 10 Veículos com Mais Multas e Valores Totais não está sendo exibido, o problema pode estar relacionado à chamada da função create_vehicle_fines_chart ou ao resultado de filtered_data.
-
-Vou revisar e corrigir o trecho completo do run.py, assegurando que todos os gráficos, tabelas, e estilizações funcionem corretamente, com o gráfico de Top 10 Veículos aparecendo acima do mapa.
-
-Versão Corrigida do run.py
-python
-Copiar código
 import streamlit as st
 import pandas as pd
 import folium
