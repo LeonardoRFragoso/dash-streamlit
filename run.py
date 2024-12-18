@@ -168,23 +168,14 @@ except ValueError as e:
     st.stop()
 
 # Filtrar apenas registros com Status de Pagamento = 'NÃO PAGO' ao iniciar
-data_cleaned = carregar_e_limpar_dados(carregar_dados_google_drive)
+data_inicial_default = data_cleaned[data_cleaned['Status de Pagamento'] == 'NÃO PAGO']
 
-# Aplicar filtro inicial: Status de Pagamento = 'NÃO PAGO' e garantir unicidade de Auto de Infração
-data_inicial_default = data_cleaned[data_cleaned['Status de Pagamento'].str.upper() == 'NÃO PAGO']
+# Remover duplicatas baseadas em 'Auto de Infração'
 data_inicial_default = data_inicial_default.drop_duplicates(subset=['Auto de Infração'])
 
-# Calcular métricas iniciais com base nos dados filtrados
+# Calcular métricas iniciais (antes da aplicação de filtros)
 total_multas, valor_total_a_pagar, multas_mes_atual = calcular_metricas(data_inicial_default)
 ultima_consulta = data_inicial_default['Dia da Consulta'].max().strftime('%d/%m/%Y')
-
-# Obter a última data de consulta
-ultima_consulta = dados_iniciais['Dia da Consulta'].max()
-ultima_consulta = ultima_consulta.strftime('%d/%m/%Y') if pd.notnull(ultima_consulta) else 'N/A'
-
-# Contar multas no mês atual
-mes_atual = pd.Timestamp.now().month
-multas_mes_atual = dados_iniciais[dados_iniciais['Data da Infração'].dt.month == mes_atual].shape[0]
 
 # Filtro por Período com layout otimizado
 st.markdown("<h2 class='titulo-secao' style='color: #0066B4;'>Filtro por Período</h2>", unsafe_allow_html=True)
@@ -196,7 +187,7 @@ col1, col2 = st.columns([0.5, 0.5])  # Definindo o peso das colunas
 data_inicial = col1.date_input("Data Inicial", value=datetime(2024, 1, 1), key="start_date")
 data_final = col2.date_input("Data Final", value=datetime.now(), key="end_date")
 
-# Usar um `key` único para o botão "Aplicar Filtro"
+# Aplicar filtro se o botão for pressionado
 if st.button("Aplicar Filtro", key="filtro_aplicar_1"):
     # Filtrar dados usando a 'Data da Infração'
     filtered_data = filtrar_dados_por_periodo(data_cleaned, data_inicial, data_final, coluna='Data da Infração')
@@ -205,10 +196,9 @@ if st.button("Aplicar Filtro", key="filtro_aplicar_1"):
     total_multas, valor_total_a_pagar, multas_mes_atual = calcular_metricas(filtered_data)
     ultima_consulta = filtered_data['Dia da Consulta'].max().strftime('%d/%m/%Y')
 else:
-    # Caso o filtro não tenha sido aplicado, usar dados não filtrados
-    filtered_data = data_cleaned
-    total_multas, valor_total_a_pagar, multas_mes_atual = calcular_metricas(filtered_data)
-    ultima_consulta = data_cleaned['Dia da Consulta'].max().strftime('%d/%m/%Y')
+    # Caso o filtro não tenha sido aplicado, usar os dados filtrados inicialmente
+    filtered_data = data_inicial_default
+
 
 # Indicadores Principais
 st.markdown(
