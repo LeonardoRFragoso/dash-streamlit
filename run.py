@@ -93,7 +93,7 @@ st.markdown(
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;  /* Ocupa a altura total da tela */
+            height: 30vh;  /* Ajustado para ocupar uma parte da tela */
             flex-direction: column;
         }
     </style>
