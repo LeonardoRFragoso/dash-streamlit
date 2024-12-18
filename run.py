@@ -164,9 +164,8 @@ with col1:
 with col2:
     data_final = st.date_input("Data Final", value=datetime.now(), key="end_date")
 
-# Botão centralizado
-st.markdown("<div style='text-align: center; margin-top: 10px;'>", unsafe_allow_html=True)
-if st.button("Aplicar Filtro"):
+# Botão com chave única para evitar duplicação
+if st.button("Aplicar Filtro", key="filtro_aplicar"):
     filtered_data = filtrar_dados_por_periodo(data_cleaned, data_inicial, data_final, coluna='Data da Infração')
     total_multas, valor_total_a_pagar, multas_mes_atual = calcular_metricas(filtered_data)
     st.write(f"**Total de Multas:** {total_multas}")
@@ -174,8 +173,6 @@ if st.button("Aplicar Filtro"):
     st.write(f"**Multas no Mês Atual:** {multas_mes_atual}")
 else:
     filtered_data = data_cleaned
-st.markdown("</div>", unsafe_allow_html=True)
-
 
 # Aplicar Filtro
 if st.button("Aplicar Filtro"):
