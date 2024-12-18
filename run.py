@@ -167,15 +167,22 @@ except ValueError as e:
     st.error(str(e))
     st.stop()
 
-# Filtrar apenas registros com Status de Pagamento = 'NÃO PAGO' ao iniciar
-data_inicial_default = data_cleaned[data_cleaned['Status de Pagamento'] == 'NÃO PAGO']
+# Filtrar dados com Status de Pagamento = 'NÃO PAGO' e Auto de Infração únicos
+dados_iniciais = data_cleaned[
+    (data_cleaned['Status de Pagamento'] == 'NÃO PAGO')
+].drop_duplicates(subset=['Auto de Infração'])
 
-# Remover duplicatas baseadas em 'Auto de Infração'
-data_inicial_default = data_inicial_default.drop_duplicates(subset=['Auto de Infração'])
+# Garantir que não haja NaN em colunas críticas
+dados_iniciais = dados_iniciais.dropna(subset=['Dia da Consulta', 'Data da Infração'])
 
-# Calcular métricas iniciais (antes da aplicação de filtros)
-total_multas, valor_total_a_pagar, multas_mes_atual = calcular_metricas(data_inicial_default)
-ultima_consulta = data_inicial_default['Dia da Consulta'].max().strftime('%d/%m/%Y')
+# Calcular métricas para os indicadores principais
+total_multas = dados_iniciais['Auto de Infração'].nunique()
+valor_total_a_pagar = dados_iniciais['Valor a ser pago R$'].sum()
+ultima_consulta = dados_iniciais['Dia da Consulta'].max().strftime('%d/%m/%Y')
+
+# Multas no mês atual
+mes_atual = pd.Timestamp.now().month
+multas_mes_atual = dados_iniciais[dados_iniciais['Data da Infração'].dt.month == mes_atual].shape[0]
 
 # Filtro por Período com layout otimizado
 st.markdown("<h2 class='titulo-secao' style='color: #0066B4;'>Filtro por Período</h2>", unsafe_allow_html=True)
