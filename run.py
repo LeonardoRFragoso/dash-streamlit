@@ -148,34 +148,28 @@ for _, row in map_data.iterrows():
             icon=CustomIcon(icon_url, icon_size=(30, 30)),
         ).add_to(map_object)
 
-# Capturar cliques no mapa
+# Exibição do mapa
 map_click_data = st_folium(map_object, width=1800, height=600)
 
-# Exibir detalhes das multas ao clicar no mapa
-if map_click_data:
-    last_clicked = map_click_data.get("last_clicked")
-    
-    if last_clicked and "lat" in last_clicked and "lng" in last_clicked:
-        lat = round(last_clicked["lat"], 5)
-        lng = round(last_clicked["lng"], 5)
-        
-        # Filtrar dados correspondentes às coordenadas clicadas
-        selected_fines = map_data[
-            (map_data['Latitude'].round(5) == lat) & (map_data['Longitude'].round(5) == lng)
-        ]
+# Detalhes das multas para a localização selecionada
+if map_click_data and map_click_data.get("last_object_clicked"):
+    lat = map_click_data["last_object_clicked"].get("lat")
+    lng = map_click_data["last_object_clicked"].get("lng")
 
-        # Renderizar tabela com detalhes
-        if not selected_fines.empty:
-            st.markdown("### Detalhes das Multas na Localização Selecionada")
-            st.dataframe(
-                selected_fines[['Local da Infração', 'Data da Infração', 'Valor a ser pago R$', 'Descrição']],
-                hide_index=True,
-                use_container_width=True
-            )
-        else:
-            st.info(f"Nenhuma multa encontrada para as coordenadas selecionadas: {lat}, {lng}.")
+    if 'Descrição' not in map_data.columns:
+        map_data['Descrição'] = "Não especificado"
+
+    selected_fines = map_data[(map_data['Latitude'] == lat) & (map_data['Longitude'] == lng)]
+
+    if not selected_fines.empty:
+        st.markdown("<h2 style='text-align: center; color: #FF7F00; font-weight: bold;'>Detalhes das Multas para a Localização Selecionada</h2>", unsafe_allow_html=True)
+        st.dataframe(
+            selected_fines[['Local da Infração', 'Valor a ser pago R$', 'Data da Infração', 'Descrição']].reset_index(drop=True),
+            use_container_width=True,
+            hide_index=True
+        )
     else:
-        st.warning("Nenhum clique válido foi detectado no mapa.")
+        st.info("Nenhuma multa encontrada para a localização selecionada.")
 
 # Ranking das Localidades
 st.markdown("### Ranking das Localidades com Mais Multas")
