@@ -76,22 +76,76 @@ ultima_consulta = data_cleaned['Dia da Consulta'].max().strftime('%d/%m/%Y')
 # Indicadores Principais
 st.markdown(
     f"""
-    <div style='display: flex; gap: 40px; justify-content: center; margin: 30px;'>
-        <div style='text-align: center;'>
-            <h3>Total de Multas</h3><p style='font-size: 24px;'>{total_multas}</p>
+    <div class="indicadores-container" style="
+        display: flex; 
+        justify-content: center; 
+        align-items: center; 
+        flex-wrap: wrap; 
+        gap: 40px; 
+        margin-top: 30px;">
+        <div class="indicador" style="
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            flex-direction: column; 
+            text-align: center; 
+            background-color: #FFFFFF; 
+            border: 4px solid #F37529; 
+            border-radius: 15px; 
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3); 
+            width: 260px; 
+            height: 160px;">
+            <span style="font-size: 18px; color: #F37529; margin-bottom: 8px;">Total de Multas</span>
+            <p style="font-size: 38px; font-weight: bold; color: #F37529; margin: 0;">{total_multas}</p>
         </div>
-        <div style='text-align: center;'>
-            <h3>Valor Total a Pagar</h3><p style='font-size: 24px;'>R$ {valor_total_a_pagar:,.2f}</p>
+        <div class="indicador" style="
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            flex-direction: column; 
+            text-align: center; 
+            background-color: #FFFFFF; 
+            border: 4px solid #F37529; 
+            border-radius: 15px; 
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3); 
+            width: 260px; 
+            height: 160px;">
+            <span style="font-size: 18px; color: #F37529; margin-bottom: 8px;">Valor Total a Pagar</span>
+            <p style="font-size: 38px; font-weight: bold; color: #F37529; margin: 0;">R$ {valor_total_a_pagar:,.2f}</p>
         </div>
-        <div style='text-align: center;'>
-            <h3>Multas no Mês Atual</h3><p style='font-size: 24px;'>{multas_mes_atual}</p>
+        <div class="indicador" style="
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            flex-direction: column; 
+            text-align: center; 
+            background-color: #FFFFFF; 
+            border: 4px solid #F37529; 
+            border-radius: 15px; 
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3); 
+            width: 260px; 
+            height: 160px;">
+            <span style="font-size: 18px; color: #F37529; margin-bottom: 8px;">Multas no Mês Atual</span>
+            <p style="font-size: 38px; font-weight: bold; color: #F37529; margin: 0;">{multas_mes_atual}</p>
         </div>
-        <div style='text-align: center;'>
-            <h3>Última Consulta</h3><p style='font-size: 24px;'>{ultima_consulta}</p>
+        <div class="indicador" style="
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            flex-direction: column; 
+            text-align: center; 
+            background-color: #FFFFFF; 
+            border: 4px solid #F37529; 
+            border-radius: 15px; 
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3); 
+            width: 260px; 
+            height: 160px;">
+            <span style="font-size: 18px; color: #F37529; margin-bottom: 8px;">Última Consulta</span>
+            <p style="font-size: 38px; font-weight: bold; color: #F37529; margin: 0;">{ultima_consulta}</p>
         </div>
     </div>
     """,
-    unsafe_allow_html=True,
+    unsafe_allow_html=True
 )
 
 # Filtro por Período
