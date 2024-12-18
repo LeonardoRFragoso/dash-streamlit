@@ -39,3 +39,19 @@ def preprocessar_valores(df):
             .str.replace(',', '.')\
             .apply(lambda x: float(x) if x.replace('.', '', 1).isdigit() else 0)
     return df
+
+def calcular_metricas(df):
+    """
+    Calcula métricas principais:
+    - Total de multas
+    - Valor total a pagar
+    - Multas do mês atual
+    """
+    total_multas = len(df)
+    valor_total_a_pagar = df['Valor a Ser Pago (R$)'].sum()
+
+    # Filtra multas do mês atual
+    mes_atual = pd.Timestamp.now().month
+    multas_mes_atual = df[df['Data da Infração'].dt.month == mes_atual].shape[0]
+
+    return total_multas, valor_total_a_pagar, multas_mes_atual
