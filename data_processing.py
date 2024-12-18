@@ -10,7 +10,7 @@ def carregar_e_limpar_dados(carregar_dados_func):
         df['Data da Infração'] = pd.to_datetime(df['Data da Infração'], errors='coerce', dayfirst=True)
 
         # Preprocessar valores
-        df['Valor a Ser Pago (R$)'] = df['Valor a Ser Pago (R$)'].astype(str)\
+        df['Valor a ser pago R$'] = df['Valor a ser pago R$'].astype(str)\
             .str.replace(r'[^\d,.-]', '', regex=True)\
             .str.replace(r'\.(?=\d{3,})', '', regex=True)\
             .str.replace(',', '.')\
@@ -32,9 +32,9 @@ def preprocessar_valores(df):
     """
     Preprocessa valores monetários no DataFrame.
     """
-    if 'Valor a Ser Pago (R$)' in df.columns:
-        df['Valor a Ser Pago (R$)'] = df['Valor a Ser Pago (R$)'].astype(str)\
-            .str.replace(r'[^d,.-]', '', regex=True)\
+    if 'Valor a ser pago R$' in df.columns:
+        df['Valor a ser pago R$'] = df['Valor a ser pago R$'].astype(str)\
+            .str.replace(r'[^\d,.-]', '', regex=True)\
             .str.replace(r'\.(?=\d{3,})', '', regex=True)\
             .str.replace(',', '.')\
             .apply(lambda x: float(x) if x.replace('.', '', 1).isdigit() else 0)
@@ -48,7 +48,7 @@ def calcular_metricas(df):
     - Multas do mês atual
     """
     total_multas = len(df)
-    valor_total_a_pagar = df['Valor a Ser Pago (R$)'].sum()
+    valor_total_a_pagar = df['Valor a ser pago R$'].sum()
 
     # Filtra multas do mês atual
     mes_atual = pd.Timestamp.now().month

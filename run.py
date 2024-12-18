@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 import folium
 from folium.features import CustomIcon
 from streamlit_folium import st_folium
@@ -8,26 +9,20 @@ from data_processing import (
     verificar_colunas_essenciais,
     calcular_metricas,
     filtrar_dados_por_periodo,
-    processar_dados_geograficos,
-    calcular_ranking_localidades,
 )
 from graph_vehicles_fines import create_vehicle_fines_chart
 from graph_common_infractions import create_common_infractions_chart
 from graph_fines_accumulated import create_fines_accumulated_chart
 from graph_weekday_infractions import create_weekday_infractions_chart
+from geo_utils import load_cache, save_cache, get_cached_coordinates
 
-# Configuração inicial
+# Configuração inicial do Streamlit
 st.set_page_config(page_title="Torre de Controle iTracker - Dashboard de Multas", layout="wide")
 
 # Estilização CSS e HTML
 st.markdown(
     """
     <style>
-        @keyframes fadeIn {
-            0% { opacity: 0; transform: translateY(-20px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-
         .titulo-dashboard-container {
             display: flex;
             justify-content: center;
@@ -38,9 +33,7 @@ st.markdown(
             background: linear-gradient(to right, #F37529, rgba(255, 255, 255, 0.8));
             border-radius: 15px;
             box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
-            animation: fadeIn 1.2s ease-out;
         }
-
         .titulo-dashboard {
             font-size: 50px;
             font-weight: bold;
@@ -48,51 +41,6 @@ st.markdown(
             text-transform: uppercase;
             margin: 0;
         }
-
-        .titulo-centralizado {
-            text-align: center;
-            font-size: 28px;
-            font-weight: bold;
-            color: #F37529;
-            margin: 20px 0;
-        }
-
-        .indicadores-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 40px;
-            margin-top: 30px;
-        }
-
-        .indicador {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            text-align: center;
-            background-color: #FFFFFF;
-            border: 4px solid #F37529;
-            border-radius: 15px;
-            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);
-            width: 260px;
-            height: 160px;
-        }
-
-        .indicador p {
-            font-size: 38px;
-            font-weight: bold;
-            color: #F37529;
-            margin: 0;
-        }
-
-        .indicador span {
-            font-size: 18px;
-            color: #F37529;
-            margin-bottom: 8px;
-        }
-
         .footer {
             text-align: center;
             font-size: 14px;
@@ -102,25 +50,19 @@ st.markdown(
             border-top: 1px solid #ddd;
         }
     </style>
-
     <div class="titulo-dashboard-container">
-        <div>
-            <h1 class="titulo-dashboard">Torre de Controle iTracker - Dashboard de Multas</h1>
-        </div>
+        <h1 class="titulo-dashboard">Torre de Controle iTracker - Dashboard de Multas</h1>
     </div>
     """,
     unsafe_allow_html=True,
 )
 
-# Logo
-logo_url = st.secrets["image"]["logo_url"]
-st.image(logo_url, width=150, use_container_width=False)
-
-# Carregar e limpar dados
+# Carregar e processar dados
 data_cleaned = carregar_e_limpar_dados(carregar_dados_google_drive)
 
 # Verificar colunas essenciais
-required_columns = ['Data da Infração', 'Valor a ser pago R$', 'Auto de Infração', 'Status de Pagamento', 'Dia da Consulta']
+required_columns = ['Data da Infração', 'Valor a ser pago R$', 'Auto de Infração', 
+                    'Status de Pagamento', 'Dia da Consulta', 'Local da Infração']
 try:
     verificar_colunas_essenciais(data_cleaned, required_columns)
 except ValueError as e:
@@ -128,34 +70,53 @@ except ValueError as e:
     st.stop()
 
 # Calcular métricas
-total_multas, valor_total_a_pagar, multas_mes_atual, ultima_consulta = calcular_metricas(data_cleaned)
+total_multas, valor_total_a_pagar, multas_mes_atual = calcular_metricas(data_cleaned)
+ultima_consulta = data_cleaned['Dia da Consulta'].max().strftime('%d/%m/%Y')
 
 # Indicadores Principais
 st.markdown(
     f"""
-    <div class="indicadores-container">
-        <div class="indicador"><span>Total de Multas</span><p>{total_multas}</p></div>
-        <div class="indicador"><span>Valor Total a Pagar</span><p>R$ {valor_total_a_pagar:,.2f}</p></div>
-        <div class="indicador"><span>Multas no Mês Atual</span><p>{multas_mes_atual}</p></div>
-        <div class="indicador"><span>Última Consulta</span><p>{ultima_consulta}</p></div>
+    <div style='display: flex; gap: 40px; justify-content: center; margin: 30px;'>
+        <div style='text-align: center;'>
+            <h3>Total de Multas</h3><p style='font-size: 24px;'>{total_multas}</p>
+        </div>
+        <div style='text-align: center;'>
+            <h3>Valor Total a Pagar</h3><p style='font-size: 24px;'>R$ {valor_total_a_pagar:,.2f}</p>
+        </div>
+        <div style='text-align: center;'>
+            <h3>Multas no Mês Atual</h3><p style='font-size: 24px;'>{multas_mes_atual}</p>
+        </div>
+        <div style='text-align: center;'>
+            <h3>Última Consulta</h3><p style='font-size: 24px;'>{ultima_consulta}</p>
+        </div>
     </div>
     """,
     unsafe_allow_html=True,
 )
 
-# Filtro de período
-start_date = st.date_input("Data Inicial", value=pd.Timestamp(f"{pd.Timestamp.today().year}-01-01"))
-end_date = st.date_input("Data Final", value=pd.Timestamp.today())
-
+# Filtro por Período
+st.markdown("### Filtro por Período")
+start_date = st.date_input("Data Inicial", value=data_cleaned['Dia da Consulta'].min())
+end_date = st.date_input("Data Final", value=data_cleaned['Dia da Consulta'].max())
 filtered_data = filtrar_dados_por_periodo(data_cleaned, start_date, end_date)
 
-# Gráficos e Mapa
+# Gráficos
+st.markdown("### Top 10 Veículos com Mais Multas e Valores Totais")
 st.plotly_chart(create_vehicle_fines_chart(filtered_data), use_container_width=True)
 
-map_data = processar_dados_geograficos(filtered_data, st.secrets["API_KEY"])
-map_center = [map_data['Latitude'].mean(), map_data['Longitude'].mean()]
-map_object = folium.Map(location=map_center, zoom_start=5, tiles="CartoDB dark_matter")
+# Mapa de Distribuição Geográfica
+st.markdown("### Distribuição Geográfica das Multas")
+API_KEY = st.secrets["API_KEY"]
+coordinates_cache = load_cache()
 
+map_data = filtered_data.dropna(subset=['Local da Infração']).copy()
+map_data[['Latitude', 'Longitude']] = map_data['Local da Infração'].apply(
+    lambda x: pd.Series(get_cached_coordinates(x, API_KEY, coordinates_cache))
+)
+save_cache(coordinates_cache)
+
+map_center = [map_data['Latitude'].mean(), map_data['Longitude'].mean()] if not map_data.empty else [0, 0]
+map_object = folium.Map(location=map_center, zoom_start=5, tiles="CartoDB dark_matter")
 for _, row in map_data.iterrows():
     popup_content = f"<b>Local:</b> {row['Local da Infração']}<br><b>Valor:</b> R$ {row['Valor a ser pago R$']:.2f}"
     folium.Marker(
@@ -166,17 +127,24 @@ for _, row in map_data.iterrows():
 
 st_folium(map_object, width=1800, height=600)
 
-# Ranking das localidades
-ranking_localidades = calcular_ranking_localidades(filtered_data)
-st.dataframe(
-    ranking_localidades.rename(columns={"Valor_Total": "Valor Total (R$)", "Total_Multas": "Total de Multas"}),
-    use_container_width=True,
-    hide_index=True,
-)
+# Ranking das Localidades
+st.markdown("### Ranking das Localidades com Mais Multas")
+ranking_localidades = filtered_data.groupby('Local da Infração', as_index=False).agg(
+    Valor_Total=('Valor a ser pago R$', 'sum'),
+    Total_Multas=('Local da Infração', 'count')
+).sort_values(by='Valor_Total', ascending=False)
+
+st.dataframe(ranking_localidades, use_container_width=True)
 
 # Gráficos adicionais
+st.markdown("### Infrações Mais Frequentes")
 st.plotly_chart(create_common_infractions_chart(filtered_data), use_container_width=True)
-st.plotly_chart(create_fines_accumulated_chart(filtered_data, 'M'), use_container_width=True)
+
+st.markdown("### Valores das Multas Acumulados por Período")
+period_option = st.radio("Selecione o período:", ["Mensal", "Semanal"], horizontal=True)
+st.plotly_chart(create_fines_accumulated_chart(filtered_data, 'M' if period_option == "Mensal" else 'W'), use_container_width=True)
+
+st.markdown("### Infrações Mais Frequentes por Dia da Semana")
 st.plotly_chart(create_weekday_infractions_chart(filtered_data), use_container_width=True)
 
 # Footer
