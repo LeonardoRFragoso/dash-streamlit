@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import folium
 from datetime import datetime
 from folium.features import CustomIcon
 from streamlit_folium import st_folium
@@ -95,6 +96,10 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
+# Exibir o logo da empresa abaixo do título
+logo_url = st.secrets["image"]["logo_url"]  # URL do logo fornecido no secrets
+st.image(logo_url, width=200, use_container_width=False)
 
 # Carregar e processar dados
 data_cleaned = carregar_e_limpar_dados(carregar_dados_google_drive)
