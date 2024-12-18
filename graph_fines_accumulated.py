@@ -24,6 +24,13 @@ def create_fines_accumulated_chart(data, data_inicial=None, data_final=None, per
     # Garantir que 'Data da Infração' seja um objeto datetime
     data['Data da Infração'] = pd.to_datetime(data['Data da Infração'], errors='coerce')
 
+    # Filtrar valores inválidos
+    invalid_dates = data['Data da Infração'].isna()
+    if invalid_dates.any():
+        print(f"Entradas inválidas em 'Data da Infração' removidas: {data[invalid_dates]}")
+
+    data = data.dropna(subset=['Data da Infração'])
+
     # Filtrar os dados pelo período especificado
     if data_inicial is None:
         data_inicial = data['Data da Infração'].min()
