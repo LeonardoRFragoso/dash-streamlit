@@ -56,7 +56,7 @@ def create_fines_accumulated_chart(data, period='M'):
     # Personalizar o layout
     fig.update_traces(mode='lines+markers', marker=dict(size=8))
     fig.update_layout(
-        xaxis_title="Meses de 2024",
+        xaxis_title="",
         yaxis_title="Valores",
         template="plotly_white",
         legend=dict(title="Métricas")
