@@ -46,7 +46,7 @@ def create_fines_accumulated_chart(data, period='M'):
         x='Período',
         y=['Quantidade_de_Multas', 'Valor_Total'],
         labels={
-            'value': 'Valores',
+            'value': 'Total de Multas',
             'variable': 'Métricas',
             'Período': 'Período'
         },
