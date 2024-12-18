@@ -92,11 +92,25 @@ st.markdown(
         /* Estilos para remover a sombra do campo de data */
         .stDateInput input {
             box-shadow: none; /* Remove a sombra padrão */
-            border: 1px solid #ddd; /* Adiciona uma borda leve */
-            width: 120px;  /* Diminui a largura das caixas de data */
+            border: 1px solid #ddd; /* Borda fina e leve */
+            padding: 5px 10px;  /* Ajuste no padding para melhorar o espaço interno */
+            width: 130px;  /* Tamanho reduzido para as caixas de data */
+            font-size: 16px;  /* Tamanho da fonte mais adequado */
+        }
+        .stDateInput input:focus {
+            border-color: #F37529;  /* Cor de borda ao focar no campo */
+            outline: none;  /* Remove o contorno padrão */
         }
         .stDateInput {
-            width: 120px;  /* Define o tamanho das caixas de data */
+            width: auto;  /* Ajusta automaticamente o tamanho */
+            margin: 0 10px;  /* Adiciona margem entre os campos de data */
+        }
+        .stButton {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            margin-top: 20px; /* Adiciona espaçamento entre o botão e os campos de data */
         }
         /* Centralizar o botão "Aplicar Filtro" */
         .stButton {
