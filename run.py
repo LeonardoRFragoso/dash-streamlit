@@ -154,6 +154,16 @@ multas_mes_atual = len(data_cleaned[
 total_multas, valor_total_a_pagar, _ = calcular_metricas(data_cleaned)
 ultima_consulta = data_cleaned['Dia da Consulta'].max().strftime('%d/%m/%Y')
 
+# Filtro por Período
+st.markdown("<h2 class='titulo-secao' style='color: #F37529;'>Filtro por Período</h2>", unsafe_allow_html=True)
+data_inicial = st.date_input("Data Inicial", value=datetime(2024, 1, 1), key="start_date")
+data_final = st.date_input("Data Final", value=datetime.now(), key="end_date")
+
+if st.button("Aplicar Filtro"):
+    filtered_data = filtrar_dados_por_periodo(data_cleaned, data_inicial, data_final)
+else:
+    filtered_data = data_cleaned
+
 # Indicadores Principais
 st.markdown(
     f"""
@@ -178,16 +188,6 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-
-# Filtro por Período
-st.markdown("<h2 class='titulo-secao' style='color: #F37529;'>Filtro por Período</h2>", unsafe_allow_html=True)
-data_inicial = st.date_input("Data Inicial", value=datetime(2024, 1, 1), key="start_date")
-data_final = st.date_input("Data Final", value=datetime.now(), key="end_date")
-
-if st.button("Aplicar Filtro"):
-    filtered_data = filtrar_dados_por_periodo(data_cleaned, data_inicial, data_final)
-else:
-    filtered_data = data_cleaned
 
 # Mapa de Distribuição Geográfica
 st.markdown("<h2 class='titulo-secao' style='color: #F37529;'>Distribuição Geográfica das Multas</h2>", unsafe_allow_html=True)
