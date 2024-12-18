@@ -119,16 +119,21 @@ coordinates_cache = load_cache()
 
 # Filtrar dados e aplicar geolocalização
 map_data = filtered_data.dropna(subset=['Local da Infração']).copy()
-map_data[['Latitude', 'Longitude']] = map_data['Local da Infração'].apply(
-    lambda x: pd.Series(get_cached_coordinates(x, API_KEY, coordinates_cache))
-)
-save_cache(coordinates_cache)
+if 'Latitude' not in map_data.columns or 'Longitude' not in map_data.columns:
+    map_data[['Latitude', 'Longitude']] = map_data['Local da Infração'].apply(
+        lambda x: pd.Series(get_cached_coordinates(x, API_KEY, coordinates_cache))
+    )
+    save_cache(coordinates_cache)
 
-# Criar mapa
+# Garantir a existência da coluna 'Descrição'
+if 'Descrição' not in map_data.columns:
+    map_data['Descrição'] = "Não especificado"
+
+# Criar o mapa com marcadores
 map_center = [map_data['Latitude'].mean(), map_data['Longitude'].mean()] if not map_data.empty else [0, 0]
 map_object = folium.Map(location=map_center, zoom_start=5, tiles="CartoDB dark_matter")
+icon_url = "https://cdn-icons-png.flaticon.com/512/1828/1828843.png"
 
-icon_url = "https://cdn-icons-png.flaticon.com/512/1828/1828843.png"  # Ícone personalizado
 for _, row in map_data.iterrows():
     if pd.notnull(row['Latitude']) and pd.notnull(row['Longitude']):
         data_infracao = row['Data da Infração'].strftime('%d/%m/%Y') if pd.notnull(row['Data da Infração']) else "Não disponível"
@@ -146,14 +151,14 @@ for _, row in map_data.iterrows():
 # Capturar cliques no mapa
 map_click_data = st_folium(map_object, width=1800, height=600)
 
-# Exibir detalhes das multas ao clicar no marcador
-if map_click_data and "last_object_clicked" in map_click_data and map_click_data["last_object_clicked"]:
-    lat = map_click_data["last_object_clicked"]["lat"]
-    lng = map_click_data["last_object_clicked"]["lng"]
+# Exibir detalhes das multas ao clicar no mapa
+if map_click_data and "last_clicked" in map_click_data:
+    lat = round(map_click_data["last_clicked"]["lat"], 5)
+    lng = round(map_click_data["last_clicked"]["lng"], 5)
 
-    # Filtrar dados correspondentes à coordenada clicada
+    # Filtrar dados correspondentes às coordenadas clicadas
     selected_fines = map_data[
-        (map_data['Latitude'] == lat) & (map_data['Longitude'] == lng)
+        (map_data['Latitude'].round(5) == lat) & (map_data['Longitude'].round(5) == lng)
     ]
 
     # Renderizar tabela com detalhes
@@ -165,7 +170,7 @@ if map_click_data and "last_object_clicked" in map_click_data and map_click_data
             use_container_width=True
         )
     else:
-        st.info("Nenhuma multa encontrada para a localização selecionada.")
+        st.info(f"Nenhuma multa encontrada para as coordenadas selecionadas: {lat}, {lng}.")
 
 # Ranking das Localidades
 st.markdown("### Ranking das Localidades com Mais Multas")
