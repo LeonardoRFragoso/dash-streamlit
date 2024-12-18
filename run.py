@@ -89,6 +89,21 @@ st.markdown(
             margin: 0;
             font-weight: bold;
         }
+        /* Estilos para remover a sombra do campo de data */
+        .stDateInput input {
+            box-shadow: none; /* Remove a sombra padrão */
+            border: 1px solid #ddd; /* Adiciona uma borda leve */
+        }
+        .stDateInput {
+            width: 150px;  /* Define o tamanho do campo de data */
+        }
+        /* Centralizar o botão "Aplicar Filtro" */
+        .stButton {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
     </style>
     """,
     unsafe_allow_html=True,
