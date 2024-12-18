@@ -152,18 +152,13 @@ multas_mes_atual = len(data_cleaned[
 total_multas, valor_total_a_pagar, _ = calcular_metricas(data_cleaned)
 ultima_consulta = data_cleaned['Dia da Consulta'].max().strftime('%d/%m/%Y')
 
-# Filtro por Período com layout otimizado
+# Filtro por Período
 st.markdown("<h2 class='titulo-secao' style='color: #F37529;'>Filtro por Período</h2>", unsafe_allow_html=True)
+data_inicial = st.date_input("Data Inicial", value=datetime(2024, 1, 1), key="start_date")
+data_final = st.date_input("Data Final", value=datetime.now(), key="end_date")
 
-# Organizar os campos em uma única coluna para que ocupem menos espaço horizontal
-col1 = st.columns(1)  # Uma coluna
-
-# Acessando a coluna diretamente sem o `with`
-data_inicial = col1[0].date_input("Data Inicial", value=datetime(2024, 1, 1), key="start_date")
-data_final = col1[0].date_input("Data Final", value=datetime.now(), key="end_date")
-
-# Botão único para aplicar filtro e calcular métricas
-if st.button("Aplicar Filtro", key="filtro_aplicar"):
+# Aplicar Filtro
+if st.button("Aplicar Filtro"):
     # Filtrar dados usando a 'Data da Infração'
     filtered_data = filtrar_dados_por_periodo(data_cleaned, data_inicial, data_final, coluna='Data da Infração')
     
@@ -171,22 +166,6 @@ if st.button("Aplicar Filtro", key="filtro_aplicar"):
     total_multas, valor_total_a_pagar, multas_mes_atual = calcular_metricas(filtered_data)
     ultima_consulta = filtered_data['Dia da Consulta'].max().strftime('%d/%m/%Y')
 else:
-    # Caso o filtro não tenha sido aplicado, usar dados não filtrados
-    filtered_data = data_cleaned
-    total_multas, valor_total_a_pagar, multas_mes_atual = calcular_metricas(filtered_data)
-    ultima_consulta = data_cleaned['Dia da Consulta'].max().strftime('%d/%m/%Y')
-
-
-# Botão único para aplicar filtro e calcular métricas
-if st.button("Aplicar Filtro", key="filtro_aplicar"):
-    # Filtrar dados usando a 'Data da Infração'
-    filtered_data = filtrar_dados_por_periodo(data_cleaned, data_inicial, data_final, coluna='Data da Infração')
-    
-    # Recalcular métricas com base nos dados filtrados
-    total_multas, valor_total_a_pagar, multas_mes_atual = calcular_metricas(filtered_data)
-    ultima_consulta = filtered_data['Dia da Consulta'].max().strftime('%d/%m/%Y')
-else:
-    # Caso o filtro não tenha sido aplicado, usar dados não filtrados
     filtered_data = data_cleaned
     total_multas, valor_total_a_pagar, multas_mes_atual = calcular_metricas(filtered_data)
     ultima_consulta = data_cleaned['Dia da Consulta'].max().strftime('%d/%m/%Y')
