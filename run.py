@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import folium
 from datetime import datetime
 from folium.features import CustomIcon
 from streamlit_folium import st_folium
@@ -109,8 +108,19 @@ except ValueError as e:
     st.error(str(e))
     st.stop()
 
+# Cálculo do número de multas no mês atual
+data_atual = pd.to_datetime(datetime.now()).date()  # Data de hoje
+data_cleaned['Dia da Consulta'] = pd.to_datetime(data_cleaned['Dia da Consulta'], errors='coerce').dt.date
+
+# Filtra apenas as multas do mês atual (dezembro de 2024)
+multas_mes_atual = len(data_cleaned[
+    (data_cleaned['Dia da Consulta'] == data_atual) & 
+    (data_cleaned['Data da Infração'].dt.month == 12) & 
+    (data_cleaned['Data da Infração'].dt.year == 2024)
+])
+
 # Calcular métricas
-total_multas, valor_total_a_pagar, multas_mes_atual = calcular_metricas(data_cleaned)
+total_multas, valor_total_a_pagar, _ = calcular_metricas(data_cleaned)
 ultima_consulta = data_cleaned['Dia da Consulta'].max().strftime('%d/%m/%Y')
 
 # Indicadores Principais
