@@ -50,8 +50,9 @@ def create_fines_accumulated_chart(data, period='M'):
             'variable': 'Métricas',
             'Período': 'Período'
         },
-        title='Quantidade e Valor Total de Multas por Mês (2024)'
+        title=''  # Remove o título
     )
+
 
     # Personalizar o layout
     fig.update_traces(mode='lines+markers', marker=dict(size=8))
