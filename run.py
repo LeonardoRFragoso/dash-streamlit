@@ -210,13 +210,23 @@ st.markdown("<h2 class='titulo-secao' style='color: #0066B4;'>Distribuição Geo
 API_KEY = st.secrets["API_KEY"]
 coordinates_cache = load_cache()
 
+# Definir filtered_data como base inicial (dados não pagos)
+filtered_data = data_nao_pago.copy()
+
 # Filtrar dados e aplicar geolocalização
 map_data = filtered_data.dropna(subset=['Local da Infração']).copy()
+
+# Verificar se as colunas 'Latitude' e 'Longitude' existem, senão adicionar
 if 'Latitude' not in map_data.columns or 'Longitude' not in map_data.columns:
     map_data[['Latitude', 'Longitude']] = map_data['Local da Infração'].apply(
-        lambda x: pd.Series(get_cached_coordinates(x, API_KEY, coordinates_cache))
+        lambda x: pd.Series(get_cached_coordinates(x, API_KEY, coordinates_cache)) 
+        if pd.notnull(x) else pd.Series([None, None])
     )
+    # Salvar as coordenadas no cache para reutilização
     save_cache(coordinates_cache)
+
+# Garantir que linhas com coordenadas ausentes sejam removidas
+map_data = map_data.dropna(subset=['Latitude', 'Longitude'])
 
 # Garantir a existência da coluna 'Descrição'
 if 'Descrição' not in map_data.columns:
