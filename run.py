@@ -199,7 +199,7 @@ st.markdown("<h2 class='titulo-secao' style='color: #F37529;'>Valores das Multas
 period_option = st.radio("Selecione o período:", ["Mensal", "Semanal"], horizontal=True)
 st.plotly_chart(create_fines_accumulated_chart(filtered_data, 'M' if period_option == "Mensal" else 'W'), use_container_width=True)
 
-st.markdown("<h2 class='titulo-secao'>Infrações Mais Frequentes por Dia da Semana</h2>", unsafe_allow_html=True)
+st.markdown("<h2 class='titulo-secao' style='color: #F37529;'>Infrações Mais Frequentes por Dia da Semana</h2>", unsafe_allow_html=True)
 st.plotly_chart(create_weekday_infractions_chart(filtered_data), use_container_width=True)
 
 # Footer
