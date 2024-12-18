@@ -11,9 +11,18 @@ def carregar_e_limpar_dados(carregar_dados_func):
         df['Dia da Consulta'] = pd.to_datetime(df['Dia da Consulta'], errors='coerce', dayfirst=True)
         df['Data da Infração'] = pd.to_datetime(df['Data da Infração'], errors='coerce', dayfirst=True)
 
+        # Remover linhas sem datas válidas
+        df = df.dropna(subset=['Data da Infração', 'Dia da Consulta'])
+
+        # Filtrar apenas o ano atual (2024)
+        df = df[df['Data da Infração'].dt.year == 2024]
+
         # Preprocessar valores monetários
         df = preprocessar_valores(df)
         
+        # Remover duplicatas com base no 'Auto de Infração'
+        df = df.drop_duplicates(subset=['Auto de Infração'])
+
         # Garantir que as colunas essenciais estejam presentes
         required_columns = ['Data da Infração', 'Valor a ser pago R$', 'Auto de Infração', 
                             'Status de Pagamento', 'Dia da Consulta', 'Local da Infração']
@@ -38,11 +47,14 @@ def preprocessar_valores(df):
     """
     if 'Valor a ser pago R$' in df.columns:
         # Limpar e converter os valores monetários
-        df['Valor a ser pago R$'] = df['Valor a ser pago R$'].astype(str)\
-            .str.replace(r'[^\d,.-]', '', regex=True)\
-            .str.replace(r'\.(?=\d{3,})', '', regex=True)\
-            .str.replace(',', '.')\
+        df['Valor a ser pago R$'] = (
+            df['Valor a ser pago R$']
+            .astype(str)
+            .str.replace(r'[^\d,.-]', '', regex=True)
+            .str.replace(r'\.(?=\d{3,})', '', regex=True)
+            .str.replace(',', '.')
             .apply(lambda x: float(x) if x.replace('.', '', 1).isdigit() else 0)
+        )
     return df
 
 def calcular_metricas(df):
@@ -56,8 +68,7 @@ def calcular_metricas(df):
     total_multas = df['Auto de Infração'].nunique()
     
     # Calcular o valor total a pagar, considerando apenas a última entrada por 'Auto de Infração'
-    df_ultimo_pagamento = df.drop_duplicates(subset=['Auto de Infração'], keep='last')  # Mantém a última entrada por 'Auto de Infração'
-    valor_total_a_pagar = df_ultimo_pagamento['Valor a ser pago R$'].sum()
+    valor_total_a_pagar = df['Valor a ser pago R$'].sum()
 
     # Filtra multas do mês atual
     mes_atual = pd.Timestamp.now().month
