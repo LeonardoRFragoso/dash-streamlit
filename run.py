@@ -142,7 +142,11 @@ ranking_localidades = filtered_data.groupby('Local da Infração', as_index=Fals
     Total_Multas=('Local da Infração', 'count')
 ).sort_values(by='Valor_Total', ascending=False)
 
-st.dataframe(ranking_localidades, use_container_width=True)
+st.dataframe(
+    ranking_localidades.reset_index(drop=True),  # Remove o índice original
+    use_container_width=True,
+    hide_index=True  # Oculta o índice no Streamlit
+)
 
 # Gráficos adicionais
 st.markdown("### Infrações Mais Frequentes")
