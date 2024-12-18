@@ -28,13 +28,14 @@ def carregar_e_limpar_dados(carregar_dados_func):
 
         # Filtrar apenas o ano atual
         ano_atual = pd.Timestamp.now().year
-        df = df[df['Data da Infração'].dt.year == ano_atual]
+        df = df[(df['Data da Infração'].dt.year == ano_atual) &
+                (df['Status de Pagamento'] == 'NÃO PAGO')]
 
         # Preprocessar valores monetários
         df = preprocessar_valores(df)
 
         # Remover duplicatas com base no 'Auto de Infração'
-        df = df.drop_duplicates(subset=['Auto de Infração'])
+        df = df.sort_values('Dia da Consulta').drop_duplicates(subset=['Auto de Infração'], keep='last')
 
         # Garantir que as colunas essenciais estejam presentes
         required_columns = ['Data da Infração', 'Valor a ser pago R$', 'Auto de Infração', 
@@ -64,9 +65,8 @@ def preprocessar_valores(df):
             df['Valor a ser pago R$']
             .astype(str)
             .str.replace(r'[^\d,.-]', '', regex=True)
-            .str.replace(r'\.(?=\d{3,})', '', regex=True)
-            .str.replace(',', '.')
-            .apply(lambda x: float(x) if x.replace('.', '', 1).isdigit() else 0)
+            .str.replace(',', '.', regex=False)
+            .astype(float)
         )
     return df
 
@@ -80,12 +80,12 @@ def calcular_metricas(df):
     # Calcular o total de multas considerando 'Auto de Infração' único
     total_multas = df['Auto de Infração'].nunique()
 
-    # Calcular o valor total a pagar, considerando apenas a última entrada por 'Auto de Infração'
+    # Calcular o valor total a pagar
     valor_total_a_pagar = df['Valor a ser pago R$'].sum()
 
     # Filtrar multas do mês atual
     mes_atual = pd.Timestamp.now().month
-    multas_mes_atual = df[df['Data da Infração'].dt.month == mes_atual].shape[0]
+    multas_mes_atual = df[df['Data da Infração'].dt.month == mes_atual]['Auto de Infração'].nunique()
 
     return total_multas, valor_total_a_pagar, multas_mes_atual
 
