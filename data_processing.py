@@ -63,6 +63,9 @@ def preprocessar_valores(df):
     Preprocessa valores monetários no DataFrame.
     """
     if 'Valor a ser pago R$' in df.columns:
+        # Substituir valores vazios ou nulos por 0
+        df['Valor a ser pago R$'] = df['Valor a ser pago R$'].replace(['', None], '0')
+
         # Remover espaços e símbolos inválidos
         df['Valor a ser pago R$'] = (
             df['Valor a ser pago R$']
