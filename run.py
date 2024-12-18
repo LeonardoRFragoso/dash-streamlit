@@ -20,7 +20,7 @@ from geo_utils import load_cache, save_cache, get_cached_coordinates
 # Configuração inicial do Streamlit
 st.set_page_config(page_title="Torre de Controle iTracker - Dashboard de Multas", layout="wide")
 
-# Exibir o logo da empresa abaixo do título
+# Exibir o logo da empresa acima do título
 logo_url = st.secrets["image"]["logo_url"]  # URL do logo fornecido no secrets
 st.image(logo_url, width=200, use_container_width=False)
 
