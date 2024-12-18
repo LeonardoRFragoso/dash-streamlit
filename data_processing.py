@@ -6,6 +6,7 @@ def carregar_e_limpar_dados(carregar_dados_func):
     Carrega e faz o pré-processamento básico dos dados.
     """
     try:
+        # Carregar os dados
         df = carregar_dados_func()
 
         # Padronizar nomes das colunas
@@ -19,35 +20,30 @@ def carregar_e_limpar_dados(carregar_dados_func):
         }
         df.rename(columns=column_mapping, inplace=True)
 
-        # Garantir que as colunas de data estão no formato correto
+        # Tratar valores monetários
+        if 'Valor a ser pago R$' in df.columns:
+            df['Valor a ser pago R$'] = df['Valor a ser pago R$'].replace(
+                {r'[^0-9,]': '', ',': '.'}, regex=True
+            ).astype(float)
+        else:
+            raise ValueError("A coluna 'Valor a ser pago R$' não foi encontrada nos dados.")
+
+        # Tratar datas
         df['Dia da Consulta'] = pd.to_datetime(df['Dia da Consulta'], errors='coerce', dayfirst=True)
         df['Data da Infração'] = pd.to_datetime(df['Data da Infração'], errors='coerce', dayfirst=True)
 
-        # Processar valores monetários
-        df = preprocessar_valores(df)
+        # Preencher valores nulos
+        df['Local da Infração'] = df['Local da Infração'].fillna('Desconhecido')
 
-        # Calcular métricas antes de remover duplicatas
-        total_multas = df['Auto de Infração'].nunique()
-        valor_total_a_pagar = df['Valor a ser pago R$'].sum()
+        # Filtrar apenas Status NÃO PAGO
+        df = df[df['Status de Pagamento'] == 'NÃO PAGO']
 
-        # Remover duplicatas com base em 'Auto de Infração'
+        # Garantir que não haja duplicatas antes de calcular as métricas
         df = df.sort_values('Dia da Consulta').drop_duplicates(subset=['Auto de Infração'], keep='last')
-
-        # Garantir que 'Data da Infração' está válida
-        df['Data da Infração'] = pd.to_datetime(df['Data da Infração'], errors='coerce', dayfirst=True)
-
-        # Filtrar apenas registros com Status de Pagamento = 'NÃO PAGO' e ano atual
-        ano_atual = pd.Timestamp.now().year
-        df = df[(df['Status de Pagamento'] == 'NÃO PAGO') & (df['Data da Infração'].dt.year == ano_atual)]
-
-        # Garantir que as colunas essenciais estejam presentes
-        required_columns = ['Data da Infração', 'Valor a ser pago R$', 'Auto de Infração', 
-                            'Status de Pagamento', 'Dia da Consulta', 'Local da Infração']
-        verificar_colunas_essenciais(df, required_columns)
 
         return df
     except Exception as e:
-        print(f"Erro ao carregar os dados: {e}")
+        print(f"Erro ao carregar e limpar os dados: {e}")
         raise
 
 def verificar_colunas_essenciais(df, required_columns):
