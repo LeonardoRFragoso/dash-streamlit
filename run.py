@@ -149,10 +149,33 @@ st.markdown(
 )
 
 # Filtro por Período
-st.markdown("### Filtro por Período")
-start_date = st.date_input("Data Inicial", value=data_cleaned['Dia da Consulta'].min())
-end_date = st.date_input("Data Final", value=data_cleaned['Dia da Consulta'].max())
+st.markdown(
+    """
+    <div style="text-align: center; margin-top: 30px; margin-bottom: 20px;">
+        <label style="font-size: 18px; color: #F37529; font-weight: bold;">Selecione o Período:</label>
+        <div style="display: flex; justify-content: center; gap: 10px; margin-top: 10px;">
+            <div>
+                <label style="font-size: 16px; color: #F37529;">Data Inicial:</label>
+                {}
+            </div>
+            <div>
+                <label style="font-size: 16px; color: #F37529;">Data Final:</label>
+                {}
+            </div>
+        </div>
+    </div>
+    """.format(
+        st.date_input("Data Inicial", value=data_cleaned['Dia da Consulta'].min(), key="start_date"),
+        st.date_input("Data Final", value=data_cleaned['Dia da Consulta'].max(), key="end_date")
+    ),
+    unsafe_allow_html=True,
+)
+
+# Aplicar o filtro aos dados
+start_date = st.session_state.get("start_date")
+end_date = st.session_state.get("end_date")
 filtered_data = filtrar_dados_por_periodo(data_cleaned, start_date, end_date)
+
 
 # Gráficos
 st.markdown("### Top 10 Veículos com Mais Multas e Valores Totais")
