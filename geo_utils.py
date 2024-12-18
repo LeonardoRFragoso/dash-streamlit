@@ -4,27 +4,21 @@ import requests
 
 CACHE_FILE = "coordinates_cache.json"
 
-def load_cache():
-    """
-    Load the cache from a JSON file.
-    
-    Returns:
-        dict: The cached coordinates if the file exists, otherwise an empty dictionary.
-    """
+# Carregar o cache uma única vez no início
+cache = None
+if os.path.exists(CACHE_FILE):
     try:
-        if os.path.exists(CACHE_FILE):
-            with open(CACHE_FILE, 'r') as f:
-                return json.load(f)
+        with open(CACHE_FILE, 'r') as f:
+            cache = json.load(f)
     except (json.JSONDecodeError, IOError) as e:
         print(f"Erro ao carregar o cache: {e}")
-    return {}
+        cache = {}
+else:
+    cache = {}
 
-def save_cache(cache):
+def save_cache():
     """
-    Save the cache to a JSON file.
-    
-    Parameters:
-        cache (dict): The cache data to save.
+    Salva o cache global no arquivo JSON.
     """
     try:
         with open(CACHE_FILE, 'w') as f:
@@ -34,22 +28,22 @@ def save_cache(cache):
 
 def get_coordinates(local, api_key):
     """
-    Fetch coordinates for a given location using the OpenCage API.
-    
-    Parameters:
-        local (str): The location to geocode.
-        api_key (str): The API key for OpenCage.
+    Busca coordenadas para um local específico usando a API OpenCage.
 
-    Returns:
-        tuple: A tuple with (latitude, longitude), or (None, None) if not found.
+    Parâmetros:
+        local (str): O local a ser geocodificado.
+        api_key (str): Chave de API para o OpenCage.
+
+    Retorna:
+        tuple: Uma tupla com (latitude, longitude), ou (None, None) se não encontrado.
     """
     if not api_key:
         raise ValueError("API key não fornecida para a solicitação de geocodificação.")
 
     url = f'https://api.opencagedata.com/geocode/v1/json?q={local}&key={api_key}'
     try:
-        response = requests.get(url, timeout=10)  # Adicionado timeout para evitar travamentos
-        response.raise_for_status()  # Levanta erro para códigos de status HTTP >= 400
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
         data = response.json()
         if 'results' in data and data['results']:
             geometry = data['results'][0]['geometry']
@@ -58,26 +52,25 @@ def get_coordinates(local, api_key):
         print(f"Erro ao obter coordenadas para '{local}': {e}")
     return None, None
 
-def get_cached_coordinates(local, api_key, cache):
+def get_cached_coordinates(local, api_key):
     """
-    Get coordinates from cache or API.
-    
-    Parameters:
-        local (str): The location to geocode.
-        api_key (str): The API key for OpenCage.
-        cache (dict): The cache data for coordinates.
+    Obtém coordenadas do cache ou da API, se necessário.
 
-    Returns:
-        tuple: A tuple with (latitude, longitude), or (None, None) if not found.
+    Parâmetros:
+        local (str): O local a ser geocodificado.
+        api_key (str): Chave de API para o OpenCage.
+
+    Retorna:
+        tuple: Uma tupla com (latitude, longitude), ou (None, None) se não encontrado.
     """
-    try:
-        if local in cache:
-            return cache[local]
-        lat, lng = get_coordinates(local, api_key)
-        if lat is not None and lng is not None:
-            cache[local] = (lat, lng)
-            save_cache(cache)  # Atualiza o cache imediatamente para persistir novos dados
-        return lat, lng
-    except Exception as e:
-        print(f"Erro ao obter ou armazenar coordenadas para '{local}': {e}")
-        return None, None
+    global cache  # Usa o cache carregado no início
+
+    if local in cache:
+        return cache[local]
+
+    # Obtém as coordenadas pela API
+    lat, lng = get_coordinates(local, api_key)
+    if lat is not None and lng is not None:
+        cache[local] = (lat, lng)
+        save_cache()  # Salva o cache imediatamente após atualizar
+    return lat, lng
