@@ -97,7 +97,6 @@ st.markdown(
 # Exibir o logo da empresa acima do título
 logo_url = st.secrets["image"]["logo_url"]  # URL do logo fornecido no secrets
 st.image(logo_url, width=200, use_container_width=False)# Exibir o logo da empresa acima do título
-logo_url = st.secrets["image"]["logo_url"]  # URL do logo fornecido no secrets
 
 # Centralizar a logo com CSS
 st.markdown(
