@@ -152,10 +152,30 @@ multas_mes_atual = len(data_cleaned[
 total_multas, valor_total_a_pagar, _ = calcular_metricas(data_cleaned)
 ultima_consulta = data_cleaned['Dia da Consulta'].max().strftime('%d/%m/%Y')
 
-# Filtro por Período
+# Filtro por Período com layout otimizado
 st.markdown("<h2 class='titulo-secao' style='color: #F37529;'>Filtro por Período</h2>", unsafe_allow_html=True)
-data_inicial = st.date_input("Data Inicial", value=datetime(2024, 1, 1), key="start_date")
-data_final = st.date_input("Data Final", value=datetime.now(), key="end_date")
+
+# Organizar os campos em colunas
+col1, col2 = st.columns([1, 1])  # Duas colunas com largura igual
+
+with col1:
+    data_inicial = st.date_input("Data Inicial", value=datetime(2024, 1, 1), key="start_date")
+
+with col2:
+    data_final = st.date_input("Data Final", value=datetime.now(), key="end_date")
+
+# Botão centralizado
+st.markdown("<div style='text-align: center; margin-top: 10px;'>", unsafe_allow_html=True)
+if st.button("Aplicar Filtro"):
+    filtered_data = filtrar_dados_por_periodo(data_cleaned, data_inicial, data_final, coluna='Data da Infração')
+    total_multas, valor_total_a_pagar, multas_mes_atual = calcular_metricas(filtered_data)
+    st.write(f"**Total de Multas:** {total_multas}")
+    st.write(f"**Valor Total a Pagar:** R$ {valor_total_a_pagar:,.2f}")
+    st.write(f"**Multas no Mês Atual:** {multas_mes_atual}")
+else:
+    filtered_data = data_cleaned
+st.markdown("</div>", unsafe_allow_html=True)
+
 
 # Aplicar Filtro
 if st.button("Aplicar Filtro"):
