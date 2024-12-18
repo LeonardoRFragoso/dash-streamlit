@@ -152,13 +152,13 @@ for _, row in map_data.iterrows():
 map_click_data = st_folium(map_object, width=1800, height=600)
 
 # Exibir detalhes das multas ao clicar no mapa
-if map_click_data and map_click_data.get("last_clicked"):
-    last_clicked = map_click_data["last_clicked"]
+if map_click_data:
+    last_clicked = map_click_data.get("last_clicked")
     
-    if last_clicked:  # Verificar se não é None
-        lat = round(last_clicked.get("lat", 0), 5)
-        lng = round(last_clicked.get("lng", 0), 5)
-
+    if last_clicked and "lat" in last_clicked and "lng" in last_clicked:
+        lat = round(last_clicked["lat"], 5)
+        lng = round(last_clicked["lng"], 5)
+        
         # Filtrar dados correspondentes às coordenadas clicadas
         selected_fines = map_data[
             (map_data['Latitude'].round(5) == lat) & (map_data['Longitude'].round(5) == lng)
