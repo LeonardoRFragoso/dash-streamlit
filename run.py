@@ -164,18 +164,8 @@ with col1:
 with col2:
     data_final = st.date_input("Data Final", value=datetime.now(), key="end_date")
 
-# Botão com chave única para evitar duplicação
+# Botão único para aplicar filtro e calcular métricas
 if st.button("Aplicar Filtro", key="filtro_aplicar"):
-    filtered_data = filtrar_dados_por_periodo(data_cleaned, data_inicial, data_final, coluna='Data da Infração')
-    total_multas, valor_total_a_pagar, multas_mes_atual = calcular_metricas(filtered_data)
-    st.write(f"**Total de Multas:** {total_multas}")
-    st.write(f"**Valor Total a Pagar:** R$ {valor_total_a_pagar:,.2f}")
-    st.write(f"**Multas no Mês Atual:** {multas_mes_atual}")
-else:
-    filtered_data = data_cleaned
-
-# Aplicar Filtro
-if st.button("Aplicar Filtro"):
     # Filtrar dados usando a 'Data da Infração'
     filtered_data = filtrar_dados_por_periodo(data_cleaned, data_inicial, data_final, coluna='Data da Infração')
     
@@ -183,6 +173,7 @@ if st.button("Aplicar Filtro"):
     total_multas, valor_total_a_pagar, multas_mes_atual = calcular_metricas(filtered_data)
     ultima_consulta = filtered_data['Dia da Consulta'].max().strftime('%d/%m/%Y')
 else:
+    # Caso o filtro não tenha sido aplicado, usar dados não filtrados
     filtered_data = data_cleaned
     total_multas, valor_total_a_pagar, multas_mes_atual = calcular_metricas(filtered_data)
     ultima_consulta = data_cleaned['Dia da Consulta'].max().strftime('%d/%m/%Y')
