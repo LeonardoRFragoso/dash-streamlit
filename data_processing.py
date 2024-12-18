@@ -20,6 +20,11 @@ def carregar_e_limpar_dados(carregar_dados_func):
         }
         df.rename(columns=column_mapping, inplace=True)
 
+        # Verificar colunas essenciais
+        required_columns = ['Data da Infração', 'Valor a ser pago R$', 'Auto de Infração', 
+                            'Status de Pagamento', 'Dia da Consulta', 'Local da Infração']
+        verificar_colunas_essenciais(df, required_columns)
+
         # Tratar valores monetários
         df = preprocessar_valores(df)
 
