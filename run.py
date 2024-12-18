@@ -189,10 +189,6 @@ if st.button("Aplicar Filtro"):
 else:
     filtered_data = data_cleaned
 
-# Gráfico de Top 10 Veículos
-st.markdown("<h2 class='titulo-secao' style='color: #F37529;'>Top 10 Veículos com Mais Multas e Valores Totais</h2>", unsafe_allow_html=True)
-st.plotly_chart(create_vehicle_fines_chart(filtered_data), use_container_width=True)
-
 # Mapa de Distribuição Geográfica
 st.markdown("<h2 class='titulo-secao' style='color: #F37529;'>Distribuição Geográfica das Multas</h2>", unsafe_allow_html=True)
 API_KEY = st.secrets["API_KEY"]
@@ -249,6 +245,10 @@ if map_click_data and map_click_data.get("last_object_clicked"):
         )
     else:
         st.info("Nenhuma multa encontrada para a localização selecionada.")
+
+# Gráfico de Top 10 Veículos
+st.markdown("<h2 class='titulo-secao' style='color: #F37529;'>Top 10 Veículos com Mais Multas e Valores Totais</h2>", unsafe_allow_html=True)
+st.plotly_chart(create_vehicle_fines_chart(filtered_data), use_container_width=True)
 
 # Ranking das Localidades
 st.markdown("<h2 class='titulo-secao' style='color: #F37529;'>Ranking das Localidades com Mais Multas</h2>", unsafe_allow_html=True)
