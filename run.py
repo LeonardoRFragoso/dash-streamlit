@@ -109,12 +109,11 @@ st.markdown(
         }
     </style>
     <div class="logo-container">
-        <img src="{0}" width="200" alt="Logo">
+        <img src="{}" width="200" alt="Logo">
     </div>
-    """.format(logo_url),
+    """.format(logo_url),  # Ajuste para garantir que o caminho da logo seja corretamente inserido
     unsafe_allow_html=True
 )
-
 
 # Título do Dashboard
 st.markdown(
