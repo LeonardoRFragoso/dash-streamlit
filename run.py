@@ -128,40 +128,42 @@ save_cache(coordinates_cache)
 map_center = [map_data['Latitude'].mean(), map_data['Longitude'].mean()] if not map_data.empty else [0, 0]
 map_object = folium.Map(location=map_center, zoom_start=5, tiles="CartoDB dark_matter")
 
-# Adicionar marcadores ao mapa
-for _, row in map_data.iterrows():
+# Lista para capturar cliques específicos
+markers_data = {}
+
+# Adicionar marcadores ao mapa com IDs únicos para identificar cliques
+for index, row in map_data.iterrows():
     popup_content = f"<b>Local:</b> {row['Local da Infração']}<br><b>Valor:</b> R$ {row['Valor a ser pago R$']:.2f}"
-    folium.Marker(
+    marker = folium.Marker(
         location=[row['Latitude'], row['Longitude']],
         popup=folium.Popup(popup_content, max_width=300),
         icon=CustomIcon("https://cdn-icons-png.flaticon.com/512/1828/1828843.png", icon_size=(30, 30)),
-    ).add_to(map_object)
+    )
+    marker.add_to(map_object)
+    markers_data[f"{row['Latitude']},{row['Longitude']}"] = row
 
 # Exibir o mapa no Streamlit
 map_click_data = st_folium(map_object, width=1800, height=600)
 
-# Exibir tabela com detalhes das multas ao clicar no mapa
+# Verificar o clique no mapa e filtrar os dados
 if map_click_data and "last_clicked" in map_click_data and map_click_data["last_clicked"]:
-    # Capturar coordenadas clicadas no mapa
-    lat = map_click_data["last_clicked"]["lat"]
-    lng = map_click_data["last_clicked"]["lng"]
+    lat = round(map_click_data["last_clicked"]["lat"], 5)
+    lng = round(map_click_data["last_clicked"]["lng"], 5)
+    clicked_key = f"{lat},{lng}"
 
-    # Filtrar as multas baseadas na coordenada clicada
-    selected_fines = map_data[
-        (map_data['Latitude'].round(5) == round(lat, 5)) &
-        (map_data['Longitude'].round(5) == round(lng, 5))
-    ]
-
-    # Verificar se há multas para a coordenada selecionada
-    if not selected_fines.empty:
-        st.markdown("### Detalhes das Multas na Localização Selecionada")
-        st.dataframe(
-            selected_fines[['Data da Infração', 'Valor a ser pago R$', 'Enquadramento', 'Descrição da Infração']],
-            use_container_width=True,
-            hide_index=True
-        )
+    # Verificar se a coordenada clicada corresponde a um marcador
+    if clicked_key in markers_data:
+        st.markdown("### Detalhes da Multa na Localização Selecionada")
+        selected_row = markers_data[clicked_key]
+        st.table({
+            "Data da Infração": [selected_row['Data da Infração']],
+            "Valor a ser pago R$": [f"R$ {selected_row['Valor a ser pago R$']:.2f}"],
+            "Enquadramento": [selected_row.get('Enquadramento', 'N/A')],
+            "Descrição da Multa": [selected_row.get('Descrição da Infração', 'N/A')]
+        })
     else:
         st.info("Nenhuma multa encontrada para a localização selecionada.")
+
 
 # Ranking das Localidades
 st.markdown("### Ranking das Localidades com Mais Multas")
