@@ -96,7 +96,25 @@ st.markdown(
 
 # Exibir o logo da empresa acima do título
 logo_url = st.secrets["image"]["logo_url"]  # URL do logo fornecido no secrets
-st.image(logo_url, width=200, use_container_width=False)
+
+# Centralizar a logo com CSS
+st.markdown(
+    """
+    <style>
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;  /* Espaçamento entre a logo e o título */
+        }
+    </style>
+    <div class="logo-container">
+        <img src="{0}" width="200" alt="Logo">
+    </div>
+    """.format(logo_url),
+    unsafe_allow_html=True
+)
+
 
 # Título do Dashboard
 st.markdown(
