@@ -58,6 +58,37 @@ st.markdown(
             padding: 10px 0;
             border-top: 1px solid #ddd;
         }
+        .indicadores-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            margin-top: 30px;
+        }
+        .indicador {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;  /* Centraliza verticalmente */
+            align-items: center;      /* Centraliza horizontalmente */
+            text-align: center;
+            background-color: #FFFFFF;
+            border: 4px solid #F37529;
+            border-radius: 15px;
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);
+            width: 260px;
+            height: 160px;
+            padding: 10px;            /* Adiciona espaçamento interno */
+        }
+        .indicador span {
+            font-size: 18px;
+            color: #F37529;
+        }
+        .indicador p {
+            font-size: 38px;
+            color: #F37529;
+            margin: 0;
+            font-weight: bold;
+        }
     </style>
     <div class="titulo-dashboard-container">
         <h1 class="titulo-dashboard">Torre de Controle iTracker - Dashboard de Multas</h1>
@@ -85,27 +116,22 @@ ultima_consulta = data_cleaned['Dia da Consulta'].max().strftime('%d/%m/%Y')
 # Indicadores Principais
 st.markdown(
     f"""
-    <div class="indicadores-container" style="
-        display: flex; justify-content: center; align-items: center; gap: 40px; margin-top: 30px;">
-        <div class="indicador" style="text-align: center; background-color: #FFFFFF; border: 4px solid #F37529; 
-            border-radius: 15px; box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3); width: 260px; height: 160px;">
-            <span style="font-size: 18px; color: #F37529;">Total de Multas</span>
-            <p style="font-size: 38px; color: #F37529; margin: 0;">{total_multas}</p>
+    <div class="indicadores-container">
+        <div class="indicador">
+            <span>Total de Multas</span>
+            <p>{total_multas}</p>
         </div>
-        <div class="indicador" style="text-align: center; background-color: #FFFFFF; border: 4px solid #F37529; 
-            border-radius: 15px; box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3); width: 260px; height: 160px;">
-            <span style="font-size: 18px; color: #F37529;">Valor Total a Pagar</span>
-            <p style="font-size: 38px; color: #F37529; margin: 0;">R$ {valor_total_a_pagar:,.2f}</p>
+        <div class="indicador">
+            <span>Valor Total a Pagar</span>
+            <p>R$ {valor_total_a_pagar:,.2f}</p>
         </div>
-        <div class="indicador" style="text-align: center; background-color: #FFFFFF; border: 4px solid #F37529; 
-            border-radius: 15px; box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3); width: 260px; height: 160px;">
-            <span style="font-size: 18px; color: #F37529;">Última Consulta</span>
-            <p style="font-size: 38px; color: #F37529; margin: 0;">{ultima_consulta}</p>
+        <div class="indicador">
+            <span>Última Consulta</span>
+            <p>{ultima_consulta}</p>
         </div>
-        <div class="indicador" style="text-align: center; background-color: #FFFFFF; border: 4px solid #F37529; 
-            border-radius: 15px; box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3); width: 260px; height: 160px;">
-            <span style="font-size: 18px; color: #F37529;">Multas no Mês Atual</span>
-            <p style="font-size: 38px; color: #F37529; margin: 0;">{multas_mes_atual}</p>
+        <div class="indicador">
+            <span>Multas no Mês Atual</span>
+            <p>{multas_mes_atual}</p>
         </div>
     </div>
     """,
