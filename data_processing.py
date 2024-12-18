@@ -88,12 +88,24 @@ def calcular_metricas(df):
 
     return total_multas, valor_total_a_pagar, multas_mes_atual
 
-def filtrar_dados_por_periodo(df, data_inicial, data_final):
+def filtrar_dados_por_periodo(df, data_inicial, data_final, coluna='Dia da Consulta'):
     """
     Filtra os dados pelo período especificado entre data_inicial e data_final.
-    """
-    # Garantir que a coluna de datas está no formato correto
-    df['Dia da Consulta'] = pd.to_datetime(df['Dia da Consulta'], errors='coerce')
 
-    return df[(df['Dia da Consulta'] >= pd.Timestamp(data_inicial)) & 
-              (df['Dia da Consulta'] <= pd.Timestamp(data_final))]
+    Parameters:
+        df (DataFrame): Dados a serem filtrados.
+        data_inicial (str or datetime): Data inicial do filtro.
+        data_final (str or datetime): Data final do filtro.
+        coluna (str): Coluna de data usada para o filtro ('Dia da Consulta' ou 'Data da Infração').
+
+    Returns:
+        DataFrame: Dados filtrados.
+    """
+    if coluna not in df.columns:
+        raise ValueError(f"A coluna '{coluna}' não existe no DataFrame.")
+
+    # Garantir que a coluna de datas está no formato correto
+    df[coluna] = pd.to_datetime(df[coluna], errors='coerce')
+
+    return df[(df[coluna] >= pd.Timestamp(data_inicial)) & 
+              (df[coluna] <= pd.Timestamp(data_final))]
