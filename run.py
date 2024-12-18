@@ -97,14 +97,17 @@ else:
 
 # Mapa de Distribuição Geográfica
 st.markdown("### Distribuição Geográfica das Multas")
+# Carregar cache de coordenadas
 API_KEY = st.secrets["API_KEY"]
 coordinates_cache = load_cache()
 
+# Filtrar dados e aplicar geolocalização
 map_data = filtered_data.dropna(subset=['Local da Infração']).copy()
 map_data[['Latitude', 'Longitude']] = map_data['Local da Infração'].apply(
     lambda x: pd.Series(get_cached_coordinates(x, API_KEY, coordinates_cache))
 )
-save_cache(coordinates_cache)  # Salva o cache atualizado corretamente
+
+save_cache(coordinates_cache)  # Salva o cache atualizado
 
 # Criação do mapa
 map_center = [map_data['Latitude'].mean(), map_data['Longitude'].mean()] if not map_data.empty else [0, 0]
