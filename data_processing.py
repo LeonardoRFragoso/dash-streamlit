@@ -1,6 +1,6 @@
 import pandas as pd
 import streamlit as st
-from data_loader import clean_data, process_currency_column
+from data_loader import load_data, clean_data, process_currency_column
 
 def carregar_e_limpar_dados(carregar_dados_func):
     """
@@ -20,7 +20,8 @@ def carregar_e_limpar_dados(carregar_dados_func):
             'Auto de Infração',
             'Dia da Consulta',
             'Data da Infração',
-            'Valor a ser pago R$'
+            'Valor a ser pago R$',
+            'Local da Infração'
         ]
         missing_cols = [col for col in required_columns if col not in df.columns]
         if missing_cols:
@@ -44,11 +45,17 @@ def carregar_e_limpar_dados(carregar_dados_func):
         # Filtrar apenas multas não pagas
         df_cleaned = filtrar_multas_nao_pagas(df_cleaned)
 
+        # Verificar se o DataFrame não está vazio após a limpeza
+        if df_cleaned.empty:
+            st.error("Após a limpeza, o DataFrame está vazio. Nenhum dado válido encontrado.")
+            return None
+
         return df_cleaned
 
     except Exception as e:
         st.error(f"Erro ao carregar e limpar os dados: {str(e)}")
         return None
+
 
 def filtrar_dados_por_periodo(df, data_inicial, data_final, coluna='Dia da Consulta'):
     try:
