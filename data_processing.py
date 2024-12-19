@@ -1,15 +1,14 @@
 import pandas as pd
 import streamlit as st
 from data_loader import load_data, clean_data, process_currency_column
-from google_drive import carregar_dados_google_drive
 
 def carregar_e_limpar_dados():
     """
     Carrega os dados do Google Drive e aplica limpeza e processamento.
     """
     try:
-        # Carregar dados do Google Drive
-        df = carregar_dados_google_drive()  # Chamada direta
+        # Carregar dados do Google Drive usando a função load_data() do data_loader.py
+        df = load_data()
 
         if df is None:
             st.error("Não foi possível carregar os dados do Google Drive")
