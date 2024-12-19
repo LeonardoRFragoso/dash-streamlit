@@ -5,22 +5,23 @@ from google_drive import carregar_dados_google_drive
 
 def carregar_e_limpar_dados(file_path=None, sheet_name=None):
     """
-    Carrega e processa os dados, seja de arquivo local ou Google Drive.
+    Carrega os dados usando `load_data` do `data_loader` e aplica limpeza adicional.
+    Caso o caminho do arquivo não seja fornecido, ele será carregado a partir do Google Drive.
     """
     try:
-        # Determinar fonte dos dados e carregar
-        df = None
+        # Se file_path não for fornecido, carregar do Google Drive
         if not file_path:
-            # Carregar do Google Drive usando ID do secrets.toml
-            drive_id = st.secrets["file_data"]["ultima_planilha_id"]
-            df = load_data(drive_id, sheet_name)
+            from google_drive import carregar_dados_google_drive
+            df = carregar_dados_google_drive()  # Executar a função
         else:
+            # Carregar os dados com `load_data` do data_loader
             df = load_data(file_path, sheet_name)
 
         if df is None:
-            raise ValueError("Não foi possível carregar os dados")
+            st.error("Não foi possível carregar os dados")
+            return None
 
-        # Verificar presença das colunas essenciais
+        # Verificar colunas essenciais antes de qualquer operação
         required_columns = [
             'Status de Pagamento', 
             'Auto de Infração', 
@@ -28,13 +29,25 @@ def carregar_e_limpar_dados(file_path=None, sheet_name=None):
             'Data da Infração', 
             'Valor a ser pago R$'
         ]
+        
+        # Primeira verificação básica antes de chamar verificar_colunas_essenciais
+        if not isinstance(df, pd.DataFrame):
+            st.error("Os dados carregados não são um DataFrame válido")
+            return None
+            
         verificar_colunas_essenciais(df, required_columns)
 
-        # Limpar e filtrar dados
+        # Limpar dados com `clean_data`
         df_cleaned = clean_data(df)
-        
-        # Filtrar apenas multas não pagas
-        df_cleaned = filtrar_multas_nao_pagas(df_cleaned)
+
+        # Padronizar e filtrar apenas multas NÃO PAGAS
+        df_cleaned['Status de Pagamento'] = (
+            df_cleaned['Status de Pagamento']
+            .astype(str)
+            .str.strip()
+            .str.upper()
+        )
+        df_cleaned = df_cleaned[df_cleaned['Status de Pagamento'] == 'NÃO PAGO']
 
         return df_cleaned
 
