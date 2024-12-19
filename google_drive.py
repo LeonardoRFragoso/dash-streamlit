@@ -4,7 +4,6 @@ from google.oauth2.service_account import Credentials
 from googleapiclient.http import MediaIoBaseDownload
 from io import BytesIO
 import streamlit as st
-import json
 
 def get_service_account_credentials():
     """
@@ -12,24 +11,28 @@ def get_service_account_credentials():
     Retorna um objeto Credentials autenticado.
     """
     try:
-        # Obter credenciais como string do painel do Streamlit
-        credentials_info = st.secrets["CREDENTIALS"]
-
-        # Se for string, converte para dicionário
-        if isinstance(credentials_info, str):
-            credentials_info = json.loads(credentials_info)
+        # Obter credenciais do painel do Streamlit diretamente
+        credentials_info = {
+            "type": st.secrets["CREDENTIALS"]["type"],
+            "project_id": st.secrets["CREDENTIALS"]["project_id"],
+            "private_key_id": st.secrets["CREDENTIALS"]["private_key_id"],
+            "private_key": st.secrets["CREDENTIALS"]["private_key"],
+            "client_email": st.secrets["CREDENTIALS"]["client_email"],
+            "client_id": st.secrets["CREDENTIALS"]["client_id"],
+            "auth_uri": st.secrets["CREDENTIALS"]["auth_uri"],
+            "token_uri": st.secrets["CREDENTIALS"]["token_uri"],
+            "auth_provider_x509_cert_url": st.secrets["CREDENTIALS"]["auth_provider_x509_cert_url"],
+            "client_x509_cert_url": st.secrets["CREDENTIALS"]["client_x509_cert_url"],
+        }
 
         # Define os escopos necessários
         scopes = ["https://www.googleapis.com/auth/drive.readonly"]
 
         # Cria o objeto Credentials
-        credentials = Credentials.from_service_account_info(info=credentials_info, scopes=scopes)
+        credentials = Credentials.from_service_account_info(credentials_info, scopes=scopes)
         st.info("Credenciais de serviço obtidas com sucesso.")
         return credentials
 
-    except json.JSONDecodeError:
-        st.error("Erro ao interpretar as credenciais como JSON. Verifique o formato no painel do Streamlit.")
-        return None
     except KeyError as e:
         st.error(f"Chave ausente nas credenciais: {str(e)}")
         return None
