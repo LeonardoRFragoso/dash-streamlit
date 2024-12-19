@@ -8,9 +8,8 @@ from googleapiclient.http import MediaIoBaseDownload
 # Função para autenticar no Google Drive
 def autenticar_google_drive():
     """Autentica no Google Drive usando credenciais de serviço."""
-    credentials = Credentials.from_service_account_info(
-        st.secrets["CREDENTIALS"], 
-        scopes=["https://www.googleapis.com/auth/drive.readonly"]
+    credentials = Credentials.from_service_account_file(
+        st.secrets["CREDENTIALS_FILE"], scopes=["https://www.googleapis.com/auth/drive"]
     )
     return build("drive", "v3", credentials=credentials)
 
@@ -18,7 +17,7 @@ def autenticar_google_drive():
 def obter_id_ultima_planilha():
     """Obtém o ID da última planilha salva no JSON."""
     try:
-        with open(st.secrets["file_data"]["ultima_planilha_json"], 'r', encoding='utf-8') as f:
+        with open(st.secrets["ULTIMA_PLANILHA_JSON"], 'r', encoding='utf-8') as f:
             data = json.load(f)
             return data.get("file_id")
     except Exception as e:
@@ -38,14 +37,7 @@ def carregar_dados_google_drive():
         while not done:
             status, done = downloader.next_chunk()
         file_buffer.seek(0)
-        
-        # Carregar o arquivo Excel e verificar se está vazio
-        df = pd.read_excel(file_buffer)
-        if df is None or df.empty:
-            st.error("O arquivo carregado está vazio ou não foi possível carregar os dados.")
-            raise ValueError("O arquivo carregado está vazio ou não contém dados utilizáveis.")
-        
-        return df
+        return pd.read_excel(file_buffer)
     except Exception as e:
         st.error(f"Erro ao carregar os dados do Google Drive: {e}")
         st.stop()
