@@ -1,25 +1,26 @@
 import pandas as pd
-from data_loader import load_data, clean_data
 import streamlit as st
-from google_drive import carregar_dados_google_drive  # Adicione esta importação
+from data_loader import load_data, clean_data, process_currency_column
+from google_drive import carregar_dados_google_drive
 
 def carregar_e_limpar_dados(file_path=None, sheet_name=None):
     """
-    Carrega os dados usando `load_data` do `data_loader` e aplica limpeza adicional.
-    Caso o caminho do arquivo não seja fornecido, ele será carregado a partir do Google Drive.
+    Carrega e processa os dados, seja de arquivo local ou Google Drive.
     """
     try:
-        # Se file_path não for fornecido, carregar do Google Drive
+        # Determinar fonte dos dados e carregar
+        df = None
         if not file_path:
-            df = carregar_dados_google_drive()
+            # Carregar do Google Drive usando ID do secrets.toml
+            drive_id = st.secrets["file_data"]["ultima_planilha_id"]
+            df = load_data(drive_id, sheet_name)
         else:
-            # Carregar os dados com `load_data` do data_loader
             df = load_data(file_path, sheet_name)
 
         if df is None:
             raise ValueError("Não foi possível carregar os dados")
 
-        # Verificar colunas essenciais antes de qualquer operação
+        # Verificar presença das colunas essenciais
         required_columns = [
             'Status de Pagamento', 
             'Auto de Infração', 
@@ -29,80 +30,111 @@ def carregar_e_limpar_dados(file_path=None, sheet_name=None):
         ]
         verificar_colunas_essenciais(df, required_columns)
 
-        # Limpar dados com `clean_data`
+        # Limpar e filtrar dados
         df_cleaned = clean_data(df)
-
-        # Padronizar e filtrar apenas multas NÃO PAGAS
-        df_cleaned['Status de Pagamento'] = (
-            df_cleaned['Status de Pagamento']
-            .astype(str)
-            .str.strip()
-            .str.upper()
-        )
-        df_cleaned = df_cleaned[df_cleaned['Status de Pagamento'] == 'NÃO PAGO']
+        
+        # Filtrar apenas multas não pagas
+        df_cleaned = filtrar_multas_nao_pagas(df_cleaned)
 
         return df_cleaned
+
     except Exception as e:
         st.error(f"Erro ao carregar e limpar os dados: {str(e)}")
         return None
 
 def verificar_colunas_essenciais(df, required_columns):
     """
-    Verifica a existência e os tipos das colunas essenciais no DataFrame.
+    Verifica a existência e formatos das colunas necessárias.
     """
     try:
+        # Verificar presença das colunas
         missing_cols = [col for col in required_columns if col not in df.columns]
         if missing_cols:
-            raise ValueError(f"Faltam as seguintes colunas essenciais: {', '.join(missing_cols)}")
+            raise ValueError(f"Faltam as seguintes colunas: {', '.join(missing_cols)}")
 
-        # Validar tipos das colunas esperadas
-        if 'Valor a ser pago R$' in df and not pd.api.types.is_numeric_dtype(df['Valor a ser pago R$']):
-            raise TypeError("A coluna 'Valor a ser pago R$' deve ser numérica.")
-        if 'Dia da Consulta' in df:
+        # Converter e validar formatos
+        if 'Valor a ser pago R$' in df.columns:
+            df['Valor a ser pago R$'] = process_currency_column(df['Valor a ser pago R$'])
+
+        if 'Dia da Consulta' in df.columns:
             df['Dia da Consulta'] = pd.to_datetime(df['Dia da Consulta'], errors='coerce')
-    except Exception as e:
-        raise RuntimeError(f"Erro na verificação de colunas essenciais: {e}")
+            if df['Dia da Consulta'].isna().all():
+                raise ValueError("Falha ao converter coluna 'Dia da Consulta' para formato de data")
 
+        if 'Data da Infração' in df.columns:
+            df['Data da Infração'] = pd.to_datetime(df['Data da Infração'], errors='coerce')
+            if df['Data da Infração'].isna().all():
+                raise ValueError("Falha ao converter coluna 'Data da Infração' para formato de data")
+
+    except Exception as e:
+        raise RuntimeError(f"Erro na verificação de colunas: {e}")
+
+def filtrar_multas_nao_pagas(df):
+    """
+    Filtra apenas as multas com status 'NÃO PAGO'.
+    """
+    try:
+        df['Status de Pagamento'] = (
+            df['Status de Pagamento']
+            .astype(str)
+            .str.strip()
+            .str.upper()
+        )
+        return df[df['Status de Pagamento'] == 'NÃO PAGO']
+    except Exception as e:
+        raise RuntimeError(f"Erro ao filtrar multas não pagas: {e}")
 
 def calcular_metricas(df):
     """
-    Calcula métricas principais:
-    - Total de multas únicas
-    - Valor total a pagar
-    - Última data de consulta
+    Calcula métricas principais do dashboard.
     """
     try:
-        # Garantir que a coluna de valor está em formato numérico
-        if not pd.api.types.is_numeric_dtype(df['Valor a ser pago R$']):
-            df['Valor a ser pago R$'] = pd.to_numeric(df['Valor a ser pago R$'], errors='coerce')
+        if df is None or df.empty:
+            return 0, 0.0, "Dados não disponíveis"
 
-        # Total de multas com base em 'Auto de Infração' único
         total_multas = df['Auto de Infração'].nunique()
-
-        # Valor total a pagar
-        valor_total_a_pagar = df['Valor a ser pago R$'].sum()
-
-        # Última data de consulta
+        valor_total = df['Valor a ser pago R$'].sum()
+        
         ultima_consulta = df['Dia da Consulta'].max()
-        ultima_consulta = ultima_consulta.strftime('%d/%m/%Y') if pd.notnull(ultima_consulta) else "Data não disponível"
+        ultima_consulta = (
+            ultima_consulta.strftime('%d/%m/%Y') 
+            if pd.notnull(ultima_consulta) 
+            else "Data não disponível"
+        )
 
-        return total_multas, valor_total_a_pagar, ultima_consulta
+        return total_multas, valor_total, ultima_consulta
+
     except Exception as e:
-        raise RuntimeError(f"Erro ao calcular métricas: {e}")
-
+        st.error(f"Erro ao calcular métricas: {str(e)}")
+        return 0, 0.0, "Erro no cálculo"
 
 def filtrar_dados_por_periodo(df, data_inicial, data_final, coluna='Dia da Consulta'):
     """
-    Filtra os dados pelo período especificado entre data_inicial e data_final.
+    Filtra dados por período específico.
     """
     try:
+        if df is None or df.empty:
+            return df
+
         if coluna not in df.columns:
-            raise ValueError(f"A coluna '{coluna}' não existe no DataFrame.")
+            raise ValueError(f"Coluna '{coluna}' não encontrada")
 
-        # Garantir que a coluna de datas está no formato correto
+        # Garantir formato de data
         df[coluna] = pd.to_datetime(df[coluna], errors='coerce')
+        
+        # Converter datas de filtro
+        data_inicial = pd.Timestamp(data_inicial)
+        data_final = pd.Timestamp(data_final)
 
-        return df[(df[coluna] >= pd.Timestamp(data_inicial)) & 
-                  (df[coluna] <= pd.Timestamp(data_final))]
+        # Aplicar filtro
+        mask = (df[coluna] >= data_inicial) & (df[coluna] <= data_final)
+        filtered_df = df[mask]
+
+        if filtered_df.empty:
+            st.warning(f"Nenhum dado encontrado para o período de {data_inicial.strftime('%d/%m/%Y')} a {data_final.strftime('%d/%m/%Y')}")
+
+        return filtered_df
+
     except Exception as e:
-        raise RuntimeError(f"Erro ao filtrar dados por período: {e}")
+        st.error(f"Erro ao filtrar por período: {str(e)}")
+        return df
