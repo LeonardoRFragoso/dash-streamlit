@@ -64,20 +64,16 @@ def verificar_colunas_essenciais(df, required_columns):
         if missing_cols:
             raise ValueError(f"Faltam as seguintes colunas: {', '.join(missing_cols)}")
 
-        # Converter e validar formatos
-        if 'Valor a ser pago R$' in df.columns:
-            df['Valor a ser pago R$'] = process_currency_column(df['Valor a ser pago R$'])
-
-        if 'Dia da Consulta' in df.columns:
-            df['Dia da Consulta'] = pd.to_datetime(df['Dia da Consulta'], errors='coerce')
-            if df['Dia da Consulta'].isna().all():
-                raise ValueError("Falha ao converter coluna 'Dia da Consulta' para formato de data")
-
-        if 'Data da Infração' in df.columns:
-            df['Data da Infração'] = pd.to_datetime(df['Data da Infração'], errors='coerce')
-            if df['Data da Infração'].isna().all():
-                raise ValueError("Falha ao converter coluna 'Data da Infração' para formato de data")
-
+        # Validar formato e converter colunas
+        for col in ['Valor a ser pago R$', 'Dia da Consulta', 'Data da Infração']:
+            if col in df.columns:
+                if col == 'Valor a ser pago R$':
+                    df['Valor a ser pago R$'] = process_currency_column(df['Valor a ser pago R$'])
+                elif col in ['Dia da Consulta', 'Data da Infração']:
+                    df[col] = pd.to_datetime(df[col], errors='coerce')
+                    if df[col].isna().all():
+                        raise ValueError(f"Falha ao converter a coluna '{col}' para formato de data")
+        return df
     except Exception as e:
         raise RuntimeError(f"Erro na verificação de colunas: {e}")
 
