@@ -7,13 +7,23 @@ import streamlit as st
 
 def get_service_account_credentials():
     """
-    Obtém as credenciais de conta de serviço do Google Drive a partir do secrets.toml.
+    Obtém as credenciais de conta de serviço do Google Drive.
     Retorna um objeto Credentials autenticado.
     """
-    credentials_info = st.secrets["CREDENTIALS"]
-    scopes = ["https://www.googleapis.com/auth/drive.readonly"]
-    credentials = Credentials.from_service_account_info(info=credentials_info, scopes=scopes)
-    return credentials
+    try:
+        # Carregar as credenciais como JSON
+        credentials_info = st.secrets["CREDENTIALS"]
+        
+        if isinstance(credentials_info, str):
+            import json
+            credentials_info = json.loads(credentials_info)
+
+        scopes = ["https://www.googleapis.com/auth/drive.readonly"]
+        credentials = Credentials.from_service_account_info(info=credentials_info, scopes=scopes)
+        return credentials
+    except Exception as e:
+        st.error(f"Erro ao carregar credenciais: {str(e)}")
+        return None
 
 def get_drive_service(credentials):
     """
