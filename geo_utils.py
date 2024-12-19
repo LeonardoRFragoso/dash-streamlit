@@ -1,13 +1,16 @@
 import os
 import json
 import requests
+import streamlit as st
 
+# Caminho do arquivo de cache de coordenadas
 CACHE_FILE = "coordinates_cache.json"
+
 
 def load_cache():
     """
     Carrega o cache do arquivo JSON.
-    
+
     Returns:
         dict: O cache carregado, ou um dicionário vazio caso não exista.
     """
@@ -19,10 +22,11 @@ def load_cache():
             print(f"Erro ao carregar o cache: {e}")
     return {}
 
+
 def save_cache(cache):
     """
     Salva o cache no arquivo JSON.
-    
+
     Parameters:
         cache (dict): Dados a serem armazenados no cache.
     """
@@ -32,10 +36,11 @@ def save_cache(cache):
     except IOError as e:
         print(f"Erro ao salvar o cache: {e}")
 
+
 def get_coordinates(local, api_key):
     """
     Busca as coordenadas para um local usando a API OpenCage.
-    
+
     Parameters:
         local (str): O local para buscar as coordenadas.
         api_key (str): A chave de API do OpenCage.
@@ -51,9 +56,12 @@ def get_coordinates(local, api_key):
         if 'results' in data and data['results']:
             geometry = data['results'][0]['geometry']
             return geometry['lat'], geometry['lng']
+        else:
+            print(f"Nenhum resultado encontrado para o local: {local}")
     except requests.RequestException as e:
         print(f"Erro ao buscar coordenadas: {e}")
     return None, None
+
 
 def get_cached_coordinates(local, api_key, cache):
     """
@@ -67,10 +75,26 @@ def get_cached_coordinates(local, api_key, cache):
     Returns:
         tuple: Uma tupla (latitude, longitude).
     """
+    # Busca no cache
     if local in cache:
         return cache[local]
+
+    # Caso não esteja no cache, buscar na API
     lat, lng = get_coordinates(local, api_key)
     if lat is not None and lng is not None:
         cache[local] = (lat, lng)
-        save_cache(cache)
+        save_cache(cache)  # Atualiza o cache
     return lat, lng
+
+
+def get_api_key():
+    """
+    Obtém a chave de API do OpenCage do Streamlit secrets.
+
+    Returns:
+        str: A chave de API.
+    """
+    try:
+        return st.secrets["API_KEY"]
+    except KeyError:
+        raise RuntimeError("API_KEY não configurada nos secrets do Streamlit.")
