@@ -25,10 +25,10 @@ def carregar_e_limpar_dados(carregar_dados_func):
                             'Status de Pagamento', 'Dia da Consulta', 'Local da Infração']
         verificar_colunas_essenciais(df, required_columns)
 
-        # Tratar valores monetários
+        # Preprocessar valores monetários
         df = preprocessar_valores(df)
 
-        # Tratar datas
+        # Garantir que as datas estão no formato correto
         df['Dia da Consulta'] = pd.to_datetime(df['Dia da Consulta'], errors='coerce', dayfirst=True)
         df['Data da Infração'] = pd.to_datetime(df['Data da Infração'], errors='coerce', dayfirst=True)
 
@@ -38,7 +38,7 @@ def carregar_e_limpar_dados(carregar_dados_func):
         # Filtrar apenas multas NÃO PAGAS
         df = df[df['Status de Pagamento'] == 'NÃO PAGO']
 
-        # Remover duplicatas com base no 'Auto de Infração'
+        # Remover duplicatas com base no 'Auto de Infração', mantendo o registro mais recente
         df = df.sort_values('Dia da Consulta').drop_duplicates(subset=['Auto de Infração'], keep='last')
 
         return df
