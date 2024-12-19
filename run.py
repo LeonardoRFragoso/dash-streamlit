@@ -149,6 +149,10 @@ try:
         st.error("Não foi possível carregar os dados. Verifique a conexão com o Google Drive.")
         st.stop()
 
+    # Exibir as primeiras linhas para depuração
+    st.write("Primeiras linhas do DataFrame:", data_cleaned.head())
+
+
     # Filtro de dados por período
     st.markdown("<h2 class='titulo-secao'>Filtrar Dados por Período</h2>", unsafe_allow_html=True)
     data_inicial = st.date_input("Data Inicial", value=datetime(2024, 1, 1))

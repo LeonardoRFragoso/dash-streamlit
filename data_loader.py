@@ -37,10 +37,17 @@ def load_data(sheet_name=None):
         # Carregar o arquivo em um DataFrame
         buffer.seek(0)
         df = pd.read_excel(buffer, sheet_name=sheet_name)
-        
+
+        # Verificar se o DataFrame está vazio ou não
         if df is None or df.empty:
             st.error("O arquivo carregado está vazio ou não foi possível carregar os dados.")
             raise ValueError("O arquivo carregado está vazio ou não contém dados utilizáveis.")
+
+        # Mostrar as primeiras linhas para depuração
+        st.write("Primeiras linhas do DataFrame:", df.head())
+
+        return padronizar_dataframe(df)
+
         
         # Mostrar as primeiras linhas para diagnóstico
         st.write(df.head())  # Exibe as primeiras linhas da planilha carregada
