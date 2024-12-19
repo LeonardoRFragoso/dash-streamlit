@@ -1,3 +1,4 @@
+import pandas as pd
 from googleapiclient.discovery import build
 from google.oauth2.service_account import Credentials
 from googleapiclient.http import MediaIoBaseDownload
@@ -41,10 +42,10 @@ def download_file(service, file_id):
     buffer.seek(0)
     return buffer
 
-def carregar_dados_google_drive():
+def carregar_dados_google_drive(sheet_name=None):
     """
     Carrega os dados do arquivo do Google Drive.
-    Retorna os dados como um objeto BytesIO.
+    Retorna os dados como um DataFrame do Pandas.
     """
     try:
         # Verificar se o ID do arquivo está configurado
@@ -55,7 +56,11 @@ def carregar_dados_google_drive():
         service = get_drive_service(credentials)
         file_id = get_file_id()
         file_data = download_file(service, file_id)
-        return file_data
+
+        # Carregar o conteúdo como DataFrame do Pandas
+        df = pd.read_excel(file_data, sheet_name=sheet_name)
+        return df
+
     except ValueError as e:
         st.error(f"Erro de configuração: {str(e)}")
         return None
