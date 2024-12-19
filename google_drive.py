@@ -11,6 +11,7 @@ def get_service_account_credentials():
     Retorna um objeto Credentials autenticado.
     """
     try:
+        # Obter credenciais do painel do Streamlit diretamente
         credentials_info = {
             "type": st.secrets["CREDENTIALS"]["type"],
             "project_id": st.secrets["CREDENTIALS"]["project_id"],
@@ -106,16 +107,13 @@ def carregar_dados_google_drive(sheet_name=None):
         if not file_data:
             raise ValueError("Falha no download do arquivo.")
 
-        # Verificar se o arquivo é um Excel e ler os dados
-        try:
-            df = pd.read_excel(file_data, sheet_name=sheet_name)
-            if not isinstance(df, pd.DataFrame):
-                raise ValueError("Os dados carregados não são um DataFrame válido.")
-            st.info("Dados carregados e convertidos em DataFrame com sucesso.")
-            return df
-        except Exception as e:
-            st.error(f"Erro ao ler o arquivo Excel: {str(e)}")
-            return None
+        # Carregar o conteúdo como DataFrame do Pandas
+        df = pd.read_excel(file_data, sheet_name=sheet_name)
+        if not isinstance(df, pd.DataFrame):
+            raise ValueError("Os dados carregados não são um DataFrame válido.")
+
+        st.info("Dados carregados e convertidos em DataFrame com sucesso.")
+        return df
 
     except ValueError as e:
         st.error(f"Erro de configuração: {str(e)}")
