@@ -51,6 +51,7 @@ def carregar_e_limpar_dados(carregar_dados_func):
         print(f"Erro ao carregar e limpar os dados: {e}")
         raise
 
+
 def verificar_colunas_essenciais(df, required_columns):
     """
     Verifica se as colunas essenciais estão presentes nos dados.
