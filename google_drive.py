@@ -1,67 +1,61 @@
 from googleapiclient.discovery import build
 from google.oauth2.service_account import Credentials
-import io
 from googleapiclient.http import MediaIoBaseDownload
-import pandas as pd
+from io import BytesIO
 import streamlit as st
-import os
-from tempfile import NamedTemporaryFile
+
+def get_service_account_credentials():
+    """
+    Obtém as credenciais de conta de serviço do Google Drive a partir do secrets.toml.
+    Retorna um objeto Credentials autenticado.
+    """
+    credentials_info = st.secrets["CREDENTIALS"]
+    scopes = ["https://www.googleapis.com/auth/drive.readonly"]
+    credentials = Credentials.from_service_account_info(info=credentials_info, scopes=scopes)
+    return credentials
+
+def get_drive_service(credentials):
+    """
+    Cria e retorna um objeto de serviço do Google Drive autenticado.
+    """
+    return build("drive", "v3", credentials=credentials)
+
+def get_file_id():
+    """
+    Obtém o ID do arquivo do Google Drive a partir do secrets.toml.
+    Retorna o ID do arquivo como uma string.
+    """
+    return st.secrets["file_data"]["ultima_planilha_id"]
+
+def download_file(service, file_id):
+    """
+    Faz o download do arquivo do Google Drive com o ID especificado.
+    Retorna os dados do arquivo como um objeto BytesIO.
+    """
+    request = service.files().get_media(fileId=file_id)
+    buffer = BytesIO()
+    downloader = MediaIoBaseDownload(buffer, request)
+    done = False
+    while done is False:
+        _, done = downloader.next_chunk()
+    buffer.seek(0)
+    return buffer
 
 def carregar_dados_google_drive():
     """
-    Carrega dados de uma planilha do Google Drive usando credenciais de serviço.
-    Retorna um DataFrame pandas ou None em caso de erro.
+    Carrega os dados do arquivo do Google Drive.
+    Retorna os dados como um objeto BytesIO.
     """
     try:
         # Verificar se o ID do arquivo está configurado
         if "file_data" not in st.secrets or "ultima_planilha_id" not in st.secrets["file_data"]:
             raise ValueError("ID do arquivo não configurado em secrets.toml")
-
-        # Carregar credenciais do secrets
-        creds = Credentials.from_service_account_info(
-            st.secrets["CREDENTIALS"], 
-            scopes=["https://www.googleapis.com/auth/drive.readonly"]
-        )
-
-        # Construir o serviço da API Google Drive
-        drive_service = build("drive", "v3", credentials=creds)
-
-        # ID do arquivo
-        file_id = st.secrets["file_data"]["ultima_planilha_id"]
         
-        # Usar arquivo temporário para evitar problemas de permissão
-        with NamedTemporaryFile(suffix='.xlsx', delete=False) as tmp_file:
-            try:
-                # Baixar o arquivo
-                request = drive_service.files().get_media(fileId=file_id)
-                downloader = MediaIoBaseDownload(tmp_file, request)
-                
-                # Download com feedback de progresso
-                with st.spinner('Baixando arquivo do Google Drive...'):
-                    done = False
-                    while not done:
-                        status, done = downloader.next_chunk()
-                        if status:
-                            st.progress(int(status.progress() * 100))
-                
-                # Carregar o arquivo em um DataFrame
-                tmp_file.seek(0)
-                df = pd.read_excel(tmp_file.name)
-                
-                # Verificar se o DataFrame foi carregado corretamente
-                if df is None or df.empty:
-                    st.error("Erro ao carregar dados da planilha. O arquivo está vazio ou inválido.")
-                    return None
-                
-                return df
-
-            finally:
-                # Limpar o arquivo temporário
-                try:
-                    os.unlink(tmp_file.name)
-                except:
-                    pass
-
+        credentials = get_service_account_credentials()
+        service = get_drive_service(credentials)
+        file_id = get_file_id()
+        file_data = download_file(service, file_id)
+        return file_data
     except ValueError as e:
         st.error(f"Erro de configuração: {str(e)}")
         return None
