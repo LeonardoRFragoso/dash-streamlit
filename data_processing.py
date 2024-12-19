@@ -10,7 +10,7 @@ def carregar_e_limpar_dados(carregar_dados_func):
         df = carregar_dados_func()
 
         # Verificar se as colunas essenciais estão presentes
-        required_columns = ['Auto de Infração', 'Status de Pagamento', 'Valor a ser pago R$']
+        required_columns = ['Auto de Infração', 'Status de Pagamento', 'Valor a ser pago R$', 'Dia da Consulta']
         missing_columns = [col for col in required_columns if col not in df.columns]
         if missing_columns:
             raise ValueError(f"Colunas faltantes: {', '.join(missing_columns)}")
@@ -26,15 +26,42 @@ def carregar_e_limpar_dados(carregar_dados_func):
             df_unicos['Valor a ser pago R$']
             .astype(str)
             .str.replace(r'[^\d,.-]', '', regex=True)  # Remove caracteres não numéricos
-            .str.replace(r'\.(?=\d{3})', '', regex=True)  # Remove separadores de milhar
+            .str.replace(r'\.(?=\d{3})', '', regex=True)  # Remove separadores de milhares
             .str.replace(',', '.', regex=False)       # Substitui vírgula por ponto decimal
         )
         df_unicos['Valor a ser pago R$'] = pd.to_numeric(df_unicos['Valor a ser pago R$'], errors='coerce').fillna(0)
+
+        # Garantir que as datas estão no formato datetime
+        df_unicos['Dia da Consulta'] = pd.to_datetime(df_unicos['Dia da Consulta'], errors='coerce', dayfirst=True)
+        df_unicos['Data da Infração'] = pd.to_datetime(df_unicos['Data da Infração'], errors='coerce', dayfirst=True)
 
         return df_unicos
     except Exception as e:
         print(f"Erro ao carregar e limpar os dados: {e}")
         raise
+
+def calcular_metricas(df):
+    """
+    Calcula métricas principais:
+    - Total de multas
+    - Valor total a pagar
+    - Última consulta
+    """
+    # Calcular o total de multas considerando 'Auto de Infração' único
+    total_multas = df['Auto de Infração'].nunique()
+
+    # Calcular o valor total a pagar
+    valor_total_a_pagar = df['Valor a ser pago R$'].sum()
+
+    # Garantir que 'Dia da Consulta' está no formato datetime
+    ultima_consulta = df['Dia da Consulta'].max()
+    if pd.notnull(ultima_consulta):
+        ultima_consulta = ultima_consulta.strftime('%d/%m/%Y')
+    else:
+        ultima_consulta = "Data não disponível"
+
+    return total_multas, valor_total_a_pagar, ultima_consulta
+
 
 def verificar_colunas_essenciais(df, required_columns):
     """
@@ -71,6 +98,7 @@ def calcular_metricas(df):
     Calcula métricas principais:
     - Total de multas
     - Valor total a pagar
+    - Última consulta
     """
     # Calcular o total de multas considerando 'Auto de Infração' único
     total_multas = df['Auto de Infração'].nunique()
@@ -79,9 +107,6 @@ def calcular_metricas(df):
     valor_total_a_pagar = df['Valor a ser pago R$'].sum()
 
     # Garantir que 'Dia da Consulta' está no formato datetime
-    df['Dia da Consulta'] = pd.to_datetime(df['Dia da Consulta'], errors='coerce')
-
-    # Obter a data da última consulta
     ultima_consulta = df['Dia da Consulta'].max()
     if pd.notnull(ultima_consulta):
         ultima_consulta = ultima_consulta.strftime('%d/%m/%Y')
