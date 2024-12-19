@@ -34,8 +34,9 @@ def load_data(file_path, sheet_name=None):
             .str.replace(r'[^\d,.-]', '', regex=True)
             .str.replace(r'\.(?=\d{3,})', '', regex=True)
             .str.replace(',', '.')
-            .apply(lambda x: float(x) if x.replace('.', '', 1).isdigit() else 0)
         )
+        # Converter para float
+        df['Valor a ser pago R$'] = pd.to_numeric(df['Valor a ser pago R$'], errors='coerce').fillna(0)
 
         return df
 
