@@ -5,25 +5,33 @@ from googleapiclient.http import MediaIoBaseDownload
 from io import BytesIO
 import streamlit as st
 
+import json
+
 def get_service_account_credentials():
     """
-    Obtém as credenciais de conta de serviço do Google Drive.
+    Obtém as credenciais de conta de serviço do Google Drive a partir do painel do Streamlit Cloud.
     Retorna um objeto Credentials autenticado.
     """
     try:
-        # Carregar as credenciais como JSON
+        # Carregar as credenciais do painel do Streamlit
         credentials_info = st.secrets["CREDENTIALS"]
         
+        # Verificar se é uma string e carregar como JSON
         if isinstance(credentials_info, str):
-            import json
             credentials_info = json.loads(credentials_info)
 
+        # Definir os escopos e criar o objeto de credenciais
         scopes = ["https://www.googleapis.com/auth/drive.readonly"]
         credentials = Credentials.from_service_account_info(info=credentials_info, scopes=scopes)
         return credentials
-    except Exception as e:
-        st.error(f"Erro ao carregar credenciais: {str(e)}")
+
+    except json.JSONDecodeError as e:
+        st.error("Erro ao decodificar as credenciais JSON. Verifique o formato.")
         return None
+    except Exception as e:
+        st.error(f"Erro ao carregar as credenciais: {str(e)}")
+        return None
+
 
 def get_drive_service(credentials):
     """
