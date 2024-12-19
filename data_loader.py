@@ -48,12 +48,6 @@ def load_data(sheet_name=None):
 
         return padronizar_dataframe(df)
 
-        
-        # Mostrar as primeiras linhas para diagnóstico
-        st.write(df.head())  # Exibe as primeiras linhas da planilha carregada
-        
-        return padronizar_dataframe(df)
-
     except Exception as e:
         st.error(f"Erro ao carregar do Google Drive: {e}")
         raise RuntimeError(f"Erro ao carregar do Google Drive: {e}")
@@ -65,10 +59,12 @@ def padronizar_dataframe(df):
     try:
         # Padronizar os nomes das colunas
         column_mapping = {
-            "Valor a ser pago R$": "Valor a ser pago R$",
+            "Valor a Ser Pago": "Valor a ser pago R$",
             "Data da Infração": "Data da Infração",
             "Dia da Consulta": "Dia da Consulta",
             "Auto de Infração": "Auto de Infração",
+            "Local da Infração": "Local da Infração",
+            # Adicionar mais colunas conforme necessário
         }
         
         # Verificar se as colunas essenciais estão presentes
@@ -96,7 +92,6 @@ def padronizar_dataframe(df):
         st.error(f"Erro ao padronizar DataFrame: {e}")
         raise RuntimeError(f"Erro ao padronizar DataFrame: {e}")
 
-
 def process_currency_column(series):
     """
     Processa uma coluna de valores monetários.
@@ -104,24 +99,24 @@ def process_currency_column(series):
     try:
         return (series
                 .astype(str)
-                .str.replace(r'[^\d,.-]', '', regex=True)
-                .str.replace(r'\.(?=\d{3,})', '', regex=True)
-                .str.replace(',', '.', regex=False)
-                .pipe(pd.to_numeric, errors='coerce')
-                .fillna(0))
+                .str.replace(r'[^\d,.-]', '', regex=True)  # Remove caracteres não numéricos
+                .str.replace(r'\.(?=\d{3,})', '', regex=True)  # Remove pontos antes de milhares
+                .str.replace(',', '.', regex=False)  # Substitui vírgula por ponto
+                .pipe(pd.to_numeric, errors='coerce')  # Converte para numérico
+                .fillna(0))  # Preenche valores ausentes com 0
     except Exception as e:
         st.error(f"Erro ao processar coluna de valores: {e}")
         raise RuntimeError(f"Erro ao processar coluna de valores: {e}")
 
-
 def clean_data(df):
     """
-    Remove duplicados com base na coluna 'Auto de Infração'.
+    Remove duplicados com base na coluna 'Auto de Infração', mantendo o último registro.
     """
     try:
         if 'Auto de Infração' not in df.columns:
             st.error("Coluna 'Auto de Infração' não encontrada")
             raise KeyError("Coluna 'Auto de Infração' não encontrada")
+        # Remove duplicados, mantendo o último registro (mais recente)
         return df.drop_duplicates(subset=['Auto de Infração'], keep='last')
     except Exception as e:
         st.error(f"Erro ao limpar dados: {e}")
