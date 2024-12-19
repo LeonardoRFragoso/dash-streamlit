@@ -58,8 +58,8 @@ def get_file_id():
         file_id = st.secrets["file_data"]["ultima_planilha_id"]
         st.info(f"ID do arquivo obtido: {file_id}")
         return file_id
-    except KeyError as e:
-        st.error(f"Chave ausente ao obter o ID do arquivo: {str(e)}")
+    except KeyError:
+        st.error("ID do arquivo não encontrado no secrets. Verifique a configuração.")
         return None
 
 def download_file(service, file_id):
@@ -87,50 +87,30 @@ def carregar_dados_google_drive(sheet_name=None):
     Retorna os dados como um DataFrame do Pandas.
     """
     try:
-        # Verificar se o ID do arquivo está configurado
-        if "file_data" not in st.secrets or "ultima_planilha_id" not in st.secrets["file_data"]:
-            raise ValueError("ID do arquivo não configurado em secrets do painel do Streamlit.")
-        
+        # Obter credenciais e serviço
         credentials = get_service_account_credentials()
         if not credentials:
-            st.error("Credenciais inválidas. Verifique o painel do Streamlit.")
-            return None
+            raise ValueError("Credenciais inválidas.")
 
         service = get_drive_service(credentials)
         if not service:
-            st.error("Não foi possível criar o serviço do Google Drive.")
-            return None
+            raise ValueError("Serviço do Google Drive não pôde ser criado.")
 
         file_id = get_file_id()
         if not file_id:
-            st.error("ID do arquivo não encontrado.")
-            return None
+            raise ValueError("ID do arquivo não encontrado.")
 
         file_data = download_file(service, file_id)
         if not file_data:
-            st.error("Erro ao baixar o arquivo. Verifique o ID e as permissões do arquivo.")
-            return None
+            raise ValueError("Falha no download do arquivo.")
 
-        # Tentativa de carregar o arquivo como DataFrame
-        try:
-            df = pd.read_excel(file_data, sheet_name=sheet_name)
-            if not isinstance(df, pd.DataFrame):
-                raise ValueError("O arquivo carregado não é um DataFrame válido.")
-            
-            # Verificar se o DataFrame está vazio
-            if df.empty:
-                st.error("O DataFrame carregado está vazio. Verifique o conteúdo do arquivo.")
-                return None
+        # Carregar o conteúdo como DataFrame do Pandas
+        df = pd.read_excel(file_data, sheet_name=sheet_name)
+        if not isinstance(df, pd.DataFrame):
+            raise ValueError("Os dados carregados não são um DataFrame válido.")
 
-            st.info("Dados carregados com sucesso como DataFrame.")
-            return df
-
-        except ValueError as e:
-            st.error(f"Erro ao interpretar o arquivo como DataFrame: {str(e)}")
-            return None
-        except Exception as e:
-            st.error(f"Erro inesperado ao carregar o arquivo: {str(e)}")
-            return None
+        st.info("Dados carregados e convertidos em DataFrame com sucesso.")
+        return df
 
     except ValueError as e:
         st.error(f"Erro de configuração: {str(e)}")
