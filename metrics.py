@@ -1,5 +1,9 @@
+
 import pandas as pd
 from datetime import datetime
+
+# Constantes para colunas
+REQUIRED_COLUMNS = ['Data da Infração', 'Valor a ser pago R$', 'Auto de Infração', 'Status de Pagamento']
 
 def preprocess_data(data):
     """
@@ -23,18 +27,14 @@ def preprocess_data(data):
 
     # Ensure 'Data da Infração' is a datetime object
     data['Data da Infração'] = pd.to_datetime(data['Data da Infração'], format='%d/%m/%Y', errors='coerce')
+    data.dropna(subset=['Data da Infração'], inplace=True)  # Drop rows with invalid dates
 
     # Standardize monetary values
-    data['Valor a ser pago R$'] = (
-        data['Valor a ser pago R$']
-        .astype(str)
-        .replace({r'[^\d,.-]': '', r'\.(?=\d{3,})': '', ',': '.'}, regex=True)
-    )
+    data['Valor a ser pago R$'] = data['Valor a ser pago R$'].replace({r'[^\d,]': '', ',': '.'}, regex=True)
     data['Valor a ser pago R$'] = pd.to_numeric(data['Valor a ser pago R$'], errors='coerce').fillna(0)
 
     # Drop rows with essential missing data
-    required_columns = ['Data da Infração', 'Valor a ser pago R$', 'Auto de Infração', 'Status de Pagamento']
-    data.dropna(subset=required_columns, inplace=True)
+    data.dropna(subset=REQUIRED_COLUMNS, inplace=True)
 
     return data
 
@@ -49,12 +49,8 @@ def calculate_metrics(data):
         tuple: Total fines, total unpaid amount, fines in the current month.
     """
     # Verify required columns
-    required_columns = ['Data da Infração', 'Valor a ser pago R$', 'Auto de Infração', 'Status de Pagamento']
-    if not all(col in data.columns for col in required_columns):
-        raise ValueError(f"Faltam colunas essenciais: {', '.join([col for col in required_columns if col not in data.columns])}")
-
-    # Copy data to avoid modifications
-    data = data.copy()
+    if not all(col in data.columns for col in REQUIRED_COLUMNS):
+        raise ValueError(f"Faltam colunas essenciais: {', '.join([col for col in REQUIRED_COLUMNS if col not in data.columns])}")
 
     # Calculate total fines (unique 'Auto de Infração')
     total_multas = data['Auto de Infração'].nunique()
@@ -63,8 +59,9 @@ def calculate_metrics(data):
     valor_total_a_pagar = data.loc[data['Status de Pagamento'] == 'NÃO PAGO', 'Valor a ser pago R$'].sum()
 
     # Current month and year
-    current_month = datetime.now().month
-    current_year = datetime.now().year
+    current_date = pd.to_datetime('today')
+    current_month = current_date.month
+    current_year = current_date.year
 
     # Calculate fines in the current month
     multas_mes_atual = data.loc[
