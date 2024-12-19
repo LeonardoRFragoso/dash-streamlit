@@ -1,6 +1,6 @@
 import pandas as pd
 import streamlit as st
-from data_loader import load_data, clean_data, padronizar_dataframe, process_currency_column
+from data_loader import load_data, clean_data, process_currency_column
 
 # Função para carregar e limpar dados
 def carregar_e_limpar_dados(carregar_dados_func):
