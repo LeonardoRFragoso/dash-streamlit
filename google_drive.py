@@ -48,6 +48,11 @@ def carregar_dados_google_drive():
                 tmp_file.seek(0)
                 df = pd.read_excel(tmp_file.name)
                 
+                # Verificar se o DataFrame foi carregado corretamente
+                if df is None or df.empty:
+                    st.error("Erro ao carregar dados da planilha. O arquivo está vazio ou inválido.")
+                    return None
+                
                 return df
 
             finally:

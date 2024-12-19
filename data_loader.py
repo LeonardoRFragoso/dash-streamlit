@@ -1,6 +1,5 @@
 import pandas as pd
 import streamlit as st
-from tempfile import NamedTemporaryFile
 import os
 
 def load_data(source, sheet_name=None):
@@ -9,12 +8,13 @@ def load_data(source, sheet_name=None):
     """
     try:
         # Se source for um ID do Google Drive, usar função específica
-        if isinstance(source, str) and len(source) == 33:  # ID do Google Drive
+        if isinstance(source, str) and len(source) == 33:  # ID do Google Drive (ID com 33 caracteres)
             return load_from_google_drive(source, sheet_name)
         
         # Caso contrário, carregar como arquivo local
         return load_from_file(source, sheet_name)
     except Exception as e:
+        st.error(f"Erro ao carregar os dados: {e}")
         raise RuntimeError(f"Erro ao carregar os dados: {e}")
 
 def load_from_file(file_path, sheet_name=None):
@@ -22,7 +22,7 @@ def load_from_file(file_path, sheet_name=None):
     Carrega dados de um arquivo Excel local.
     """
     try:
-        # Detectar a aba automaticamente se não especificada
+        # Verificar se o sheet_name foi fornecido, se não, carregar a primeira aba
         sheet_name = sheet_name or 0
 
         # Carregar a planilha
@@ -30,6 +30,7 @@ def load_from_file(file_path, sheet_name=None):
         return padronizar_dataframe(df)
 
     except Exception as e:
+        st.error(f"Erro ao carregar arquivo local: {e}")
         raise RuntimeError(f"Erro ao carregar arquivo local: {e}")
 
 def load_from_google_drive(file_id, sheet_name=None):
@@ -40,9 +41,11 @@ def load_from_google_drive(file_id, sheet_name=None):
         from google_drive import carregar_dados_google_drive
         df = carregar_dados_google_drive(file_id)
         if df is None:
+            st.error("Falha ao carregar dados do Google Drive")
             raise ValueError("Falha ao carregar dados do Google Drive")
         return padronizar_dataframe(df)
     except Exception as e:
+        st.error(f"Erro ao carregar do Google Drive: {e}")
         raise RuntimeError(f"Erro ao carregar do Google Drive: {e}")
 
 def padronizar_dataframe(df):
@@ -57,6 +60,13 @@ def padronizar_dataframe(df):
             "Dia da Consulta": "Dia da Consulta",
             "Auto de Infração": "Auto de Infração",
         }
+        
+        # Verificar se as colunas essenciais estão presentes
+        missing_columns = [col for col in column_mapping.values() if col not in df.columns]
+        if missing_columns:
+            st.error(f"Faltam as colunas necessárias no DataFrame: {', '.join(missing_columns)}")
+            raise ValueError(f"Faltam as colunas necessárias no DataFrame: {', '.join(missing_columns)}")
+
         df = df.rename(columns=column_mapping)
 
         # Converter colunas de datas
@@ -70,6 +80,7 @@ def padronizar_dataframe(df):
 
         return df
     except Exception as e:
+        st.error(f"Erro ao padronizar DataFrame: {e}")
         raise RuntimeError(f"Erro ao padronizar DataFrame: {e}")
 
 def process_currency_column(series):
@@ -85,6 +96,7 @@ def process_currency_column(series):
                 .pipe(pd.to_numeric, errors='coerce')
                 .fillna(0))
     except Exception as e:
+        st.error(f"Erro ao processar coluna de valores: {e}")
         raise RuntimeError(f"Erro ao processar coluna de valores: {e}")
 
 def clean_data(df):
@@ -93,7 +105,9 @@ def clean_data(df):
     """
     try:
         if 'Auto de Infração' not in df.columns:
+            st.error("Coluna 'Auto de Infração' não encontrada")
             raise KeyError("Coluna 'Auto de Infração' não encontrada")
         return df.drop_duplicates(subset=['Auto de Infração'], keep='last')
     except Exception as e:
+        st.error(f"Erro ao limpar dados: {e}")
         raise RuntimeError(f"Erro ao limpar dados: {e}")
