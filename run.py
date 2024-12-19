@@ -170,7 +170,7 @@ try:
     current_month = datetime.now().month
     current_year = datetime.now().year
     multas_mes_atual = data_cleaned[
-        (data_cleaned['Data da Infração'].dt.month == current_month) &
+        (data_cleaned['Data da Infração'].dt.month == current_month) & 
         (data_cleaned['Data da Infração'].dt.year == current_year)
     ]
     valor_total_mes_atual = multas_mes_atual['Valor a ser pago R$'].sum()
@@ -258,7 +258,7 @@ try:
         lat = map_click_data["last_object_clicked"].get("lat")
         lng = map_click_data["last_object_clicked"].get("lng")
         
-        selected_fines = map_data[
+        selected_fines = map_data[ 
             (map_data['Latitude'] == lat) & 
             (map_data['Longitude'] == lng)
         ]
