@@ -1,7 +1,8 @@
 import pandas as pd
 import streamlit as st
-from data_loader import load_data, clean_data, process_currency_column
+from data_loader import load_data, clean_data, padronizar_dataframe, process_currency_column
 
+# Função para carregar e limpar dados
 def carregar_e_limpar_dados(carregar_dados_func):
     """
     Carrega os dados do Google Drive e aplica limpeza e processamento.
@@ -56,10 +57,8 @@ def carregar_e_limpar_dados(carregar_dados_func):
         st.error(f"Erro ao carregar e limpar os dados: {str(e)}")
         return None
 
+# Função para filtrar dados por período
 def filtrar_dados_por_periodo(df, data_inicial, data_final, coluna='Dia da Consulta'):
-    """
-    Filtra os dados para o período selecionado.
-    """
     try:
         if df is None or df.empty:
             raise ValueError("O DataFrame está vazio ou é inválido.")
@@ -89,9 +88,10 @@ def filtrar_dados_por_periodo(df, data_inicial, data_final, coluna='Dia da Consu
         st.error(f"Erro ao filtrar dados por período: {str(e)}")
         return pd.DataFrame()  # Retorna DataFrame vazio para evitar problema
 
+# Função para calcular métricas
 def calcular_metricas(df):
     """
-    Calcula as métricas principais do dashboard.
+    Calcula métricas principais do dashboard.
     """
     try:
         if df is None or df.empty:
@@ -113,6 +113,7 @@ def calcular_metricas(df):
         st.error(f"Erro ao calcular métricas: {str(e)}")
         return 0, 0.0, "Erro no cálculo"
 
+# Função para filtrar multas não pagas
 def filtrar_multas_nao_pagas(df):
     """
     Filtra multas que não foram pagas.

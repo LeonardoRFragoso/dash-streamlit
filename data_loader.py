@@ -1,65 +1,91 @@
 import pandas as pd
 import streamlit as st
+import io
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
-from io import BytesIO
 
-def load_data(sheet_name=None):
-    """
-    Carrega dados do Google Drive utilizando credenciais de serviço e retorna um DataFrame limpo.
-    """
+# Função para autenticar no Google Drive
+def autenticar_google_drive():
+    """Autentica no Google Drive usando credenciais de serviço."""
+    credentials = Credentials.from_service_account_info(
+        st.secrets["CREDENTIALS"], 
+        scopes=["https://www.googleapis.com/auth/drive.readonly"]
+    )
+    return build("drive", "v3", credentials=credentials)
+
+# Função para obter o ID da última planilha a partir do arquivo JSON
+def obter_id_ultima_planilha():
+    """Obtém o ID da última planilha salva no JSON."""
     try:
-        # Carregar credenciais do secrets.toml
-        if "CREDENTIALS" not in st.secrets or "file_data" not in st.secrets or "ultima_planilha_id" not in st.secrets["file_data"]:
-            st.error("As credenciais ou configurações do arquivo estão ausentes no secrets.toml.")
-            raise KeyError("As credenciais ou configurações do arquivo estão ausentes no secrets.toml.")
-        
-        creds = Credentials.from_service_account_info(
-            st.secrets["CREDENTIALS"], 
-            scopes=["https://www.googleapis.com/auth/drive.readonly"]
-        )
-        
-        # Construir o serviço da API Google Drive
-        drive_service = build("drive", "v3", credentials=creds)
+        with open(st.secrets["file_data"]["ultima_planilha_json"], 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            return data.get("file_id")
+    except Exception as e:
+        st.error(f"Erro ao carregar o ID da última planilha: {e}")
+        st.stop()
 
-        # ID do arquivo
-        file_id = st.secrets["file_data"]["ultima_planilha_id"]
-        
-        # Baixar o arquivo
+# Função para carregar os dados do Google Drive
+def carregar_dados_google_drive():
+    """Carrega os dados da última planilha no Google Drive."""
+    try:
+        drive_service = autenticar_google_drive()
+        file_id = obter_id_ultima_planilha()
         request = drive_service.files().get_media(fileId=file_id)
-        buffer = BytesIO()
-        downloader = MediaIoBaseDownload(buffer, request)
+        file_buffer = io.BytesIO()
+        downloader = MediaIoBaseDownload(file_buffer, request)
         done = False
         while not done:
-            _, done = downloader.next_chunk()
+            status, done = downloader.next_chunk()
+        file_buffer.seek(0)
         
-        # Carregar o arquivo em um DataFrame
-        buffer.seek(0)
-        df = pd.read_excel(buffer, sheet_name=sheet_name)
-        
-        # Verificar se o DataFrame é válido
+        # Carregar o arquivo Excel e verificar se está vazio
+        df = pd.read_excel(file_buffer)
         if df is None or df.empty:
             st.error("O arquivo carregado está vazio ou não foi possível carregar os dados.")
             raise ValueError("O arquivo carregado está vazio ou não contém dados utilizáveis.")
         
-        # Confirmar que o DataFrame foi carregado corretamente
-        st.write("DataFrame carregado com sucesso:", df.head())
-
-        # Padronizar e limpar os dados
-        return padronizar_dataframe(df)
-
+        return df
     except Exception as e:
-        st.error(f"Erro ao carregar dados do Google Drive: {e}")
-        raise RuntimeError(f"Erro ao carregar dados do Google Drive: {e}")
+        st.error(f"Erro ao carregar os dados do Google Drive: {e}")
+        st.stop()
 
+# Função para limpar e processar os dados
+def clean_data(df):
+    """Limpa os dados e trata valores ausentes ou inválidos."""
+    try:
+        if 'Valor a ser pago R$' in df.columns:
+            df['Valor a ser pago R$'] = df['Valor a ser pago R$'].replace(
+                {r'[^0-9,]': '', ',': '.'}, regex=True
+            ).astype(float)
+        else:
+            st.error("A coluna 'Valor a ser pago R$' não foi encontrada nos dados carregados.")
+            st.stop()
+
+        if 'Local da Infração' in df.columns:
+            df['Local da Infração'] = df['Local da Infração'].fillna('Desconhecido')
+        else:
+            st.error("A coluna 'Local da Infração' não foi encontrada nos dados carregados.")
+            st.stop()
+
+        # Ajuste das datas
+        df['Dia da Consulta'] = pd.to_datetime(df['Dia da Consulta'], dayfirst=True, errors='coerce')
+        df['Data da Infração'] = pd.to_datetime(df['Data da Infração'], dayfirst=True, errors='coerce')
+
+        # Remover entradas com dados ausentes nas colunas principais
+        df.dropna(subset=['Status de Pagamento', 'Auto de Infração', 'Dia da Consulta', 'Data da Infração'], inplace=True)
+        return df
+    except Exception as e:
+        st.error(f"Erro ao limpar os dados: {e}")
+        st.stop()
+
+# Função para verificar e padronizar o DataFrame
 def padronizar_dataframe(df):
     """
     Padroniza o DataFrame após o carregamento.
     """
     try:
-        # Verificar e corrigir colunas essenciais
-        required_columns = ['Status de Pagamento', 'Auto de Infração', 'Dia da Consulta', 'Data da Infração', 'Valor a ser pago R$', 'Local da Infração']
+        required_columns = ['Status de Pagamento', 'Auto de Infração', 'Dia da Consulta', 'Data da Infração', 'Valor a ser pago R$']
         missing_cols = [col for col in required_columns if col not in df.columns]
         if missing_cols:
             st.error(f"Faltam as seguintes colunas: {', '.join(missing_cols)}")
@@ -78,7 +104,8 @@ def padronizar_dataframe(df):
 
         # Processar valores monetários (Valor a ser pago R$)
         if 'Valor a ser pago R$' in df.columns:
-            df['Valor a ser pago R$'] = process_currency_column(df['Valor a ser pago R$'])
+            df['Valor a ser pago R$'] = df['Valor a ser pago R$'].replace({r'[^\d,]': '', ',': '.'}, regex=True)
+            df['Valor a ser pago R$'] = pd.to_numeric(df['Valor a ser pago R$'], errors='coerce').fillna(0)
 
         # Converter colunas de datas
         for date_col in ['Dia da Consulta', 'Data da Infração']:
@@ -91,38 +118,8 @@ def padronizar_dataframe(df):
         if 'Local da Infração' in df.columns:
             df['Local da Infração'] = df['Local da Infração'].fillna('Desconhecido')
 
-        # Retornar o DataFrame limpo e padronizado
         return df
 
     except Exception as e:
         st.error(f"Erro ao padronizar DataFrame: {e}")
-        raise RuntimeError(f"Erro ao padronizar DataFrame: {e}")
-
-def process_currency_column(series):
-    """
-    Processa uma coluna de valores monetários, removendo caracteres não numéricos e convertendo para float.
-    """
-    try:
-        return (series
-                .astype(str)
-                .str.replace(r'[^\d,.-]', '', regex=True)  # Remove caracteres não numéricos
-                .str.replace(r'\.(?=\d{3,})', '', regex=True)  # Remove ponto de milhar
-                .str.replace(',', '.', regex=False)  # Troca vírgula por ponto decimal
-                .pipe(pd.to_numeric, errors='coerce')  # Converte para numérico, com erro tratado
-                .fillna(0))  # Substitui valores inválidos (NaN) por 0
-    except Exception as e:
-        st.error(f"Erro ao processar coluna de valores: {e}")
-        raise RuntimeError(f"Erro ao processar coluna de valores: {e}")
-
-def clean_data(df):
-    """
-    Remove duplicados com base na coluna 'Auto de Infração' para garantir que não haja registros duplicados.
-    """
-    try:
-        if 'Auto de Infração' not in df.columns:
-            st.error("Coluna 'Auto de Infração' não encontrada")
-            raise KeyError("Coluna 'Auto de Infração' não encontrada")
-        return df.drop_duplicates(subset=['Auto de Infração'], keep='last')
-    except Exception as e:
-        st.error(f"Erro ao limpar dados: {e}")
-        raise RuntimeError(f"Erro ao limpar dados: {e}")
+        st.stop()
