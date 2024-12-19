@@ -4,7 +4,6 @@ from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 from io import BytesIO
-import re
 
 def load_data(sheet_name=None):
     """
@@ -38,11 +37,14 @@ def load_data(sheet_name=None):
         # Carregar o arquivo em um DataFrame
         buffer.seek(0)
         df = pd.read_excel(buffer, sheet_name=sheet_name)
-
-        # Verificar se o DataFrame está vazio ou não
+        
+        # Verificar se o DataFrame é válido
         if df is None or df.empty:
             st.error("O arquivo carregado está vazio ou não foi possível carregar os dados.")
             raise ValueError("O arquivo carregado está vazio ou não contém dados utilizáveis.")
+        
+        # Confirmar que o DataFrame foi carregado corretamente
+        st.write("DataFrame carregado com sucesso:", df.head())
 
         # Padronizar e limpar os dados
         return padronizar_dataframe(df)
