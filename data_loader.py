@@ -1,48 +1,39 @@
 import pandas as pd
 import streamlit as st
-import os
+from google.oauth2.service_account import Credentials
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseDownload
+from io import BytesIO
 
-def load_data(source, sheet_name=None):
+def load_data(sheet_name=None):
     """
-    Carrega dados de diferentes fontes (arquivo local ou ID do Google Drive).
+    Carrega dados do Google Drive usando as credenciais do secrets.toml.
     """
     try:
-        # Se source for um ID do Google Drive, usar função específica
-        if isinstance(source, str) and len(source) == 33:  # ID do Google Drive (ID com 33 caracteres)
-            return load_from_google_drive(source, sheet_name)
+        # Carregar credenciais do secrets.toml
+        creds = Credentials.from_service_account_info(
+            st.secrets["CREDENTIALS"], 
+            scopes=["https://www.googleapis.com/auth/drive.readonly"]
+        )
         
-        # Caso contrário, carregar como arquivo local
-        return load_from_file(source, sheet_name)
-    except Exception as e:
-        st.error(f"Erro ao carregar os dados: {e}")
-        raise RuntimeError(f"Erro ao carregar os dados: {e}")
+        # Construir o serviço da API Google Drive
+        drive_service = build("drive", "v3", credentials=creds)
 
-def load_from_file(file_path, sheet_name=None):
-    """
-    Carrega dados de um arquivo Excel local.
-    """
-    try:
-        # Verificar se o sheet_name foi fornecido, se não, carregar a primeira aba
-        sheet_name = sheet_name or 0
-
-        # Carregar a planilha
-        df = pd.read_excel(file_path, sheet_name=sheet_name)
-        return padronizar_dataframe(df)
-
-    except Exception as e:
-        st.error(f"Erro ao carregar arquivo local: {e}")
-        raise RuntimeError(f"Erro ao carregar arquivo local: {e}")
-
-def load_from_google_drive(file_id, sheet_name=None):
-    """
-    Carrega dados do Google Drive usando ID do arquivo.
-    """
-    try:
-        from google_drive import carregar_dados_google_drive
-        df = carregar_dados_google_drive(file_id)
-        if df is None:
-            st.error("Falha ao carregar dados do Google Drive")
-            raise ValueError("Falha ao carregar dados do Google Drive")
+        # ID do arquivo
+        file_id = st.secrets["file_data"]["ultima_planilha_id"]
+        
+        # Baixar o arquivo
+        request = drive_service.files().get_media(fileId=file_id)
+        buffer = BytesIO()
+        downloader = MediaIoBaseDownload(buffer, request)
+        done = False
+        while done is False:
+            _, done = downloader.next_chunk()
+        
+        # Carregar o arquivo em um DataFrame
+        buffer.seek(0)
+        df = pd.read_excel(buffer, sheet_name=sheet_name)
+        
         return padronizar_dataframe(df)
     except Exception as e:
         st.error(f"Erro ao carregar do Google Drive: {e}")
