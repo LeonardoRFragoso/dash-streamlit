@@ -1,6 +1,7 @@
 import pandas as pd
 from data_loader import load_data, clean_data
 
+
 def carregar_e_limpar_dados(file_path, sheet_name=None):
     """
     Carrega os dados usando `load_data` do `data_loader` e aplica limpeza adicional.
@@ -9,24 +10,34 @@ def carregar_e_limpar_dados(file_path, sheet_name=None):
         # Carregar e preprocessar os dados com `load_data`
         df = load_data(file_path, sheet_name)
 
+        # Verificar colunas essenciais antes de qualquer operação
+        required_columns = ['Status de Pagamento', 'Auto de Infração', 'Dia da Consulta', 'Data da Infração', 'Valor a ser pago R$']
+        verificar_colunas_essenciais(df, required_columns)
+
         # Limpar duplicatas usando `clean_data`
         df_cleaned = clean_data(df)
 
-        # Filtrar multas NÃO PAGAS
-        df_cleaned = df_cleaned[df_cleaned['Status de Pagamento'].str.strip().str.upper() == 'NÃO PAGO']
-
-        # Remover duplicatas por 'Auto de Infração'
-        df_cleaned = df_cleaned.drop_duplicates(subset=['Auto de Infração'], keep='last')
+        # Filtrar apenas multas NÃO PAGAS (garantindo padronização)
+        df_cleaned['Status de Pagamento'] = df_cleaned['Status de Pagamento'].str.strip().str.upper()
+        df_cleaned = df_cleaned[df_cleaned['Status de Pagamento'] == 'NÃO PAGO']
 
         return df_cleaned
     except Exception as e:
         print(f"Erro ao carregar e limpar os dados: {e}")
         raise
 
+
 def verificar_colunas_essenciais(df, required_columns):
-    missing_cols = [col for col in required_columns if col not in df.columns]
-    if missing_cols:
-        raise ValueError(f"Faltam as seguintes colunas essenciais: {', '.join(missing_cols)}")
+    """
+    Verifica a existência das colunas essenciais no DataFrame.
+    """
+    try:
+        missing_cols = [col for col in required_columns if col not in df.columns]
+        if missing_cols:
+            raise ValueError(f"Faltam as seguintes colunas essenciais: {', '.join(missing_cols)}")
+    except Exception as e:
+        print(f"Erro na verificação de colunas essenciais: {e}")
+        raise
 
 
 def calcular_metricas(df):
@@ -37,6 +48,10 @@ def calcular_metricas(df):
     - Última data de consulta
     """
     try:
+        # Garantir que a coluna de valor está em formato numérico
+        if not pd.api.types.is_numeric_dtype(df['Valor a ser pago R$']):
+            raise ValueError("A coluna 'Valor a ser pago R$' não está em formato numérico.")
+
         # Total de multas com base em 'Auto de Infração' único
         total_multas = df['Auto de Infração'].nunique()
 
@@ -51,6 +66,7 @@ def calcular_metricas(df):
     except Exception as e:
         print(f"Erro ao calcular métricas: {e}")
         raise
+
 
 def filtrar_dados_por_periodo(df, data_inicial, data_final, coluna='Dia da Consulta'):
     """
