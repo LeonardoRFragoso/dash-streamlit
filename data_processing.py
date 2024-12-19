@@ -1,35 +1,50 @@
 import pandas as pd
 from data_loader import load_data, clean_data
 import streamlit as st
+from google_drive import carregar_dados_google_drive  # Adicione esta importação
 
 def carregar_e_limpar_dados(file_path=None, sheet_name=None):
     """
     Carrega os dados usando `load_data` do `data_loader` e aplica limpeza adicional.
-    Caso o caminho do arquivo não seja fornecido, ele será carregado a partir do Google Drive usando o ID da planilha do `secrets.toml`.
+    Caso o caminho do arquivo não seja fornecido, ele será carregado a partir do Google Drive.
     """
     try:
-        # Se file_path não for fornecido, carregar o arquivo a partir do Google Drive usando ID
+        # Se file_path não for fornecido, carregar do Google Drive
         if not file_path:
-            file_path = st.secrets["file_data"]["ultima_planilha_id"]
+            df = carregar_dados_google_drive()
+        else:
+            # Carregar os dados com `load_data` do data_loader
+            df = load_data(file_path, sheet_name)
 
-        # Carregar os dados com `load_data` do data_loader
-        df = load_data(file_path, sheet_name)
+        if df is None:
+            raise ValueError("Não foi possível carregar os dados")
 
         # Verificar colunas essenciais antes de qualquer operação
-        required_columns = ['Status de Pagamento', 'Auto de Infração', 'Dia da Consulta', 'Data da Infração', 'Valor a ser pago R$']
+        required_columns = [
+            'Status de Pagamento', 
+            'Auto de Infração', 
+            'Dia da Consulta', 
+            'Data da Infração', 
+            'Valor a ser pago R$'
+        ]
         verificar_colunas_essenciais(df, required_columns)
 
         # Limpar dados com `clean_data`
         df_cleaned = clean_data(df)
 
         # Padronizar e filtrar apenas multas NÃO PAGAS
-        df_cleaned['Status de Pagamento'] = df_cleaned['Status de Pagamento'].str.strip().str.upper()
+        df_cleaned['Status de Pagamento'] = (
+            df_cleaned['Status de Pagamento']
+            .astype(str)
+            .str.strip()
+            .str.upper()
+        )
         df_cleaned = df_cleaned[df_cleaned['Status de Pagamento'] == 'NÃO PAGO']
 
         return df_cleaned
     except Exception as e:
-        raise RuntimeError(f"Erro ao carregar e limpar os dados: {e}")
-
+        st.error(f"Erro ao carregar e limpar os dados: {str(e)}")
+        return None
 
 def verificar_colunas_essenciais(df, required_columns):
     """
