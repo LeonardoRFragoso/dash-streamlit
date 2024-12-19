@@ -23,6 +23,12 @@ def carregar_e_limpar_dados(file_path, sheet_name=None):
         print(f"Erro ao carregar e limpar os dados: {e}")
         raise
 
+def verificar_colunas_essenciais(df, required_columns):
+    missing_cols = [col for col in required_columns if col not in df.columns]
+    if missing_cols:
+        raise ValueError(f"Faltam as seguintes colunas essenciais: {', '.join(missing_cols)}")
+
+
 def calcular_metricas(df):
     """
     Calcula métricas principais:
