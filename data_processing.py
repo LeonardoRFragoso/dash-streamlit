@@ -1,81 +1,54 @@
 import pandas as pd
 import streamlit as st
-from data_loader import load_data, clean_data, process_currency_column
+from data_loader import clean_data, process_currency_column
 
-def carregar_e_limpar_dados():
+def carregar_e_limpar_dados(carregar_dados_func):
     """
     Carrega os dados do Google Drive e aplica limpeza e processamento.
     """
     try:
-        # Carregar dados do Google Drive usando a função load_data() do data_loader.py
-        df = load_data()
+        # Carregar dados do Google Drive usando a função fornecida
+        df = carregar_dados_func()
 
-        if df is None:
-            st.error("Não foi possível carregar os dados do Google Drive")
+        if df is None or not isinstance(df, pd.DataFrame):
+            st.error("Não foi possível carregar os dados ou os dados não são válidos")
             return None
 
-        # Verificar se é um DataFrame válido
-        if not isinstance(df, pd.DataFrame):
-            st.error("Os dados carregados não são um DataFrame válido")
-            return None
-
-        # Verificar colunas essenciais
+        # Verificar e corrigir colunas essenciais
         required_columns = [
-            'Status de Pagamento', 
-            'Auto de Infração', 
-            'Dia da Consulta', 
-            'Data da Infração', 
+            'Status de Pagamento',
+            'Auto de Infração',
+            'Dia da Consulta',
+            'Data da Infração',
             'Valor a ser pago R$'
         ]
-        
-        try:
-            df = verificar_colunas_essenciais(df, required_columns)
-        except Exception as e:
-            st.error(f"Erro na verificação de colunas: {str(e)}")
+        missing_cols = [col for col in required_columns if col not in df.columns]
+        if missing_cols:
+            st.error(f"Faltam as seguintes colunas: {', '.join(missing_cols)}")
             return None
 
-        # Limpar dados
+        # Validar e processar colunas
+        for col in ['Valor a ser pago R$', 'Dia da Consulta', 'Data da Infração']:
+            if col in df.columns:
+                if col == 'Valor a ser pago R$':
+                    df[col] = process_currency_column(df[col])
+                elif col in ['Dia da Consulta', 'Data da Infração']:
+                    df[col] = pd.to_datetime(df[col], errors='coerce')
+                    if df[col].isna().all():
+                        st.error(f"Falha ao converter a coluna '{col}' para formato de data")
+                        return None
+
+        # Limpar dados duplicados
         df_cleaned = clean_data(df)
-        if df_cleaned is None:
-            st.error("Erro na limpeza dos dados")
-            return None
 
-        # Filtrar multas não pagas
-        try:
-            df_cleaned = filtrar_multas_nao_pagas(df_cleaned)
-        except Exception as e:
-            st.error(f"Erro ao filtrar multas não pagas: {str(e)}")
-            return None
+        # Filtrar apenas multas não pagas
+        df_cleaned = filtrar_multas_nao_pagas(df_cleaned)
 
         return df_cleaned
 
     except Exception as e:
         st.error(f"Erro ao carregar e limpar os dados: {str(e)}")
         return None
-
-
-def verificar_colunas_essenciais(df, required_columns):
-    """
-    Verifica a existência e formatos das colunas necessárias.
-    """
-    try:
-        # Verificar presença das colunas
-        missing_cols = [col for col in required_columns if col not in df.columns]
-        if missing_cols:
-            raise ValueError(f"Faltam as seguintes colunas: {', '.join(missing_cols)}")
-
-        # Validar formato e converter colunas
-        for col in ['Valor a ser pago R$', 'Dia da Consulta', 'Data da Infração']:
-            if col in df.columns:
-                if col == 'Valor a ser pago R$':
-                    df['Valor a ser pago R$'] = process_currency_column(df['Valor a ser pago R$'])
-                elif col in ['Dia da Consulta', 'Data da Infração']:
-                    df[col] = pd.to_datetime(df[col], errors='coerce')
-                    if df[col].isna().all():
-                        raise ValueError(f"Falha ao converter a coluna '{col}' para formato de data")
-        return df
-    except Exception as e:
-        raise RuntimeError(f"Erro na verificação de colunas: {e}")
 
 
 def filtrar_multas_nao_pagas(df):
