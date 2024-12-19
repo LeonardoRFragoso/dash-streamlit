@@ -9,7 +9,6 @@ from data_processing import (
     calcular_metricas,
     filtrar_dados_por_periodo
 )
-from google_drive import carregar_dados_google_drive
 from graph_vehicles_fines import create_vehicle_fines_chart
 from graph_common_infractions import create_common_infractions_chart
 from graph_fines_accumulated import create_fines_accumulated_chart
@@ -147,6 +146,16 @@ try:
     data_cleaned = carregar_e_limpar_dados(carregar_dados_google_drive)
     if data_cleaned is None:
         st.error("Não foi possível carregar os dados. Verifique a conexão com o Google Drive.")
+        st.stop()
+
+    # Filtro de dados por período
+    st.markdown("<h2 class='titulo-secao'>Filtrar Dados por Período</h2>", unsafe_allow_html=True)
+    data_inicial = st.date_input("Data Inicial", value=datetime(2024, 1, 1))
+    data_final = st.date_input("Data Final", value=datetime.now())
+    data_cleaned = filtrar_dados_por_periodo(data_cleaned, data_inicial, data_final)
+
+    if data_cleaned.empty:
+        st.error("Nenhum dado encontrado no período selecionado.")
         st.stop()
 
     # Calcular métricas principais
