@@ -189,19 +189,27 @@ try:
     st.markdown("<h2 class='titulo-secao' style='color: #0066B4;'>Distribuição Geográfica das Multas</h2>", unsafe_allow_html=True)
     
     # Carregar cache de coordenadas
-    API_KEY = st.secrets["API_KEY"]["key"]
-    coordinates_cache = load_cache()
+    try:
+        API_KEY = st.secrets["API_KEY"]["key"]
+        coordinates_cache = load_cache()
+    except KeyError:
+        st.error("Chave de API não configurada corretamente no arquivo secrets.toml.")
+        st.stop()
 
     # Preparar dados para o mapa
     map_data = data_cleaned.dropna(subset=['Local da Infração']).copy()
     
     # Obter coordenadas
     if 'Latitude' not in map_data.columns or 'Longitude' not in map_data.columns:
-        map_data[['Latitude', 'Longitude']] = map_data['Local da Infração'].apply(
-            lambda x: pd.Series(get_cached_coordinates(x, API_KEY, coordinates_cache))
-            if pd.notnull(x) else pd.Series([None, None])
-        )
-        save_cache(coordinates_cache)
+        try:
+            map_data[['Latitude', 'Longitude']] = map_data['Local da Infração'].apply(
+                lambda x: pd.Series(get_cached_coordinates(x, API_KEY, coordinates_cache))
+                if pd.notnull(x) else pd.Series([None, None])
+            )
+            save_cache(coordinates_cache)
+        except Exception as e:
+            st.error(f"Erro ao obter as coordenadas geográficas: {str(e)}")
+            st.stop()
 
     map_data = map_data.dropna(subset=['Latitude', 'Longitude'])
 
