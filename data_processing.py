@@ -3,25 +3,24 @@ import streamlit as st
 from data_loader import load_data, clean_data, process_currency_column
 from google_drive import carregar_dados_google_drive
 
-def carregar_e_limpar_dados(file_path=None, sheet_name=None):
+def carregar_e_limpar_dados():
     """
-    Carrega os dados usando `load_data` do `data_loader` e aplica limpeza adicional.
-    Caso o caminho do arquivo não seja fornecido, ele será carregado a partir do Google Drive.
+    Carrega os dados do Google Drive e aplica limpeza e processamento.
     """
     try:
-        # Se file_path não for fornecido, carregar do Google Drive
-        if not file_path:
-            from google_drive import carregar_dados_google_drive
-            df = carregar_dados_google_drive()  # Executar a função
-        else:
-            # Carregar os dados com `load_data` do data_loader
-            df = load_data(file_path, sheet_name)
+        # Carregar dados do Google Drive
+        df = carregar_dados_google_drive()  # Chamada direta
 
         if df is None:
-            st.error("Não foi possível carregar os dados")
+            st.error("Não foi possível carregar os dados do Google Drive")
             return None
 
-        # Verificar colunas essenciais antes de qualquer operação
+        # Verificar se é um DataFrame válido
+        if not isinstance(df, pd.DataFrame):
+            st.error("Os dados carregados não são um DataFrame válido")
+            return None
+
+        # Verificar colunas essenciais
         required_columns = [
             'Status de Pagamento', 
             'Auto de Infração', 
@@ -30,24 +29,24 @@ def carregar_e_limpar_dados(file_path=None, sheet_name=None):
             'Valor a ser pago R$'
         ]
         
-        # Primeira verificação básica antes de chamar verificar_colunas_essenciais
-        if not isinstance(df, pd.DataFrame):
-            st.error("Os dados carregados não são um DataFrame válido")
+        try:
+            verificar_colunas_essenciais(df, required_columns)
+        except Exception as e:
+            st.error(f"Erro na verificação de colunas: {str(e)}")
             return None
-            
-        verificar_colunas_essenciais(df, required_columns)
 
-        # Limpar dados com `clean_data`
+        # Limpar dados
         df_cleaned = clean_data(df)
+        if df_cleaned is None:
+            st.error("Erro na limpeza dos dados")
+            return None
 
-        # Padronizar e filtrar apenas multas NÃO PAGAS
-        df_cleaned['Status de Pagamento'] = (
-            df_cleaned['Status de Pagamento']
-            .astype(str)
-            .str.strip()
-            .str.upper()
-        )
-        df_cleaned = df_cleaned[df_cleaned['Status de Pagamento'] == 'NÃO PAGO']
+        # Filtrar multas não pagas
+        try:
+            df_cleaned = filtrar_multas_nao_pagas(df_cleaned)
+        except Exception as e:
+            st.error(f"Erro ao filtrar multas não pagas: {str(e)}")
+            return None
 
         return df_cleaned
 
