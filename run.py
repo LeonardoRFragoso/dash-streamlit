@@ -5,12 +5,13 @@ from datetime import datetime
 from folium.features import CustomIcon
 from streamlit_folium import st_folium
 from google_drive import carregar_dados_google_drive
-from data_processing import (
+from .data_processing import (
     carregar_e_limpar_dados,
     verificar_colunas_essenciais,
     calcular_metricas,
     filtrar_dados_por_periodo,
 )
+
 from graph_vehicles_fines import create_vehicle_fines_chart
 from graph_common_infractions import create_common_infractions_chart
 from graph_fines_accumulated import create_fines_accumulated_chart
@@ -209,6 +210,52 @@ for _, row in map_data.iterrows():
         icon=CustomIcon("https://cdn-icons-png.flaticon.com/512/1828/1828843.png", icon_size=(30, 30))
     ).add_to(map_object)
 st_folium(map_object, width="100%", height=600)
+
+# Detalhes das multas para a localização selecionada
+if map_click_data and map_click_data.get("last_object_clicked"):
+    lat = map_click_data["last_object_clicked"].get("lat")
+    lng = map_click_data["last_object_clicked"].get("lng")
+
+    # Filtrando as multas que correspondem ao local clicado
+    selected_fines = map_data[(map_data['Latitude'] == lat) & (map_data['Longitude'] == lng)]
+
+    if not selected_fines.empty:
+        st.markdown("<h2 class='titulo-secao' style='color: #0066B4;'>Detalhes das Multas para a Localização Selecionada</h2>", unsafe_allow_html=True)
+        st.dataframe(
+            selected_fines[['Local da Infração', 'Valor a ser pago R$', 'Data da Infração', 'Descrição']].reset_index(drop=True),
+            use_container_width=True,
+            hide_index=True
+        )
+    else:
+        st.info("Nenhuma multa encontrada para a localização selecionada.")
+
+# Gráfico de Top 10 Veículos
+st.markdown("<h2 class='titulo-secao' style='color: #0066B4;'>Top 10 Veículos com Mais Multas e Valores Totais</h2>", unsafe_allow_html=True)
+st.plotly_chart(create_vehicle_fines_chart(filtered_data), use_container_width=True)
+
+# Ranking das Localidades
+st.markdown("<h2 class='titulo-secao' style='color: #0066B4;'>Ranking das Localidades com Mais Multas</h2>", unsafe_allow_html=True)
+ranking_localidades = filtered_data.groupby('Local da Infração', as_index=False).agg(
+    Valor_Total=('Valor a ser pago R$', 'sum'),
+    Total_Multas=('Local da Infração', 'count')
+).sort_values(by='Valor_Total', ascending=False)
+
+st.dataframe(
+    ranking_localidades.reset_index(drop=True),  # Remove o índice original
+    use_container_width=True,
+    hide_index=True  # Oculta o índice no Streamlit
+)
+
+# Gráficos adicionais
+st.markdown("<h2 class='titulo-secao' style='color: #0066B4;'>Infrações Mais Frequentes</h2>", unsafe_allow_html=True)
+st.plotly_chart(create_common_infractions_chart(filtered_data), use_container_width=True)
+
+st.markdown("<h2 class='titulo-secao' style='color: #0066B4;'>Valores das Multas Acumulados por Período</h2>", unsafe_allow_html=True)
+period_option = st.radio("Selecione o período:", ["Mensal", "Semanal"], horizontal=True)
+st.plotly_chart(create_fines_accumulated_chart(filtered_data, 'M' if period_option == "Mensal" else 'W'), use_container_width=True)
+
+st.markdown("<h2 class='titulo-secao' style='color: #0066B4;'>Infrações Mais Frequentes por Dia da Semana</h2>", unsafe_allow_html=True)
+st.plotly_chart(create_weekday_infractions_chart(filtered_data), use_container_width=True)
 
 # Footer
 st.markdown("<div class='footer'>Dashboard de Multas © 2024 | Desenvolvido pela Equipe de Qualidade</div>", unsafe_allow_html=True)
