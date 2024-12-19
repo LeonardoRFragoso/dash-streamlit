@@ -143,7 +143,7 @@ try:
     )
 
     # Carregar e processar dados
-    data_cleaned = carregar_e_limpar_dados()
+    data_cleaned = carregar_e_limpar_dados(carregar_dados_google_drive)
     if data_cleaned is None:
         st.error("Não foi possível carregar os dados. Verifique a conexão com o Google Drive.")
         st.stop()

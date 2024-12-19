@@ -51,21 +51,35 @@ def carregar_e_limpar_dados(carregar_dados_func):
         return None
 
 
-def filtrar_multas_nao_pagas(df):
-    """
-    Filtra apenas as multas com status 'NÃO PAGO'.
-    """
+def filtrar_dados_por_periodo(df, data_inicial, data_final, coluna='Dia da Consulta'):
     try:
-        df['Status de Pagamento'] = (
-            df['Status de Pagamento']
-            .astype(str)
-            .str.strip()
-            .str.upper()
-        )
-        return df[df['Status de Pagamento'] == 'NÃO PAGO']
-    except Exception as e:
-        raise RuntimeError(f"Erro ao filtrar multas não pagas: {e}")
+        if df is None or df.empty:
+            raise ValueError("O DataFrame está vazio ou é inválido.")
+        
+        if coluna not in df.columns:
+            raise ValueError(f"Coluna '{coluna}' não encontrada no DataFrame.")
+        
+        # Garantir formato de data
+        df[coluna] = pd.to_datetime(df[coluna], errors='coerce')
+        if df[coluna].isna().all():
+            raise ValueError(f"Coluna '{coluna}' não possui valores válidos de data.")
+        
+        # Converter datas de filtro
+        data_inicial = pd.Timestamp(data_inicial)
+        data_final = pd.Timestamp(data_final)
+        
+        # Aplicar filtro
+        mask = (df[coluna] >= data_inicial) & (df[coluna] <= data_final)
+        filtered_df = df[mask]
+        
+        if filtered_df.empty:
+            st.warning(f"Nenhum dado encontrado para o período de {data_inicial.strftime('%d/%m/%Y')} a {data_final.strftime('%d/%m/%Y')}")
+        
+        return filtered_df
 
+    except Exception as e:
+        st.error(f"Erro ao filtrar dados por período: {str(e)}")
+        return pd.DataFrame()  # Retorna DataFrame vazio para evitar problema
 
 def calcular_metricas(df):
     """
