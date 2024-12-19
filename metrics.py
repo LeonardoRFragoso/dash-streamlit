@@ -1,5 +1,5 @@
-
 import pandas as pd
+from data_loader import carregar_dados_google_drive
 from datetime import datetime
 
 # Constantes para colunas
@@ -72,18 +72,15 @@ def calculate_metrics(data):
 
     return total_multas, valor_total_a_pagar, multas_mes_atual
 
-# Example usage
-if __name__ == "__main__":
-    # Load your dataset here
-    file_path = "ResultadosOrganizados.xlsx"
-    raw_data = pd.read_excel(file_path)
+# Carregar dados diretamente do Google Drive
+data = carregar_dados_google_drive()  # Esta função deve retornar o DataFrame
 
-    # Preprocess the data
-    clean_data = preprocess_data(raw_data)
+# Preprocessar os dados
+clean_data = preprocess_data(data)
 
-    # Calculate metrics
-    total_fines, total_unpaid, current_month_fines = calculate_metrics(clean_data)
+# Calcular métricas
+total_fines, total_unpaid, current_month_fines = calculate_metrics(clean_data)
 
-    print(f"Total Fines: {total_fines}")
-    print(f"Total Unpaid Amount: R$ {total_unpaid:,.2f}")
-    print(f"Fines in Current Month: {current_month_fines}")
+print(f"Total Fines: {total_fines}")
+print(f"Total Unpaid Amount: R$ {total_unpaid:,.2f}")
+print(f"Fines in Current Month: {current_month_fines}")
