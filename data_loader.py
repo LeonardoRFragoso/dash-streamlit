@@ -41,13 +41,15 @@ def load_data(sheet_name=None):
         if df is None or df.empty:
             st.error("O arquivo carregado está vazio ou não foi possível carregar os dados.")
             raise ValueError("O arquivo carregado está vazio ou não contém dados utilizáveis.")
-
+        
+        # Mostrar as primeiras linhas para diagnóstico
+        st.write(df.head())  # Exibe as primeiras linhas da planilha carregada
+        
         return padronizar_dataframe(df)
 
     except Exception as e:
         st.error(f"Erro ao carregar do Google Drive: {e}")
         raise RuntimeError(f"Erro ao carregar do Google Drive: {e}")
-
 
 def padronizar_dataframe(df):
     """
