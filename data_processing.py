@@ -17,27 +17,31 @@ def carregar_e_limpar_dados(file_path, sheet_name=None):
         # Limpar duplicatas usando `clean_data`
         df_cleaned = clean_data(df)
 
-        # Filtrar apenas multas NÃO PAGAS (garantindo padronização)
+        # Padronizar e filtrar apenas multas NÃO PAGAS
         df_cleaned['Status de Pagamento'] = df_cleaned['Status de Pagamento'].str.strip().str.upper()
         df_cleaned = df_cleaned[df_cleaned['Status de Pagamento'] == 'NÃO PAGO']
 
         return df_cleaned
     except Exception as e:
-        print(f"Erro ao carregar e limpar os dados: {e}")
-        raise
+        raise RuntimeError(f"Erro ao carregar e limpar os dados: {e}")
 
 
 def verificar_colunas_essenciais(df, required_columns):
     """
-    Verifica a existência das colunas essenciais no DataFrame.
+    Verifica a existência e os tipos das colunas essenciais no DataFrame.
     """
     try:
         missing_cols = [col for col in required_columns if col not in df.columns]
         if missing_cols:
             raise ValueError(f"Faltam as seguintes colunas essenciais: {', '.join(missing_cols)}")
+
+        # Validar tipos das colunas esperadas (exemplo para valores e datas)
+        if 'Valor a ser pago R$' in df and not pd.api.types.is_numeric_dtype(df['Valor a ser pago R$']):
+            raise TypeError("A coluna 'Valor a ser pago R$' deve ser numérica.")
+        if 'Dia da Consulta' in df:
+            pd.to_datetime(df['Dia da Consulta'], errors='coerce')
     except Exception as e:
-        print(f"Erro na verificação de colunas essenciais: {e}")
-        raise
+        raise RuntimeError(f"Erro na verificação de colunas essenciais: {e}")
 
 
 def calcular_metricas(df):
@@ -50,7 +54,7 @@ def calcular_metricas(df):
     try:
         # Garantir que a coluna de valor está em formato numérico
         if not pd.api.types.is_numeric_dtype(df['Valor a ser pago R$']):
-            raise ValueError("A coluna 'Valor a ser pago R$' não está em formato numérico.")
+            df['Valor a ser pago R$'] = pd.to_numeric(df['Valor a ser pago R$'], errors='coerce')
 
         # Total de multas com base em 'Auto de Infração' único
         total_multas = df['Auto de Infração'].nunique()
@@ -64,8 +68,7 @@ def calcular_metricas(df):
 
         return total_multas, valor_total_a_pagar, ultima_consulta
     except Exception as e:
-        print(f"Erro ao calcular métricas: {e}")
-        raise
+        raise RuntimeError(f"Erro ao calcular métricas: {e}")
 
 
 def filtrar_dados_por_periodo(df, data_inicial, data_final, coluna='Dia da Consulta'):
@@ -91,5 +94,4 @@ def filtrar_dados_por_periodo(df, data_inicial, data_final, coluna='Dia da Consu
         return df[(df[coluna] >= pd.Timestamp(data_inicial)) & 
                   (df[coluna] <= pd.Timestamp(data_final))]
     except Exception as e:
-        print(f"Erro ao filtrar dados por período: {e}")
-        raise
+        raise RuntimeError(f"Erro ao filtrar dados por período: {e}")

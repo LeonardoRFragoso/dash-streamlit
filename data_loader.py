@@ -2,7 +2,9 @@ import pandas as pd
 
 
 def load_data(file_path, sheet_name=None):
-    """Load and preprocess the data."""
+    """
+    Carrega e processa os dados de um arquivo Excel.
+    """
     try:
         # Detectar a aba automaticamente se não especificada
         sheet_name = sheet_name or 0
@@ -10,7 +12,7 @@ def load_data(file_path, sheet_name=None):
         # Carregar a planilha
         df = pd.read_excel(file_path, sheet_name=sheet_name)
 
-        # Padronizar os nomes das colunas (se forem inconsistentes)
+        # Padronizar os nomes das colunas
         column_mapping = {
             "Valor a ser pago R$": "Valor a ser pago R$",
             "Data da Infração": "Data da Infração",
@@ -21,9 +23,7 @@ def load_data(file_path, sheet_name=None):
 
         # Verificar se as colunas essenciais existem
         required_columns = ['Dia da Consulta', 'Data da Infração', 'Valor a ser pago R$', 'Auto de Infração']
-        missing_columns = [col for col in required_columns if col not in df.columns]
-        if missing_columns:
-            raise ValueError(f"As colunas essenciais estão ausentes: {', '.join(missing_columns)}")
+        verificar_colunas_essenciais(df, required_columns)
 
         # Converter colunas de datas para o formato datetime
         for date_col in ['Dia da Consulta', 'Data da Infração']:
@@ -44,17 +44,41 @@ def load_data(file_path, sheet_name=None):
 
         return df
 
+    except ValueError as e:
+        raise RuntimeError(f"Erro de validação ao carregar os dados: {e}")
     except Exception as e:
-        print(f"Erro ao carregar os dados: {e}")
-        raise
+        raise RuntimeError(f"Erro ao carregar os dados: {e}")
 
 
 def clean_data(df):
-    """Remove duplicates based on 'Auto de Infração'."""
+    """
+    Remove duplicados com base na coluna 'Auto de Infração'.
+    """
     try:
         # Remove duplicados com base na coluna 'Auto de Infração'
+        if 'Auto de Infração' not in df.columns:
+            raise KeyError("'Auto de Infração' não encontrada no DataFrame.")
         return df.drop_duplicates(subset=['Auto de Infração'], keep='last')
     except KeyError as e:
-        raise ValueError(f"Erro ao limpar os dados: Coluna ausente {e}")
+        raise RuntimeError(f"Erro ao limpar os dados: {e}")
     except Exception as e:
-        raise ValueError(f"Erro desconhecido ao limpar os dados: {e}")
+        raise RuntimeError(f"Erro desconhecido ao limpar os dados: {e}")
+
+
+def verificar_colunas_essenciais(df, required_columns):
+    """
+    Verifica a existência e o formato das colunas essenciais no DataFrame.
+    """
+    try:
+        missing_columns = [col for col in required_columns if col not in df.columns]
+        if missing_columns:
+            raise ValueError(f"As colunas essenciais estão ausentes: {', '.join(missing_columns)}")
+
+        # Validar tipos das colunas essenciais
+        if 'Valor a ser pago R$' in df and not pd.api.types.is_numeric_dtype(df['Valor a ser pago R$']):
+            raise TypeError("A coluna 'Valor a ser pago R$' deve ser numérica.")
+        for date_col in ['Dia da Consulta', 'Data da Infração']:
+            if date_col in df and not pd.api.types.is_datetime64_any_dtype(df[date_col]):
+                raise TypeError(f"A coluna '{date_col}' deve estar em formato datetime.")
+    except Exception as e:
+        raise RuntimeError(f"Erro na verificação de colunas essenciais: {e}")
