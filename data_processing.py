@@ -9,39 +9,29 @@ def carregar_e_limpar_dados(carregar_dados_func):
         # Carregar os dados
         df = carregar_dados_func()
 
-        # Padronizar nomes das colunas
-        column_mapping = {
-            "Valor a ser pago R$": "Valor a ser pago R$",
-            "Data da Infração": "Data da Infração",
-            "Dia da Consulta": "Dia da Consulta",
-            "Auto de Infração": "Auto de Infração",
-            "Status de Pagamento": "Status de Pagamento",
-            "Local da Infração": "Local da Infração"
-        }
-        df.rename(columns=column_mapping, inplace=True)
-
         # Verificar se as colunas essenciais estão presentes
-        required_columns = ['Data da Infração', 'Valor a ser pago R$', 'Auto de Infração', 
-                            'Status de Pagamento', 'Dia da Consulta', 'Local da Infração']
-        verificar_colunas_essenciais(df, required_columns)
+        required_columns = ['Auto de Infração', 'Status de Pagamento', 'Valor a ser pago R$']
+        missing_columns = [col for col in required_columns if col not in df.columns]
+        if missing_columns:
+            raise ValueError(f"Colunas faltantes: {', '.join(missing_columns)}")
+
+        # Filtrar multas não pagas
+        df_nao_pago = df[df['Status de Pagamento'].str.strip().str.upper() == 'NÃO PAGO']
+
+        # Remover duplicatas por 'Auto de Infração'
+        df_unicos = df_nao_pago.drop_duplicates(subset=['Auto de Infração'], keep='last')
 
         # Preprocessar valores monetários
-        df = preprocessar_valores(df)
+        df_unicos['Valor a ser pago R$'] = (
+            df_unicos['Valor a ser pago R$']
+            .astype(str)
+            .str.replace(r'[^\d,.-]', '', regex=True)  # Remove caracteres não numéricos
+            .str.replace(r'\.(?=\d{3})', '', regex=True)  # Remove separadores de milhar
+            .str.replace(',', '.', regex=False)       # Substitui vírgula por ponto decimal
+        )
+        df_unicos['Valor a ser pago R$'] = pd.to_numeric(df_unicos['Valor a ser pago R$'], errors='coerce').fillna(0)
 
-        # Garantir que as datas estão no formato correto
-        df['Dia da Consulta'] = pd.to_datetime(df['Dia da Consulta'], errors='coerce', dayfirst=True)
-        df['Data da Infração'] = pd.to_datetime(df['Data da Infração'], errors='coerce', dayfirst=True)
-
-        # Preencher valores nulos
-        df['Local da Infração'] = df['Local da Infração'].fillna('Desconhecido')
-
-        # Filtrar apenas multas NÃO PAGAS
-        df = df[df['Status de Pagamento'] == 'NÃO PAGO']
-
-        # Remover duplicatas com base no 'Auto de Infração', mantendo o registro mais recente
-        df = df.sort_values('Dia da Consulta').drop_duplicates(subset=['Auto de Infração'], keep='last')
-
-        return df
+        return df_unicos
     except Exception as e:
         print(f"Erro ao carregar e limpar os dados: {e}")
         raise
@@ -67,7 +57,7 @@ def preprocessar_valores(df):
             df['Valor a ser pago R$']
             .astype(str)
             .str.replace(r'[^\d,.-]', '', regex=True)  # Remove caracteres não numéricos
-            .str.replace('.', '', regex=False)        # Remove separador de milhar
+            .str.replace(r'\.(?=\d{3})', '', regex=True)  # Remove separadores de milhares
             .str.replace(',', '.', regex=False)       # Converte vírgula para ponto
         )
 
@@ -81,7 +71,6 @@ def calcular_metricas(df):
     Calcula métricas principais:
     - Total de multas
     - Valor total a pagar
-    - Multas do mês atual
     """
     # Calcular o total de multas considerando 'Auto de Infração' único
     total_multas = df['Auto de Infração'].nunique()
@@ -89,11 +78,7 @@ def calcular_metricas(df):
     # Calcular o valor total a pagar
     valor_total_a_pagar = df['Valor a ser pago R$'].sum()
 
-    # Filtrar multas do mês atual
-    mes_atual = pd.Timestamp.now().month
-    multas_mes_atual = df[df['Data da Infração'].dt.month == mes_atual]['Auto de Infração'].nunique()
-
-    return total_multas, valor_total_a_pagar, multas_mes_atual
+    return total_multas, valor_total_a_pagar
 
 def filtrar_dados_por_periodo(df, data_inicial, data_final, coluna='Dia da Consulta'):
     """
