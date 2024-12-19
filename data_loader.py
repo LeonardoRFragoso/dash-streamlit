@@ -57,7 +57,7 @@ def padronizar_dataframe(df):
     """
     try:
         # Verificar e corrigir colunas essenciais
-        required_columns = ['Status de Pagamento', 'Auto de Infração', 'Dia da Consulta', 'Data da Infração', 'Valor a ser pago R$']
+        required_columns = ['Status de Pagamento', 'Auto de Infração', 'Dia da Consulta', 'Data da Infração', 'Valor a ser pago R$', 'Local da Infração']
         missing_cols = [col for col in required_columns if col not in df.columns]
         if missing_cols:
             st.error(f"Faltam as seguintes colunas: {', '.join(missing_cols)}")
