@@ -4,12 +4,12 @@ import folium
 from datetime import datetime
 from folium.features import CustomIcon
 from streamlit_folium import st_folium
+from data_loader import carregar_dados_google_drive  # Atualize a importação
 from data_processing import (
     carregar_e_limpar_dados,
     calcular_metricas,
     filtrar_dados_por_periodo
 )
-from google_drive import carregar_dados_google_drive
 from graph_vehicles_fines import create_vehicle_fines_chart
 from graph_common_infractions import create_common_infractions_chart
 from graph_fines_accumulated import create_fines_accumulated_chart
