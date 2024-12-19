@@ -29,7 +29,7 @@ def carregar_e_limpar_dados():
         ]
         
         try:
-            verificar_colunas_essenciais(df, required_columns)
+            df = verificar_colunas_essenciais(df, required_columns)
         except Exception as e:
             st.error(f"Erro na verificação de colunas: {str(e)}")
             return None
@@ -52,6 +52,7 @@ def carregar_e_limpar_dados():
     except Exception as e:
         st.error(f"Erro ao carregar e limpar os dados: {str(e)}")
         return None
+
 
 def verificar_colunas_essenciais(df, required_columns):
     """
@@ -76,6 +77,7 @@ def verificar_colunas_essenciais(df, required_columns):
     except Exception as e:
         raise RuntimeError(f"Erro na verificação de colunas: {e}")
 
+
 def filtrar_multas_nao_pagas(df):
     """
     Filtra apenas as multas com status 'NÃO PAGO'.
@@ -90,6 +92,7 @@ def filtrar_multas_nao_pagas(df):
         return df[df['Status de Pagamento'] == 'NÃO PAGO']
     except Exception as e:
         raise RuntimeError(f"Erro ao filtrar multas não pagas: {e}")
+
 
 def calcular_metricas(df):
     """
@@ -114,6 +117,7 @@ def calcular_metricas(df):
     except Exception as e:
         st.error(f"Erro ao calcular métricas: {str(e)}")
         return 0, 0.0, "Erro no cálculo"
+
 
 def filtrar_dados_por_periodo(df, data_inicial, data_final, coluna='Dia da Consulta'):
     """
