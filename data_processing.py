@@ -57,6 +57,9 @@ def carregar_e_limpar_dados(carregar_dados_func):
         return None
 
 def filtrar_dados_por_periodo(df, data_inicial, data_final, coluna='Dia da Consulta'):
+    """
+    Filtra os dados para o período selecionado.
+    """
     try:
         if df is None or df.empty:
             raise ValueError("O DataFrame está vazio ou é inválido.")
@@ -88,7 +91,7 @@ def filtrar_dados_por_periodo(df, data_inicial, data_final, coluna='Dia da Consu
 
 def calcular_metricas(df):
     """
-    Calcula métricas principais do dashboard.
+    Calcula as métricas principais do dashboard.
     """
     try:
         if df is None or df.empty:
