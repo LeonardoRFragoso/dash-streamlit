@@ -105,34 +105,8 @@ def calcular_metricas(df):
         st.error(f"Erro ao calcular métricas: {str(e)}")
         return 0, 0.0, "Erro no cálculo"
 
-
-def filtrar_dados_por_periodo(df, data_inicial, data_final, coluna='Dia da Consulta'):
+def filtrar_multas_nao_pagas(df):
     """
-    Filtra dados por período específico.
+    Filtra multas que não foram pagas.
     """
-    try:
-        if df is None or df.empty:
-            return df
-
-        if coluna not in df.columns:
-            raise ValueError(f"Coluna '{coluna}' não encontrada")
-
-        # Garantir formato de data
-        df[coluna] = pd.to_datetime(df[coluna], errors='coerce')
-        
-        # Converter datas de filtro
-        data_inicial = pd.Timestamp(data_inicial)
-        data_final = pd.Timestamp(data_final)
-
-        # Aplicar filtro
-        mask = (df[coluna] >= data_inicial) & (df[coluna] <= data_final)
-        filtered_df = df[mask]
-
-        if filtered_df.empty:
-            st.warning(f"Nenhum dado encontrado para o período de {data_inicial.strftime('%d/%m/%Y')} a {data_final.strftime('%d/%m/%Y')}")
-
-        return filtered_df
-
-    except Exception as e:
-        st.error(f"Erro ao filtrar por período: {str(e)}")
-        return df
+    return df[df['Status de Pagamento'] == 'NÃO PAGO']
