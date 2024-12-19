@@ -1,5 +1,5 @@
 import pandas as pd
-from data_loader import carregar_dados_google_drive
+from data_processing_loader import carregar_dados_google_drive, calcular_metricas
 from datetime import datetime
 
 # Constantes para colunas
