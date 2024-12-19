@@ -1,20 +1,25 @@
 import pandas as pd
 from data_loader import load_data, clean_data
+import streamlit as st
 
-
-def carregar_e_limpar_dados(file_path, sheet_name=None):
+def carregar_e_limpar_dados(file_path=None, sheet_name=None):
     """
     Carrega os dados usando `load_data` do `data_loader` e aplica limpeza adicional.
+    Caso o caminho do arquivo não seja fornecido, ele será carregado a partir do Google Drive usando o ID da planilha do `secrets.toml`.
     """
     try:
-        # Carregar e preprocessar os dados com `load_data`
+        # Se file_path não for fornecido, carregar o arquivo a partir do Google Drive usando ID
+        if not file_path:
+            file_path = st.secrets["file_data"]["ultima_planilha_id"]
+
+        # Carregar os dados com `load_data` do data_loader
         df = load_data(file_path, sheet_name)
 
         # Verificar colunas essenciais antes de qualquer operação
         required_columns = ['Status de Pagamento', 'Auto de Infração', 'Dia da Consulta', 'Data da Infração', 'Valor a ser pago R$']
         verificar_colunas_essenciais(df, required_columns)
 
-        # Limpar duplicatas usando `clean_data`
+        # Limpar dados com `clean_data`
         df_cleaned = clean_data(df)
 
         # Padronizar e filtrar apenas multas NÃO PAGAS
@@ -35,11 +40,11 @@ def verificar_colunas_essenciais(df, required_columns):
         if missing_cols:
             raise ValueError(f"Faltam as seguintes colunas essenciais: {', '.join(missing_cols)}")
 
-        # Validar tipos das colunas esperadas (exemplo para valores e datas)
+        # Validar tipos das colunas esperadas
         if 'Valor a ser pago R$' in df and not pd.api.types.is_numeric_dtype(df['Valor a ser pago R$']):
             raise TypeError("A coluna 'Valor a ser pago R$' deve ser numérica.")
         if 'Dia da Consulta' in df:
-            pd.to_datetime(df['Dia da Consulta'], errors='coerce')
+            df['Dia da Consulta'] = pd.to_datetime(df['Dia da Consulta'], errors='coerce')
     except Exception as e:
         raise RuntimeError(f"Erro na verificação de colunas essenciais: {e}")
 
@@ -74,15 +79,6 @@ def calcular_metricas(df):
 def filtrar_dados_por_periodo(df, data_inicial, data_final, coluna='Dia da Consulta'):
     """
     Filtra os dados pelo período especificado entre data_inicial e data_final.
-
-    Parameters:
-        df (DataFrame): Dados a serem filtrados.
-        data_inicial (str or datetime): Data inicial do filtro.
-        data_final (str or datetime): Data final do filtro.
-        coluna (str): Coluna de data usada para o filtro ('Dia da Consulta' ou 'Data da Infração').
-
-    Returns:
-        DataFrame: Dados filtrados.
     """
     try:
         if coluna not in df.columns:

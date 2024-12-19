@@ -1,11 +1,10 @@
 import streamlit as st
 import pandas as pd
 import folium
-from datetime import datetime
 from folium.features import CustomIcon
 from streamlit_folium import st_folium
 from google_drive import carregar_dados_google_drive
-from data_processing import (  # Corrigida a importação
+from data_processing import (
     carregar_e_limpar_dados,
     verificar_colunas_essenciais,
     calcular_metricas,
@@ -16,7 +15,6 @@ from graph_common_infractions import create_common_infractions_chart
 from graph_fines_accumulated import create_fines_accumulated_chart
 from graph_weekday_infractions import create_weekday_infractions_chart
 from geo_utils import load_cache, save_cache, get_cached_coordinates
-
 
 # Configuração inicial do Streamlit
 st.set_page_config(page_title="Torre de Controle iTracker - Dashboard de Multas", layout="wide")
@@ -43,14 +41,6 @@ st.markdown(
             text-transform: uppercase;
             margin: 0;
         }
-        .titulo-secao {
-            text-align: center;
-            font-size: 36px;
-            font-weight: bold;
-            color: #0066B4;
-            margin-top: 30px;
-            margin-bottom: 20px;
-        }
         .footer {
             text-align: center;
             font-size: 14px;
@@ -58,67 +48,6 @@ st.markdown(
             margin-top: 40px;
             padding: 10px 0;
             border-top: 1px solid #ddd;
-        }
-        .indicadores-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 40px;
-            margin-top: 30px;
-        }
-        .indicador {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;  /* Centraliza verticalmente */
-            align-items: center;      /* Centraliza horizontalmente */
-            text-align: center;
-            background-color: #FFFFFF;
-            border: 4px solid #0066B4;
-            border-radius: 15px;
-            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);
-            width: 260px;
-            height: 160px;
-            padding: 10px;            /* Adiciona espaçamento interno */
-        }
-        .indicador span {
-            font-size: 18px;
-            color: #0066B4;
-        }
-        .indicador p {
-            font-size: 38px;
-            color: #0066B4;
-            margin: 0;
-            font-weight: bold;
-        }
-        /* Estilos para remover a sombra do campo de data */
-        .stDateInput input {
-            box-shadow: none; /* Remove a sombra padrão */
-            border: 1px solid #ddd; /* Borda fina e leve */
-            padding: 5px 10px;  /* Ajuste no padding para melhorar o espaço interno */
-            width: 130px;  /* Tamanho reduzido para as caixas de data */
-            font-size: 16px;  /* Tamanho da fonte mais adequado */
-        }
-        .stDateInput input:focus {
-            border-color: #0066B4;  /* Cor de borda ao focar no campo */
-            outline: none;  /* Remove o contorno padrão */
-        }
-        .stDateInput {
-            width: auto;  /* Ajusta automaticamente o tamanho */
-            margin: 0 10px;  /* Adiciona margem entre os campos de data */
-        }
-        .stButton {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            margin-top: 20px; /* Adiciona espaçamento entre o botão e os campos de data */
-        }
-        /* Centralizar o botão "Aplicar Filtro" */
-        .stButton {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
         }
     </style>
     """,
@@ -128,17 +57,8 @@ st.markdown(
 # Exibir o logo da empresa acima do título
 logo_url = st.secrets["image"]["logo_url"]  # URL do logo fornecido no secrets
 
-# Centralizar a logo com CSS
 st.markdown(
     f"""
-    <style>
-        .logo-container {{
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 20px;  /* Espaçamento entre a logo e o título */
-        }}
-    </style>
     <div class="logo-container">
         <img src="{logo_url}" width="200" alt="Logo">
     </div>
@@ -157,7 +77,14 @@ st.markdown(
 )
 
 # Carregar e processar dados
-data_cleaned = carregar_e_limpar_dados(carregar_dados_google_drive)
+try:
+    # Carregar dados do Google Drive
+    raw_data = carregar_dados_google_drive()
+    # Limpar e processar dados
+    data_cleaned = carregar_e_limpar_dados(raw_data)
+except Exception as e:
+    st.error(f"Erro ao carregar ou processar os dados: {e}")
+    st.stop()
 
 # Verificar colunas essenciais
 required_columns = ['Dia da Consulta', 'Data da Infração', 'Valor a ser pago R$', 'Auto de Infração', 'Status de Pagamento']
