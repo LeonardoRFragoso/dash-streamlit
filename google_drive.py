@@ -111,14 +111,26 @@ def carregar_dados_google_drive(sheet_name=None):
             st.error("Erro ao baixar o arquivo. Verifique o ID e as permissões do arquivo.")
             return None
 
-        # Carregar o conteúdo como DataFrame do Pandas
-        df = pd.read_excel(file_data, sheet_name=sheet_name)
-        if df.empty:
-            st.error("O arquivo baixado está vazio ou não contém dados.")
-            return None
+        # Tentativa de carregar o arquivo como DataFrame
+        try:
+            df = pd.read_excel(file_data, sheet_name=sheet_name)
+            if not isinstance(df, pd.DataFrame):
+                raise ValueError("O arquivo carregado não é um DataFrame válido.")
+            
+            # Verificar se o DataFrame está vazio
+            if df.empty:
+                st.error("O DataFrame carregado está vazio. Verifique o conteúdo do arquivo.")
+                return None
 
-        st.info("Dados carregados com sucesso como DataFrame.")
-        return df
+            st.info("Dados carregados com sucesso como DataFrame.")
+            return df
+
+        except ValueError as e:
+            st.error(f"Erro ao interpretar o arquivo como DataFrame: {str(e)}")
+            return None
+        except Exception as e:
+            st.error(f"Erro inesperado ao carregar o arquivo: {str(e)}")
+            return None
 
     except ValueError as e:
         st.error(f"Erro de configuração: {str(e)}")
