@@ -155,11 +155,9 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Caminho da planilha
-file_path = "ResultadosOrganizados.xlsx"
-
 # Carregar e processar dados
-data_cleaned = carregar_e_limpar_dados(lambda: load_data(file_path))
+file_path = "ResultadosOrganizados.xlsx"
+data_cleaned = carregar_e_limpar_dados(lambda: carregar_dados_google_drive(file_path))
 
 # Calcular métricas principais
 total_multas, valor_total_a_pagar, ultima_consulta = calcular_metricas(data_cleaned)
