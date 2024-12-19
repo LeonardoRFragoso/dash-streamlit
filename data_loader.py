@@ -1,15 +1,17 @@
 import pandas as pd
-import streamlit as st
 import io
-from google.oauth2.service_account import Credentials
+import json
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
+from google.oauth2.service_account import Credentials
+import streamlit as st
 
 # Função para autenticar no Google Drive
 def autenticar_google_drive():
     """Autentica no Google Drive usando credenciais de serviço."""
-    credentials = Credentials.from_service_account_file(
-        st.secrets["CREDENTIALS_FILE"], scopes=["https://www.googleapis.com/auth/drive"]
+    credentials = Credentials.from_service_account_info(
+        st.secrets["CREDENTIALS"], 
+        scopes=["https://www.googleapis.com/auth/drive.readonly"]
     )
     return build("drive", "v3", credentials=credentials)
 
@@ -17,9 +19,9 @@ def autenticar_google_drive():
 def obter_id_ultima_planilha():
     """Obtém o ID da última planilha salva no JSON."""
     try:
-        with open(st.secrets["ULTIMA_PLANILHA_JSON"], 'r', encoding='utf-8') as f:
-            data = json.load(f)
-            return data.get("file_id")
+        # Lê o arquivo JSON para obter o ID da planilha
+        file_id = st.secrets["file_data"]["ultima_planilha_id"]
+        return file_id
     except Exception as e:
         st.error(f"Erro ao carregar o ID da última planilha: {e}")
         st.stop()
@@ -35,7 +37,7 @@ def carregar_dados_google_drive():
         downloader = MediaIoBaseDownload(file_buffer, request)
         done = False
         while not done:
-            status, done = downloader.next_chunk()
+            _, done = downloader.next_chunk()
         file_buffer.seek(0)
         return pd.read_excel(file_buffer)
     except Exception as e:
@@ -47,6 +49,7 @@ def clean_data(df):
     """Limpa os dados e trata valores ausentes ou inválidos."""
     try:
         if 'Valor a ser pago R$' in df.columns:
+            # Remove caracteres não numéricos e converte para float
             df['Valor a ser pago R$'] = df['Valor a ser pago R$'].replace(
                 {r'[^0-9,]': '', ',': '.'}, regex=True
             ).astype(float)
@@ -77,6 +80,7 @@ def padronizar_dataframe(df):
     Padroniza o DataFrame após o carregamento.
     """
     try:
+        # Verifica se todas as colunas necessárias estão presentes
         required_columns = ['Status de Pagamento', 'Auto de Infração', 'Dia da Consulta', 'Data da Infração', 'Valor a ser pago R$']
         missing_cols = [col for col in required_columns if col not in df.columns]
         if missing_cols:
