@@ -50,7 +50,6 @@ def carregar_e_limpar_dados(carregar_dados_func):
         st.error(f"Erro ao carregar e limpar os dados: {str(e)}")
         return None
 
-
 def filtrar_dados_por_periodo(df, data_inicial, data_final, coluna='Dia da Consulta'):
     try:
         if df is None or df.empty:

@@ -38,19 +38,22 @@ def load_data(sheet_name=None):
         buffer.seek(0)
         df = pd.read_excel(buffer, sheet_name=sheet_name)
 
-        # Verificar se o DataFrame está vazio ou não
+        # Verificar se o DataFrame foi carregado corretamente
         if df is None or df.empty:
             st.error("O arquivo carregado está vazio ou não foi possível carregar os dados.")
             raise ValueError("O arquivo carregado está vazio ou não contém dados utilizáveis.")
-
-        # Mostrar as primeiras linhas para depuração
+        
         st.write("Primeiras linhas do DataFrame:", df.head())
+
+        # Verificar as colunas do DataFrame
+        st.write("Colunas do DataFrame:", df.columns.tolist())
 
         return padronizar_dataframe(df)
 
     except Exception as e:
         st.error(f"Erro ao carregar do Google Drive: {e}")
         raise RuntimeError(f"Erro ao carregar do Google Drive: {e}")
+
 
 def padronizar_dataframe(df):
     """
