@@ -78,7 +78,18 @@ def calcular_metricas(df):
     # Calcular o valor total a pagar
     valor_total_a_pagar = df['Valor a ser pago R$'].sum()
 
-    return total_multas, valor_total_a_pagar
+    # Garantir que 'Dia da Consulta' está no formato datetime
+    df['Dia da Consulta'] = pd.to_datetime(df['Dia da Consulta'], errors='coerce')
+
+    # Obter a data da última consulta
+    ultima_consulta = df['Dia da Consulta'].max()
+    if pd.notnull(ultima_consulta):
+        ultima_consulta = ultima_consulta.strftime('%d/%m/%Y')
+    else:
+        ultima_consulta = "Data não disponível"
+
+    return total_multas, valor_total_a_pagar, ultima_consulta
+
 
 def filtrar_dados_por_periodo(df, data_inicial, data_final, coluna='Dia da Consulta'):
     """
