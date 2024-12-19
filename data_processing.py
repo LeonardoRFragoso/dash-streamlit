@@ -20,7 +20,7 @@ def carregar_e_limpar_dados(carregar_dados_func):
         }
         df.rename(columns=column_mapping, inplace=True)
 
-        # Verificar colunas essenciais
+        # Verificar se as colunas essenciais estão presentes
         required_columns = ['Data da Infração', 'Valor a ser pago R$', 'Auto de Infração', 
                             'Status de Pagamento', 'Dia da Consulta', 'Local da Infração']
         verificar_colunas_essenciais(df, required_columns)
@@ -35,22 +35,16 @@ def carregar_e_limpar_dados(carregar_dados_func):
         # Preencher valores nulos
         df['Local da Infração'] = df['Local da Infração'].fillna('Desconhecido')
 
-        # Filtrar apenas Status NÃO PAGO
+        # Filtrar apenas multas NÃO PAGAS
         df = df[df['Status de Pagamento'] == 'NÃO PAGO']
 
-        # Calcular métricas antes de deduplicar
-        print("Valores antes de deduplicar:")
-        print(df[['Auto de Infração', 'Valor a ser pago R$']].head(10))
-        print("Soma total antes da deduplicação:", df['Valor a ser pago R$'].sum())
-
-        # Deduplicar registros com base em 'Auto de Infração'
+        # Remover duplicatas com base no 'Auto de Infração'
         df = df.sort_values('Dia da Consulta').drop_duplicates(subset=['Auto de Infração'], keep='last')
 
         return df
     except Exception as e:
         print(f"Erro ao carregar e limpar os dados: {e}")
         raise
-
 
 def verificar_colunas_essenciais(df, required_columns):
     """

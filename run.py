@@ -167,38 +167,42 @@ except ValueError as e:
     st.error(str(e))
     st.stop()
 
-# Filtrar apenas registros com Status de Pagamento = 'NÃO PAGO' ao iniciar
+# Filtrar registros não pagos e deduplicar por 'Auto de Infração'
 data_nao_pago = data_cleaned[data_cleaned['Status de Pagamento'] == 'NÃO PAGO']
-
-# Remover duplicatas baseadas em 'Auto de Infração' (registro único)
-data_nao_pago = data_nao_pago.drop_duplicates(subset=['Auto de Infração'])
-
+data_unicos = data_nao_pago.drop_duplicates(subset=['Auto de Infração'])
 
 # Garantir que 'Valor a ser pago R$' está em formato numérico
-data_nao_pago['Valor a ser pago R$'] = (
-    data_nao_pago['Valor a ser pago R$']
+data_cleaned['Valor a ser pago R$'] = (
+    data_cleaned['Valor a ser pago R$']
     .astype(str)
-    .str.replace('.', '', regex=False)  # Remove separadores de milhares
-    .str.replace(',', '.', regex=False)  # Substitui vírgulas por pontos
-    .astype(float)  # Converte para float
+    .str.replace(r'[^\d,.-]', '', regex=True)  # Remove caracteres inválidos
+    .str.replace('.', '', regex=False)        # Remove separadores de milhares
+    .str.replace(',', '.', regex=False)       # Substitui vírgulas por pontos
+    .astype(float)                            # Converte para float
 )
 
+# Filtrar registros não pagos
+data_nao_pago = data_cleaned[data_cleaned['Status de Pagamento'] == 'NÃO PAGO']
 
-# Calcular métricas iniciais (antes da aplicação de filtros)
-total_multas = data_nao_pago['Auto de Infração'].nunique()
-# Calcular o total dos valores únicos de multas
-valor_total_a_pagar = data_nao_pago['Valor a ser pago R$'].sum()
-ultima_consulta = data_nao_pago['Dia da Consulta'].max().strftime('%d/%m/%Y')
+# Remover duplicatas por 'Auto de Infração'
+data_unicos = data_nao_pago.drop_duplicates(subset=['Auto de Infração'], keep='last')
 
-# Converter 'Data da Infração' para datetime
-data_nao_pago['Data da Infração'] = pd.to_datetime(data_nao_pago['Data da Infração'], errors='coerce', dayfirst=True)
+# Calcular métricas iniciais (antes da aplicação de filtros adicionais)
+total_multas = data_unicos['Auto de Infração'].nunique()
+valor_total_a_pagar = data_unicos['Valor a ser pago R$'].sum()
+ultima_consulta = data_unicos['Dia da Consulta'].max().strftime('%d/%m/%Y')
+
+# Garantir que 'Data da Infração' está em formato datetime
+data_unicos['Data da Infração'] = pd.to_datetime(
+    data_unicos['Data da Infração'], errors='coerce', dayfirst=True
+)
 
 # Filtrar multas do mês atual
 current_month = datetime.now().month
 current_year = datetime.now().year
-multas_mes_atual = data_nao_pago[
-    (data_nao_pago['Data da Infração'].dt.month == current_month) &
-    (data_nao_pago['Data da Infração'].dt.year == current_year)
+multas_mes_atual = data_unicos[
+    (data_unicos['Data da Infração'].dt.month == current_month) &
+    (data_unicos['Data da Infração'].dt.year == current_year)
 ]
 
 # Calcular o valor total das multas no mês atual
@@ -215,6 +219,10 @@ st.markdown(
         <div class="indicador">
             <span>Valor Total a Pagar</span>
             <p>R$ {valor_total_a_pagar:,.2f}</p>
+        </div>
+        <div class="indicador">
+            <span>Multas no Mês Atual</span>
+            <p>R$ {valor_total_mes_atual:,.2f}</p>
         </div>
         <div class="indicador">
             <span>Última Consulta</span>
