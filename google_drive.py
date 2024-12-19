@@ -12,7 +12,7 @@ def get_service_account_credentials():
     Retorna um objeto Credentials autenticado.
     """
     try:
-        # Obter credenciais do painel do Streamlit diretamente
+        # Obter credenciais do painel do Streamlit diretamente como uma string JSON
         credentials_info_str = st.secrets["CREDENTIALS"]  # As credenciais são lidas como string no painel
         credentials_info = json.loads(credentials_info_str)  # Convertendo a string JSON para um dicionário Python
 
@@ -26,6 +26,9 @@ def get_service_account_credentials():
 
     except KeyError as e:
         st.error(f"Chave ausente nas credenciais: {str(e)}")
+        return None
+    except json.JSONDecodeError as e:
+        st.error(f"Erro ao interpretar o JSON das credenciais: {str(e)}")
         return None
     except Exception as e:
         st.error(f"Erro ao carregar as credenciais: {str(e)}")
